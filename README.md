@@ -1,0 +1,38 @@
+# Frappe Job Search
+
+A standalone Frappe app extending Frappe CRM with a structured, source-backed job-search workflow. It follows Cartertek's SEI conventions: standard DocTypes/controllers, narrowly scoped CRM Custom Field fixtures, migration-managed configuration, whitelisted service methods, and version-controlled procedures.
+
+**Package:** job_search. **Dependency:** Frappe CRM (crm). **Reference environment:** Frappe 17.0.0-dev and CRM 2.0.0-dev (SEI bench inspected October 2026; integration tests have not yet run).
+
+## Features
+
+- CRM Deal as the job opportunity with js_is_job_search, employer link, position details, and namespaced JS: stage status values.
+- Employer fields on CRM Organization; Frappe Contact and CRM Task reused.
+- Durable records for Posting, Source, Research, Procedure, Procedure Execution, Application, Interview, Decision, and Transition.
+- Source evidence, original job descriptions, historical applications, immutable human approvals, completed procedure steps, and stage transitions.
+- Server-side validation for CRM Deal status edits, whether from CRM UI, Desk, or standard document REST.
+- Desk Workspace and operator API. No automated application submission or outbound email.
+
+## Installation (on a separate test site first)
+
+In the bench directory:
+
+    bench get-app https://github.com/cartertek/frappe-job-search --branch main
+    bench --site TEST-SITE install-app crm  # only if not already installed
+    bench --site TEST-SITE install-app job_search
+    bench --site TEST-SITE migrate
+
+Assign **Job Search Operator** and an appropriate CRM Sales role (for Deal/Organization/Task permissions) to a dedicated non-Administrator operator user. Assign **Job Search Approver** only to actual human approvers. Approvers also need CRM permissions for their interactions.
+
+Desk has a Job Search workspace and sidebar. In CRM, create a saved Deal view filtered by Job Search Opportunity = true and group by status if the frontend supports it. Job Search stages are isolated from sales stages through the JS: prefix.
+
+**A real test-site install, migration, CRM frontend check, and backup/restore test remain required.** Static CI cannot replace this verification.
+
+## Documentation
+
+- [Architecture](docs/architecture.md)
+- [Workflow and approvals](docs/workflows.md)
+- [Operator API](docs/api.md)
+- [Deployment](docs/deployment.md)
+- [Known limitations](docs/limitations.md)
+- [Procedures](docs/procedures/README.md)

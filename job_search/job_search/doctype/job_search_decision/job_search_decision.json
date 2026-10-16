@@ -1,0 +1,82 @@
+{
+  "doctype": "DocType",
+  "name": "Job Search Decision",
+  "module": "Job Search",
+  "custom": 0,
+  "istable": 0,
+  "editable_grid": 0,
+  "engine": "InnoDB",
+  "allow_import": 0,
+  "track_changes": 1,
+  "autoname": "format:JS-.YYYY.-.#####",
+  "field_order": [
+    "opportunity",
+    "decision",
+    "rationale",
+    "authorized_by",
+    "authorized_at",
+    "used_for"
+  ],
+  "fields": [
+    {
+      "fieldname": "opportunity",
+      "label": "Opportunity",
+      "fieldtype": "Link",
+      "options": "CRM Deal",
+      "reqd": 1,
+      "in_standard_filter": 1
+    },
+    {
+      "fieldname": "decision",
+      "label": "Decision",
+      "fieldtype": "Select",
+      "options": "Pursue\nAuthorize Application\nAccept Offer\nWithdraw\nOverride",
+      "reqd": 1
+    },
+    {
+      "fieldname": "rationale",
+      "label": "Rationale",
+      "fieldtype": "Text Editor"
+    },
+    {
+      "fieldname": "authorized_by",
+      "label": "Authorized By",
+      "fieldtype": "Link",
+      "options": "User",
+      "read_only": 1
+    },
+    {
+      "fieldname": "authorized_at",
+      "label": "Authorized At",
+      "fieldtype": "Datetime",
+      "read_only": 1
+    },
+    {
+      "fieldname": "used_for",
+      "label": "Used For",
+      "fieldtype": "Data",
+      "read_only": 1
+    }
+  ],
+  "permissions": [
+    {
+      "role": "Job Search Approver",
+      "read": 1,
+      "report": 1,
+      "export": 1,
+      "create": 1,
+      "write": 1
+    },
+    {
+      "role": "System Manager",
+      "read": 1,
+      "report": 1,
+      "export": 1,
+      "create": 1,
+      "write": 1
+    }
+  ],
+  "sort_field": "modified",
+  "sort_order": "DESC",
+  "actions": []
+}

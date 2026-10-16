@@ -1,0 +1,135 @@
+{
+  "doctype": "DocType",
+  "name": "Job Search Application",
+  "module": "Job Search",
+  "custom": 0,
+  "istable": 0,
+  "editable_grid": 0,
+  "engine": "InnoDB",
+  "allow_import": 1,
+  "track_changes": 1,
+  "autoname": "format:JS-.YYYY.-.#####",
+  "field_order": [
+    "opportunity",
+    "submitted_on",
+    "submission_method",
+    "submission_url",
+    "reference_number",
+    "resume",
+    "cover_letter",
+    "materials",
+    "confirmation",
+    "status",
+    "outcome_notes",
+    "authorization",
+    "notes"
+  ],
+  "fields": [
+    {
+      "fieldname": "opportunity",
+      "label": "Opportunity",
+      "fieldtype": "Link",
+      "options": "CRM Deal",
+      "reqd": 1,
+      "in_standard_filter": 1
+    },
+    {
+      "fieldname": "submitted_on",
+      "label": "Submitted On",
+      "fieldtype": "Datetime",
+      "reqd": 1
+    },
+    {
+      "fieldname": "submission_method",
+      "label": "Submission Method",
+      "fieldtype": "Select",
+      "options": "Employer Website\nEmail\nJob Board\nReferral\nOther",
+      "reqd": 1
+    },
+    {
+      "fieldname": "submission_url",
+      "label": "Submission Url",
+      "fieldtype": "Data",
+      "options": "URL"
+    },
+    {
+      "fieldname": "reference_number",
+      "label": "Reference Number",
+      "fieldtype": "Data"
+    },
+    {
+      "fieldname": "resume",
+      "label": "Resume",
+      "fieldtype": "Attach"
+    },
+    {
+      "fieldname": "cover_letter",
+      "label": "Cover Letter",
+      "fieldtype": "Attach"
+    },
+    {
+      "fieldname": "materials",
+      "label": "Materials",
+      "fieldtype": "Text Editor"
+    },
+    {
+      "fieldname": "confirmation",
+      "label": "Confirmation",
+      "fieldtype": "Attach"
+    },
+    {
+      "fieldname": "status",
+      "label": "Status",
+      "fieldtype": "Select",
+      "options": "Submitted\nIn Review\nRejected\nWithdrawn\nAccepted"
+    },
+    {
+      "fieldname": "outcome_notes",
+      "label": "Outcome Notes",
+      "fieldtype": "Text Editor"
+    },
+    {
+      "fieldname": "authorization",
+      "label": "Authorization",
+      "fieldtype": "Link",
+      "options": "Job Search Decision"
+    },
+    {
+      "fieldname": "notes",
+      "label": "Notes",
+      "fieldtype": "Text Editor"
+    }
+  ],
+  "permissions": [
+    {
+      "role": "Job Search Operator",
+      "read": 1,
+      "report": 1,
+      "export": 1,
+      "create": 1,
+      "write": 1,
+      "delete": 1
+    },
+    {
+      "role": "Job Search Approver",
+      "read": 1,
+      "report": 1,
+      "export": 1,
+      "create": 1,
+      "write": 1,
+      "delete": 1
+    },
+    {
+      "role": "System Manager",
+      "read": 1,
+      "report": 1,
+      "export": 1,
+      "create": 1,
+      "write": 1,
+      "delete": 1
+    }
+  ],
+  "sort_field": "modified",
+  "sort_order": "DESC",
+  "actions": []
+}

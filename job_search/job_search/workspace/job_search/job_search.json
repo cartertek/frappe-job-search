@@ -1,0 +1,123 @@
+{
+  "doctype": "Workspace",
+  "app": "job_search",
+  "name": "Job Search",
+  "label": "Job Search",
+  "title": "Job Search",
+  "module": "Job Search",
+  "public": 1,
+  "for_user": "",
+  "icon": "briefcase",
+  "is_hidden": 0,
+  "hide_custom": 0,
+  "indicator_color": "blue",
+  "content": "[{\"id\":\"jobsearch_header\",\"type\":\"header\",\"data\":{\"text\":\"Job Search\",\"col\":12}},{\"id\":\"jobsearch_intro\",\"type\":\"paragraph\",\"data\":{\"text\":\"Research-first job management. Filter CRM Deals by Job Search Opportunity.\",\"col\":12}}]",
+  "links": [
+    {
+      "type": "Card Break",
+      "label": "Opportunities",
+      "link_type": "DocType",
+      "link_to": null
+    },
+    {
+      "type": "Link",
+      "label": "Job Search Deals",
+      "link_type": "DocType",
+      "link_to": "CRM Deal"
+    },
+    {
+      "type": "Link",
+      "label": "Employers",
+      "link_type": "DocType",
+      "link_to": "CRM Organization"
+    },
+    {
+      "type": "Link",
+      "label": "Contacts",
+      "link_type": "DocType",
+      "link_to": "Contact"
+    },
+    {
+      "type": "Link",
+      "label": "Follow-up Tasks",
+      "link_type": "DocType",
+      "link_to": "CRM Task"
+    },
+    {
+      "type": "Card Break",
+      "label": "Research",
+      "link_type": "DocType",
+      "link_to": null
+    },
+    {
+      "type": "Link",
+      "label": "Postings",
+      "link_type": "DocType",
+      "link_to": "Job Search Posting"
+    },
+    {
+      "type": "Link",
+      "label": "Research",
+      "link_type": "DocType",
+      "link_to": "Job Search Research"
+    },
+    {
+      "type": "Link",
+      "label": "Sources",
+      "link_type": "DocType",
+      "link_to": "Job Search Source"
+    },
+    {
+      "type": "Card Break",
+      "label": "Execution",
+      "link_type": "DocType",
+      "link_to": null
+    },
+    {
+      "type": "Link",
+      "label": "Procedures",
+      "link_type": "DocType",
+      "link_to": "Job Search Procedure"
+    },
+    {
+      "type": "Link",
+      "label": "Procedure Executions",
+      "link_type": "DocType",
+      "link_to": "Job Search Procedure Execution"
+    },
+    {
+      "type": "Link",
+      "label": "Decisions",
+      "link_type": "DocType",
+      "link_to": "Job Search Decision"
+    },
+    {
+      "type": "Link",
+      "label": "Transition History",
+      "link_type": "DocType",
+      "link_to": "Job Search Transition"
+    },
+    {
+      "type": "Card Break",
+      "label": "Applications",
+      "link_type": "DocType",
+      "link_to": null
+    },
+    {
+      "type": "Link",
+      "label": "Applications",
+      "link_type": "DocType",
+      "link_to": "Job Search Application"
+    },
+    {
+      "type": "Link",
+      "label": "Interviews",
+      "link_type": "DocType",
+      "link_to": "Job Search Interview"
+    }
+  ],
+  "shortcuts": [],
+  "charts": [],
+  "number_cards": [],
+  "custom_blocks": []
+}

@@ -1,0 +1,136 @@
+{
+  "doctype": "DocType",
+  "name": "Job Search Procedure Execution",
+  "module": "Job Search",
+  "custom": 0,
+  "istable": 0,
+  "editable_grid": 0,
+  "engine": "InnoDB",
+  "allow_import": 1,
+  "track_changes": 1,
+  "autoname": "format:JS-.YYYY.-.#####",
+  "field_order": [
+    "procedure",
+    "procedure_version",
+    "organization",
+    "opportunity",
+    "operator",
+    "started_at",
+    "completed_at",
+    "status",
+    "steps",
+    "findings",
+    "blockers",
+    "exceptions",
+    "assessment"
+  ],
+  "fields": [
+    {
+      "fieldname": "procedure",
+      "label": "Procedure",
+      "fieldtype": "Link",
+      "options": "Job Search Procedure",
+      "reqd": 1
+    },
+    {
+      "fieldname": "procedure_version",
+      "label": "Procedure Version",
+      "fieldtype": "Data",
+      "read_only": 1
+    },
+    {
+      "fieldname": "organization",
+      "label": "Organization",
+      "fieldtype": "Link",
+      "options": "CRM Organization",
+      "in_standard_filter": 1
+    },
+    {
+      "fieldname": "opportunity",
+      "label": "Opportunity",
+      "fieldtype": "Link",
+      "options": "CRM Deal"
+    },
+    {
+      "fieldname": "operator",
+      "label": "Operator",
+      "fieldtype": "Link",
+      "options": "User"
+    },
+    {
+      "fieldname": "started_at",
+      "label": "Started At",
+      "fieldtype": "Datetime"
+    },
+    {
+      "fieldname": "completed_at",
+      "label": "Completed At",
+      "fieldtype": "Datetime"
+    },
+    {
+      "fieldname": "status",
+      "label": "Status",
+      "fieldtype": "Select",
+      "options": "Pending\nIn Progress\nCompleted\nBlocked\nFailed\nCancelled",
+      "reqd": 1
+    },
+    {
+      "fieldname": "steps",
+      "label": "Steps",
+      "fieldtype": "Table",
+      "options": "Job Search Execution Step"
+    },
+    {
+      "fieldname": "findings",
+      "label": "Findings",
+      "fieldtype": "Text Editor"
+    },
+    {
+      "fieldname": "blockers",
+      "label": "Blockers",
+      "fieldtype": "Text Editor"
+    },
+    {
+      "fieldname": "exceptions",
+      "label": "Exceptions",
+      "fieldtype": "Text Editor"
+    },
+    {
+      "fieldname": "assessment",
+      "label": "Assessment",
+      "fieldtype": "Text Editor"
+    }
+  ],
+  "permissions": [
+    {
+      "role": "Job Search Operator",
+      "read": 1,
+      "report": 1,
+      "export": 1,
+      "create": 1,
+      "write": 1,
+      "delete": 1
+    },
+    {
+      "role": "Job Search Approver",
+      "read": 1,
+      "report": 1,
+      "export": 1,
+      "create": 1,
+      "write": 1,
+      "delete": 1
+    },
+    {
+      "role": "System Manager",
+      "read": 1,
+      "report": 1,
+      "export": 1,
+      "create": 1,
+      "write": 1,
+      "delete": 1
+    }
+  ],
+  "sort_field": "modified",
+  "sort_order": "DESC",
+  "actions": []
+}

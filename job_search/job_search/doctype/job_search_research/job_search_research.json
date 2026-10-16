@@ -1,0 +1,131 @@
+{
+  "doctype": "DocType",
+  "name": "Job Search Research",
+  "module": "Job Search",
+  "custom": 0,
+  "istable": 0,
+  "editable_grid": 0,
+  "engine": "InnoDB",
+  "allow_import": 1,
+  "track_changes": 1,
+  "autoname": "format:JS-.YYYY.-.#####",
+  "field_order": [
+    "title",
+    "category",
+    "organization",
+    "opportunity",
+    "content",
+    "evidence_class",
+    "status",
+    "operator",
+    "last_reviewed",
+    "last_verified",
+    "sources",
+    "procedure_execution"
+  ],
+  "fields": [
+    {
+      "fieldname": "title",
+      "label": "Title",
+      "fieldtype": "Data",
+      "reqd": 1
+    },
+    {
+      "fieldname": "category",
+      "label": "Category",
+      "fieldtype": "Select",
+      "options": "Company Overview\nProducts and Services\nFinancial Health\nTechnology Stack\nEngineering Organization\nWorkplace and Culture\nPosition Requirements\nCompensation\nHiring Process\nInterview Preparation\nGeneral Observations"
+    },
+    {
+      "fieldname": "organization",
+      "label": "Organization",
+      "fieldtype": "Link",
+      "options": "CRM Organization",
+      "in_standard_filter": 1
+    },
+    {
+      "fieldname": "opportunity",
+      "label": "Opportunity",
+      "fieldtype": "Link",
+      "options": "CRM Deal"
+    },
+    {
+      "fieldname": "content",
+      "label": "Content",
+      "fieldtype": "Text Editor"
+    },
+    {
+      "fieldname": "evidence_class",
+      "label": "Evidence Class",
+      "fieldtype": "Select",
+      "options": "Verified Fact\nSupported Interpretation\nUnverified Claim\nUnknown",
+      "reqd": 1
+    },
+    {
+      "fieldname": "status",
+      "label": "Status",
+      "fieldtype": "Select",
+      "options": "Draft\nReview\nVerified\nStale"
+    },
+    {
+      "fieldname": "operator",
+      "label": "Operator",
+      "fieldtype": "Link",
+      "options": "User"
+    },
+    {
+      "fieldname": "last_reviewed",
+      "label": "Last Reviewed",
+      "fieldtype": "Date"
+    },
+    {
+      "fieldname": "last_verified",
+      "label": "Last Verified",
+      "fieldtype": "Date"
+    },
+    {
+      "fieldname": "sources",
+      "label": "Sources",
+      "fieldtype": "Table",
+      "options": "Job Search Research Source"
+    },
+    {
+      "fieldname": "procedure_execution",
+      "label": "Procedure Execution",
+      "fieldtype": "Link",
+      "options": "Job Search Procedure Execution"
+    }
+  ],
+  "permissions": [
+    {
+      "role": "Job Search Operator",
+      "read": 1,
+      "report": 1,
+      "export": 1,
+      "create": 1,
+      "write": 1,
+      "delete": 1
+    },
+    {
+      "role": "Job Search Approver",
+      "read": 1,
+      "report": 1,
+      "export": 1,
+      "create": 1,
+      "write": 1,
+      "delete": 1
+    },
+    {
+      "role": "System Manager",
+      "read": 1,
+      "report": 1,
+      "export": 1,
+      "create": 1,
+      "write": 1,
+      "delete": 1
+    }
+  ],
+  "sort_field": "modified",
+  "sort_order": "DESC",
+  "actions": []
+}

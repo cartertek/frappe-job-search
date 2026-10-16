@@ -1,0 +1,274 @@
+[
+  {
+    "procedure_id": "discover",
+    "title": "Discover opportunities",
+    "version": "1.0",
+    "status": "Active",
+    "purpose": "Discover opportunities",
+    "instructions": "Use source-backed evidence, preserve unknowns, and record all material decisions. Discover opportunities.",
+    "completion_criteria": "All required steps complete, with an assessment and links to produced records.",
+    "steps": [
+      {
+        "step_id": "capture",
+        "title": "Capture employer, role, posting URL, and date",
+        "instructions": "Capture employer, role, posting URL, and date",
+        "required": 1
+      },
+      {
+        "step_id": "dedupe",
+        "title": "Check requisition ID, title/location and existing posting URLs",
+        "instructions": "Check requisition ID, title/location and existing posting URLs",
+        "required": 1
+      },
+      {
+        "step_id": "register",
+        "title": "Register opportunity and preserve original posting",
+        "instructions": "Register opportunity and preserve original posting",
+        "required": 1
+      }
+    ]
+  },
+  {
+    "procedure_id": "research-employer",
+    "title": "Research an employer",
+    "version": "1.0",
+    "status": "Active",
+    "purpose": "Research an employer",
+    "instructions": "Use source-backed evidence, preserve unknowns, and record all material decisions. Research an employer.",
+    "completion_criteria": "All required steps complete, with an assessment and links to produced records.",
+    "steps": [
+      {
+        "step_id": "identify",
+        "title": "Verify legal/employer identity and official careers site",
+        "instructions": "Verify legal/employer identity and official careers site",
+        "required": 1
+      },
+      {
+        "step_id": "assess",
+        "title": "Research business, financial context and employment considerations",
+        "instructions": "Research business, financial context and employment considerations",
+        "required": 1
+      },
+      {
+        "step_id": "cite",
+        "title": "Record cited findings and uncertainty",
+        "instructions": "Record cited findings and uncertainty",
+        "required": 1
+      }
+    ]
+  },
+  {
+    "procedure_id": "research-opening",
+    "title": "Research an opening",
+    "version": "1.0",
+    "status": "Active",
+    "purpose": "Research an opening",
+    "instructions": "Use source-backed evidence, preserve unknowns, and record all material decisions. Research an opening.",
+    "completion_criteria": "All required steps complete, with an assessment and links to produced records.",
+    "steps": [
+      {
+        "step_id": "snapshot",
+        "title": "Capture complete posting text and retrieval date",
+        "instructions": "Capture complete posting text and retrieval date",
+        "required": 1
+      },
+      {
+        "step_id": "requirements",
+        "title": "Extract position requirements and employment terms",
+        "instructions": "Extract position requirements and employment terms",
+        "required": 1
+      },
+      {
+        "step_id": "sources",
+        "title": "Attach evidence and note unresolved questions",
+        "instructions": "Attach evidence and note unresolved questions",
+        "required": 1
+      }
+    ]
+  },
+  {
+    "procedure_id": "qualify",
+    "title": "Qualify an opportunity",
+    "version": "1.0",
+    "status": "Active",
+    "purpose": "Qualify an opportunity",
+    "instructions": "Use source-backed evidence, preserve unknowns, and record all material decisions. Qualify an opportunity.",
+    "completion_criteria": "All required steps complete, with an assessment and links to produced records.",
+    "steps": [
+      {
+        "step_id": "verify",
+        "title": "Review employer and opening research",
+        "instructions": "Review employer and opening research",
+        "required": 1
+      },
+      {
+        "step_id": "evaluate",
+        "title": "Record fit, uncertainty and evidence",
+        "instructions": "Record fit, uncertainty and evidence",
+        "required": 1
+      },
+      {
+        "step_id": "decision",
+        "title": "Record qualification rationale and request pursuit approval",
+        "instructions": "Record qualification rationale and request pursuit approval",
+        "required": 1
+      }
+    ]
+  },
+  {
+    "procedure_id": "prepare-application",
+    "title": "Prepare an application",
+    "version": "1.0",
+    "status": "Active",
+    "purpose": "Prepare an application",
+    "instructions": "Use source-backed evidence, preserve unknowns, and record all material decisions. Prepare an application.",
+    "completion_criteria": "All required steps complete, with an assessment and links to produced records.",
+    "steps": [
+      {
+        "step_id": "materials",
+        "title": "Identify resume and cover-letter versions",
+        "instructions": "Identify resume and cover-letter versions",
+        "required": 1
+      },
+      {
+        "step_id": "review",
+        "title": "Review application requirements and materials",
+        "instructions": "Review application requirements and materials",
+        "required": 1
+      },
+      {
+        "step_id": "approval",
+        "title": "Request explicit authorization before external submission",
+        "instructions": "Request explicit authorization before external submission",
+        "required": 1
+      }
+    ]
+  },
+  {
+    "procedure_id": "record-application",
+    "title": "Record an application",
+    "version": "1.0",
+    "status": "Active",
+    "purpose": "Record an application",
+    "instructions": "Use source-backed evidence, preserve unknowns, and record all material decisions. Record an application.",
+    "completion_criteria": "All required steps complete, with an assessment and links to produced records.",
+    "steps": [
+      {
+        "step_id": "confirm",
+        "title": "Verify a submission actually occurred",
+        "instructions": "Verify a submission actually occurred",
+        "required": 1
+      },
+      {
+        "step_id": "record",
+        "title": "Retain confirmation, date, references and materials",
+        "instructions": "Retain confirmation, date, references and materials",
+        "required": 1
+      },
+      {
+        "step_id": "followup",
+        "title": "Create follow-up task",
+        "instructions": "Create follow-up task",
+        "required": 1
+      }
+    ]
+  },
+  {
+    "procedure_id": "follow-up",
+    "title": "Follow up on an application",
+    "version": "1.0",
+    "status": "Active",
+    "purpose": "Follow up on an application",
+    "instructions": "Use source-backed evidence, preserve unknowns, and record all material decisions. Follow up on an application.",
+    "completion_criteria": "All required steps complete, with an assessment and links to produced records.",
+    "steps": [
+      {
+        "step_id": "review",
+        "title": "Review communication history and outstanding next steps",
+        "instructions": "Review communication history and outstanding next steps",
+        "required": 1
+      },
+      {
+        "step_id": "plan",
+        "title": "Record authorized next action and due date",
+        "instructions": "Record authorized next action and due date",
+        "required": 1
+      }
+    ]
+  },
+  {
+    "procedure_id": "prepare-interview",
+    "title": "Prepare for an interview",
+    "version": "1.0",
+    "status": "Active",
+    "purpose": "Prepare for an interview",
+    "instructions": "Use source-backed evidence, preserve unknowns, and record all material decisions. Prepare for an interview.",
+    "completion_criteria": "All required steps complete, with an assessment and links to produced records.",
+    "steps": [
+      {
+        "step_id": "review",
+        "title": "Review interview format, interviewer information and requirements",
+        "instructions": "Review interview format, interviewer information and requirements",
+        "required": 1
+      },
+      {
+        "step_id": "prepare",
+        "title": "Link preparation notes and evidence",
+        "instructions": "Link preparation notes and evidence",
+        "required": 1
+      },
+      {
+        "step_id": "schedule",
+        "title": "Confirm time, timezone and reminders",
+        "instructions": "Confirm time, timezone and reminders",
+        "required": 1
+      }
+    ]
+  },
+  {
+    "procedure_id": "record-interview",
+    "title": "Record interview outcome",
+    "version": "1.0",
+    "status": "Active",
+    "purpose": "Record interview outcome",
+    "instructions": "Use source-backed evidence, preserve unknowns, and record all material decisions. Record interview outcome.",
+    "completion_criteria": "All required steps complete, with an assessment and links to produced records.",
+    "steps": [
+      {
+        "step_id": "capture",
+        "title": "Record round, participants, notes and result",
+        "instructions": "Record round, participants, notes and result",
+        "required": 1
+      },
+      {
+        "step_id": "next",
+        "title": "Record next steps and update status if appropriate",
+        "instructions": "Record next steps and update status if appropriate",
+        "required": 1
+      }
+    ]
+  },
+  {
+    "procedure_id": "close",
+    "title": "Close an opportunity",
+    "version": "1.0",
+    "status": "Active",
+    "purpose": "Close an opportunity",
+    "instructions": "Use source-backed evidence, preserve unknowns, and record all material decisions. Close an opportunity.",
+    "completion_criteria": "All required steps complete, with an assessment and links to produced records.",
+    "steps": [
+      {
+        "step_id": "reason",
+        "title": "Record closure outcome and rationale",
+        "instructions": "Record closure outcome and rationale",
+        "required": 1
+      },
+      {
+        "step_id": "archive",
+        "title": "Verify historic research and applications are retained",
+        "instructions": "Verify historic research and applications are retained",
+        "required": 1
+      }
+    ]
+  }
+]

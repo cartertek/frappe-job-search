@@ -1,0 +1,15 @@
+{
+  "doctype": "Desktop Icon",
+  "app": "job_search",
+  "name": "Job Search",
+  "label": "Job Search",
+  "docstatus": 0,
+  "icon": "briefcase",
+  "icon_type": "Link",
+  "link_to": "Job Search",
+  "link_type": "Workspace Sidebar",
+  "hidden": 0,
+  "idx": 1,
+  "roles": [],
+  "standard": 1
+}

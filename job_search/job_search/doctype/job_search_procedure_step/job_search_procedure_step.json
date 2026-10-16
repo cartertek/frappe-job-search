@@ -1,0 +1,53 @@
+{
+  "doctype": "DocType",
+  "name": "Job Search Procedure Step",
+  "module": "Job Search",
+  "custom": 0,
+  "istable": 1,
+  "editable_grid": 1,
+  "engine": "InnoDB",
+  "allow_import": 0,
+  "track_changes": 0,
+  "autoname": "hash",
+  "field_order": [
+    "step_id",
+    "title",
+    "instructions",
+    "required",
+    "completion_criteria"
+  ],
+  "fields": [
+    {
+      "fieldname": "step_id",
+      "label": "Step Id",
+      "fieldtype": "Data",
+      "reqd": 1
+    },
+    {
+      "fieldname": "title",
+      "label": "Title",
+      "fieldtype": "Data",
+      "reqd": 1
+    },
+    {
+      "fieldname": "instructions",
+      "label": "Instructions",
+      "fieldtype": "Text Editor"
+    },
+    {
+      "fieldname": "required",
+      "label": "Required",
+      "fieldtype": "Check",
+      "default": 1
+    },
+    {
+      "fieldname": "completion_criteria",
+      "label": "Completion Criteria",
+      "fieldtype": "Small Text"
+    }
+  ],
+  "permissions": [],
+  "sort_field": "modified",
+  "sort_order": "DESC",
+  "actions": []
+}

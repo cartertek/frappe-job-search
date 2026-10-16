@@ -1,0 +1,95 @@
+{
+  "doctype": "DocType",
+  "name": "Job Search Transition",
+  "module": "Job Search",
+  "custom": 0,
+  "istable": 0,
+  "editable_grid": 0,
+  "engine": "InnoDB",
+  "allow_import": 0,
+  "track_changes": 1,
+  "autoname": "format:JS-.YYYY.-.#####",
+  "field_order": [
+    "opportunity",
+    "from_stage",
+    "to_stage",
+    "actor",
+    "transitioned_at",
+    "reason",
+    "authorization",
+    "exception"
+  ],
+  "fields": [
+    {
+      "fieldname": "opportunity",
+      "label": "Opportunity",
+      "fieldtype": "Link",
+      "options": "CRM Deal",
+      "reqd": 1,
+      "in_standard_filter": 1
+    },
+    {
+      "fieldname": "from_stage",
+      "label": "From Stage",
+      "fieldtype": "Data"
+    },
+    {
+      "fieldname": "to_stage",
+      "label": "To Stage",
+      "fieldtype": "Data",
+      "reqd": 1
+    },
+    {
+      "fieldname": "actor",
+      "label": "Actor",
+      "fieldtype": "Link",
+      "options": "User",
+      "read_only": 1
+    },
+    {
+      "fieldname": "transitioned_at",
+      "label": "Transitioned At",
+      "fieldtype": "Datetime",
+      "read_only": 1
+    },
+    {
+      "fieldname": "reason",
+      "label": "Reason",
+      "fieldtype": "Text Editor"
+    },
+    {
+      "fieldname": "authorization",
+      "label": "Authorization",
+      "fieldtype": "Link",
+      "options": "Job Search Decision"
+    },
+    {
+      "fieldname": "exception",
+      "label": "Exception",
+      "fieldtype": "Text Editor"
+    }
+  ],
+  "permissions": [
+    {
+      "role": "Job Search Operator",
+      "read": 1,
+      "report": 1,
+      "export": 1
+    },
+    {
+      "role": "Job Search Approver",
+      "read": 1,
+      "report": 1,
+      "export": 1
+    },
+    {
+      "role": "System Manager",
+      "read": 1,
+      "report": 1,
+      "export": 1
+    }
+  ],
+  "sort_field": "modified",
+  "sort_order": "DESC",
+  "actions": []
+}

@@ -1,0 +1,136 @@
+{
+  "doctype": "DocType",
+  "name": "Job Search Posting",
+  "module": "Job Search",
+  "custom": 0,
+  "istable": 0,
+  "editable_grid": 0,
+  "engine": "InnoDB",
+  "allow_import": 1,
+  "track_changes": 1,
+  "autoname": "format:JS-.YYYY.-.#####",
+  "field_order": [
+    "opportunity",
+    "organization",
+    "source_name",
+    "source_url",
+    "requisition_id",
+    "posting_title",
+    "published_on",
+    "retrieved_on",
+    "description",
+    "snapshot",
+    "status",
+    "first_observed",
+    "last_observed"
+  ],
+  "fields": [
+    {
+      "fieldname": "opportunity",
+      "label": "Opportunity",
+      "fieldtype": "Link",
+      "options": "CRM Deal",
+      "reqd": 1,
+      "in_standard_filter": 1
+    },
+    {
+      "fieldname": "organization",
+      "label": "Organization",
+      "fieldtype": "Link",
+      "options": "CRM Organization",
+      "in_standard_filter": 1
+    },
+    {
+      "fieldname": "source_name",
+      "label": "Source Name",
+      "fieldtype": "Data",
+      "reqd": 1
+    },
+    {
+      "fieldname": "source_url",
+      "label": "Source Url",
+      "fieldtype": "Data",
+      "options": "URL"
+    },
+    {
+      "fieldname": "requisition_id",
+      "label": "Requisition Id",
+      "fieldtype": "Data"
+    },
+    {
+      "fieldname": "posting_title",
+      "label": "Posting Title",
+      "fieldtype": "Data",
+      "reqd": 1
+    },
+    {
+      "fieldname": "published_on",
+      "label": "Published On",
+      "fieldtype": "Date"
+    },
+    {
+      "fieldname": "retrieved_on",
+      "label": "Retrieved On",
+      "fieldtype": "Datetime"
+    },
+    {
+      "fieldname": "description",
+      "label": "Description",
+      "fieldtype": "Text Editor",
+      "reqd": 1
+    },
+    {
+      "fieldname": "snapshot",
+      "label": "Snapshot",
+      "fieldtype": "Attach"
+    },
+    {
+      "fieldname": "status",
+      "label": "Status",
+      "fieldtype": "Select",
+      "options": "Active\nRemoved\nExpired\nUnknown"
+    },
+    {
+      "fieldname": "first_observed",
+      "label": "First Observed",
+      "fieldtype": "Date"
+    },
+    {
+      "fieldname": "last_observed",
+      "label": "Last Observed",
+      "fieldtype": "Date"
+    }
+  ],
+  "permissions": [
+    {
+      "role": "Job Search Operator",
+      "read": 1,
+      "report": 1,
+      "export": 1,
+      "create": 1,
+      "write": 1,
+      "delete": 1
+    },
+    {
+      "role": "Job Search Approver",
+      "read": 1,
+      "report": 1,
+      "export": 1,
+      "create": 1,
+      "write": 1,
+      "delete": 1
+    },
+    {
+      "role": "System Manager",
+      "read": 1,
+      "report": 1,
+      "export": 1,
+      "create": 1,
+      "write": 1,
+      "delete": 1
+    }
+  ],
+  "sort_field": "modified",
+  "sort_order": "DESC",
+  "actions": []
+}

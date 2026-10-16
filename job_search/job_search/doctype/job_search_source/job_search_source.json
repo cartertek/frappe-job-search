@@ -1,0 +1,121 @@
+{
+  "doctype": "DocType",
+  "name": "Job Search Source",
+  "module": "Job Search",
+  "custom": 0,
+  "istable": 0,
+  "editable_grid": 0,
+  "engine": "InnoDB",
+  "allow_import": 1,
+  "track_changes": 1,
+  "autoname": "format:JS-.YYYY.-.#####",
+  "field_order": [
+    "title",
+    "url",
+    "source_type",
+    "publisher",
+    "published_on",
+    "retrieved_on",
+    "excerpt",
+    "archive",
+    "verification_status",
+    "organization",
+    "opportunity"
+  ],
+  "fields": [
+    {
+      "fieldname": "title",
+      "label": "Title",
+      "fieldtype": "Data",
+      "reqd": 1
+    },
+    {
+      "fieldname": "url",
+      "label": "Url",
+      "fieldtype": "Data",
+      "options": "URL"
+    },
+    {
+      "fieldname": "source_type",
+      "label": "Source Type",
+      "fieldtype": "Select",
+      "options": "Employer\nJob Board\nPublication\nOfficial Record\nOther"
+    },
+    {
+      "fieldname": "publisher",
+      "label": "Publisher",
+      "fieldtype": "Data"
+    },
+    {
+      "fieldname": "published_on",
+      "label": "Published On",
+      "fieldtype": "Date"
+    },
+    {
+      "fieldname": "retrieved_on",
+      "label": "Retrieved On",
+      "fieldtype": "Datetime"
+    },
+    {
+      "fieldname": "excerpt",
+      "label": "Excerpt",
+      "fieldtype": "Text Editor"
+    },
+    {
+      "fieldname": "archive",
+      "label": "Archive",
+      "fieldtype": "Attach"
+    },
+    {
+      "fieldname": "verification_status",
+      "label": "Verification Status",
+      "fieldtype": "Select",
+      "options": "Verified\nUnverified\nDisputed\nUnavailable"
+    },
+    {
+      "fieldname": "organization",
+      "label": "Organization",
+      "fieldtype": "Link",
+      "options": "CRM Organization",
+      "in_standard_filter": 1
+    },
+    {
+      "fieldname": "opportunity",
+      "label": "Opportunity",
+      "fieldtype": "Link",
+      "options": "CRM Deal"
+    }
+  ],
+  "permissions": [
+    {
+      "role": "Job Search Operator",
+      "read": 1,
+      "report": 1,
+      "export": 1,
+      "create": 1,
+      "write": 1,
+      "delete": 1
+    },
+    {
+      "role": "Job Search Approver",
+      "read": 1,
+      "report": 1,
+      "export": 1,
+      "create": 1,
+      "write": 1,
+      "delete": 1
+    },
+    {
+      "role": "System Manager",
+      "read": 1,
+      "report": 1,
+      "export": 1,
+      "create": 1,
+      "write": 1,
+      "delete": 1
+    }
+  ],
+  "sort_field": "modified",
+  "sort_order": "DESC",
+  "actions": []
+}

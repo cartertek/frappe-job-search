@@ -1,0 +1,123 @@
+{
+  "doctype": "DocType",
+  "name": "Job Search Interview",
+  "module": "Job Search",
+  "custom": 0,
+  "istable": 0,
+  "editable_grid": 0,
+  "engine": "InnoDB",
+  "allow_import": 1,
+  "track_changes": 1,
+  "autoname": "format:JS-.YYYY.-.#####",
+  "field_order": [
+    "opportunity",
+    "application",
+    "interview_type",
+    "round",
+    "scheduled_at",
+    "timezone",
+    "interviewers",
+    "preparation",
+    "notes",
+    "outcome",
+    "next_steps"
+  ],
+  "fields": [
+    {
+      "fieldname": "opportunity",
+      "label": "Opportunity",
+      "fieldtype": "Link",
+      "options": "CRM Deal",
+      "reqd": 1,
+      "in_standard_filter": 1
+    },
+    {
+      "fieldname": "application",
+      "label": "Application",
+      "fieldtype": "Link",
+      "options": "Job Search Application"
+    },
+    {
+      "fieldname": "interview_type",
+      "label": "Interview Type",
+      "fieldtype": "Select",
+      "options": "Recruiter Screen\nTechnical\nBehavioral\nPanel\nHiring Manager\nOther",
+      "reqd": 1
+    },
+    {
+      "fieldname": "round",
+      "label": "Round",
+      "fieldtype": "Int"
+    },
+    {
+      "fieldname": "scheduled_at",
+      "label": "Scheduled At",
+      "fieldtype": "Datetime"
+    },
+    {
+      "fieldname": "timezone",
+      "label": "Timezone",
+      "fieldtype": "Data"
+    },
+    {
+      "fieldname": "interviewers",
+      "label": "Interviewers",
+      "fieldtype": "Table",
+      "options": "Job Search Interview Contact"
+    },
+    {
+      "fieldname": "preparation",
+      "label": "Preparation",
+      "fieldtype": "Link",
+      "options": "Job Search Research"
+    },
+    {
+      "fieldname": "notes",
+      "label": "Notes",
+      "fieldtype": "Text Editor"
+    },
+    {
+      "fieldname": "outcome",
+      "label": "Outcome",
+      "fieldtype": "Select",
+      "options": "Pending\nPassed\nFailed\nRescheduled\nCancelled"
+    },
+    {
+      "fieldname": "next_steps",
+      "label": "Next Steps",
+      "fieldtype": "Text Editor"
+    }
+  ],
+  "permissions": [
+    {
+      "role": "Job Search Operator",
+      "read": 1,
+      "report": 1,
+      "export": 1,
+      "create": 1,
+      "write": 1,
+      "delete": 1
+    },
+    {
+      "role": "Job Search Approver",
+      "read": 1,
+      "report": 1,
+      "export": 1,
+      "create": 1,
+      "write": 1,
+      "delete": 1
+    },
+    {
+      "role": "System Manager",
+      "read": 1,
+      "report": 1,
+      "export": 1,
+      "create": 1,
+      "write": 1,
+      "delete": 1
+    }
+  ],
+  "sort_field": "modified",
+  "sort_order": "DESC",
+  "actions": []
+}

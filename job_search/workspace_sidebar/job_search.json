@@ -1,0 +1,153 @@
+{
+  "doctype": "Workspace Sidebar",
+  "app": "job_search",
+  "name": "Job Search",
+  "label": "Job Search",
+  "header_icon": "briefcase",
+  "for_user": "",
+  "items": [
+    {
+      "type": "Link",
+      "label": "Home",
+      "link_type": "Workspace",
+      "link_to": "Job Search",
+      "icon": "house",
+      "indent": 0,
+      "child": 0,
+      "open_in_new_tab": 1
+    },
+    {
+      "type": "Section Break",
+      "label": "Opportunities",
+      "link_type": "DocType",
+      "indent": 1,
+      "child": 0
+    },
+    {
+      "type": "Link",
+      "label": "Job Search Deals",
+      "link_type": "DocType",
+      "link_to": "CRM Deal",
+      "indent": 0,
+      "child": 1
+    },
+    {
+      "type": "Link",
+      "label": "Employers",
+      "link_type": "DocType",
+      "link_to": "CRM Organization",
+      "indent": 0,
+      "child": 1
+    },
+    {
+      "type": "Link",
+      "label": "Contacts",
+      "link_type": "DocType",
+      "link_to": "Contact",
+      "indent": 0,
+      "child": 1
+    },
+    {
+      "type": "Link",
+      "label": "Follow-up Tasks",
+      "link_type": "DocType",
+      "link_to": "CRM Task",
+      "indent": 0,
+      "child": 1
+    },
+    {
+      "type": "Section Break",
+      "label": "Research",
+      "link_type": "DocType",
+      "indent": 1,
+      "child": 0
+    },
+    {
+      "type": "Link",
+      "label": "Postings",
+      "link_type": "DocType",
+      "link_to": "Job Search Posting",
+      "indent": 0,
+      "child": 1
+    },
+    {
+      "type": "Link",
+      "label": "Research",
+      "link_type": "DocType",
+      "link_to": "Job Search Research",
+      "indent": 0,
+      "child": 1
+    },
+    {
+      "type": "Link",
+      "label": "Sources",
+      "link_type": "DocType",
+      "link_to": "Job Search Source",
+      "indent": 0,
+      "child": 1
+    },
+    {
+      "type": "Section Break",
+      "label": "Execution",
+      "link_type": "DocType",
+      "indent": 1,
+      "child": 0
+    },
+    {
+      "type": "Link",
+      "label": "Procedures",
+      "link_type": "DocType",
+      "link_to": "Job Search Procedure",
+      "indent": 0,
+      "child": 1
+    },
+    {
+      "type": "Link",
+      "label": "Procedure Executions",
+      "link_type": "DocType",
+      "link_to": "Job Search Procedure Execution",
+      "indent": 0,
+      "child": 1
+    },
+    {
+      "type": "Link",
+      "label": "Decisions",
+      "link_type": "DocType",
+      "link_to": "Job Search Decision",
+      "indent": 0,
+      "child": 1
+    },
+    {
+      "type": "Link",
+      "label": "Transition History",
+      "link_type": "DocType",
+      "link_to": "Job Search Transition",
+      "indent": 0,
+      "child": 1
+    },
+    {
+      "type": "Section Break",
+      "label": "Applications",
+      "link_type": "DocType",
+      "indent": 1,
+      "child": 0
+    },
+    {
+      "type": "Link",
+      "label": "Applications",
+      "link_type": "DocType",
+      "link_to": "Job Search Application",
+      "indent": 0,
+      "child": 1
+    },
+    {
+      "type": "Link",
+      "label": "Interviews",
+      "link_type": "DocType",
+      "link_to": "Job Search Interview",
+      "indent": 0,
+      "child": 1
+    }
+  ],
+  "roles": []
+}

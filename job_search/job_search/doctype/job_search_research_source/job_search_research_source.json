@@ -1,0 +1,34 @@
+{
+  "doctype": "DocType",
+  "name": "Job Search Research Source",
+  "module": "Job Search",
+  "custom": 0,
+  "istable": 1,
+  "editable_grid": 1,
+  "engine": "InnoDB",
+  "allow_import": 0,
+  "track_changes": 0,
+  "autoname": "hash",
+  "field_order": [
+    "source",
+    "finding_reference"
+  ],
+  "fields": [
+    {
+      "fieldname": "source",
+      "label": "Source",
+      "fieldtype": "Link",
+      "options": "Job Search Source",
+      "reqd": 1
+    },
+    {
+      "fieldname": "finding_reference",
+      "label": "Finding Reference",
+      "fieldtype": "Small Text"
+    }
+  ],
+  "permissions": [],
+  "sort_field": "modified",
+  "sort_order": "DESC",
+  "actions": []
+}

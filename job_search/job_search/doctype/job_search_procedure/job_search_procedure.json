@@ -1,0 +1,121 @@
+{
+  "doctype": "DocType",
+  "name": "Job Search Procedure",
+  "module": "Job Search",
+  "custom": 0,
+  "istable": 0,
+  "editable_grid": 0,
+  "engine": "InnoDB",
+  "allow_import": 1,
+  "track_changes": 1,
+  "autoname": "format:JS-.YYYY.-.#####",
+  "field_order": [
+    "procedure_id",
+    "title",
+    "version",
+    "status",
+    "purpose",
+    "scope",
+    "prerequisites",
+    "instructions",
+    "required_outputs",
+    "completion_criteria",
+    "steps"
+  ],
+  "fields": [
+    {
+      "fieldname": "procedure_id",
+      "label": "Procedure Id",
+      "fieldtype": "Data",
+      "reqd": 1
+    },
+    {
+      "fieldname": "title",
+      "label": "Title",
+      "fieldtype": "Data",
+      "reqd": 1
+    },
+    {
+      "fieldname": "version",
+      "label": "Version",
+      "fieldtype": "Data",
+      "reqd": 1
+    },
+    {
+      "fieldname": "status",
+      "label": "Status",
+      "fieldtype": "Select",
+      "options": "Draft\nActive\nRetired",
+      "reqd": 1
+    },
+    {
+      "fieldname": "purpose",
+      "label": "Purpose",
+      "fieldtype": "Text Editor"
+    },
+    {
+      "fieldname": "scope",
+      "label": "Scope",
+      "fieldtype": "Text Editor"
+    },
+    {
+      "fieldname": "prerequisites",
+      "label": "Prerequisites",
+      "fieldtype": "Text Editor"
+    },
+    {
+      "fieldname": "instructions",
+      "label": "Instructions",
+      "fieldtype": "Text Editor"
+    },
+    {
+      "fieldname": "required_outputs",
+      "label": "Required Outputs",
+      "fieldtype": "Text Editor"
+    },
+    {
+      "fieldname": "completion_criteria",
+      "label": "Completion Criteria",
+      "fieldtype": "Text Editor"
+    },
+    {
+      "fieldname": "steps",
+      "label": "Steps",
+      "fieldtype": "Table",
+      "options": "Job Search Procedure Step",
+      "reqd": 1
+    }
+  ],
+  "permissions": [
+    {
+      "role": "Job Search Operator",
+      "read": 1,
+      "report": 1,
+      "export": 1,
+      "create": 1,
+      "write": 1,
+      "delete": 1
+    },
+    {
+      "role": "Job Search Approver",
+      "read": 1,
+      "report": 1,
+      "export": 1,
+      "create": 1,
+      "write": 1,
+      "delete": 1
+    },
+    {
+      "role": "System Manager",
+      "read": 1,
+      "report": 1,
+      "export": 1,
+      "create": 1,
+      "write": 1,
+      "delete": 1
+    }
+  ],
+  "sort_field": "modified",
+  "sort_order": "DESC",
+  "actions": []
+}

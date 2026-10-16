@@ -1,0 +1,73 @@
+{
+  "doctype": "DocType",
+  "name": "Job Search Execution Step",
+  "module": "Job Search",
+  "custom": 0,
+  "istable": 1,
+  "editable_grid": 1,
+  "engine": "InnoDB",
+  "allow_import": 0,
+  "track_changes": 0,
+  "autoname": "hash",
+  "field_order": [
+    "step_id",
+    "title",
+    "status",
+    "findings",
+    "produced_records",
+    "blockers",
+    "completed_on",
+    "completed_by"
+  ],
+  "fields": [
+    {
+      "fieldname": "step_id",
+      "label": "Step Id",
+      "fieldtype": "Data",
+      "reqd": 1
+    },
+    {
+      "fieldname": "title",
+      "label": "Title",
+      "fieldtype": "Data",
+      "reqd": 1
+    },
+    {
+      "fieldname": "status",
+      "label": "Status",
+      "fieldtype": "Select",
+      "options": "Pending\nIn Progress\nCompleted\nBlocked\nFailed\nSkipped",
+      "reqd": 1
+    },
+    {
+      "fieldname": "findings",
+      "label": "Findings",
+      "fieldtype": "Text Editor"
+    },
+    {
+      "fieldname": "produced_records",
+      "label": "Produced Records",
+      "fieldtype": "Small Text"
+    },
+    {
+      "fieldname": "blockers",
+      "label": "Blockers",
+      "fieldtype": "Text Editor"
+    },
+    {
+      "fieldname": "completed_on",
+      "label": "Completed On",
+      "fieldtype": "Datetime"
+    },
+    {
+      "fieldname": "completed_by",
+      "label": "Completed By",
+      "fieldtype": "Link",
+      "options": "User"
+    }
+  ],
+  "permissions": [],
+  "sort_field": "modified",
+  "sort_order": "DESC",
+  "actions": []
+}

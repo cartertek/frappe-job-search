@@ -1,0 +1,28 @@
+{
+  "doctype": "DocType",
+  "name": "Job Search Interview Contact",
+  "module": "Job Search",
+  "custom": 0,
+  "istable": 1,
+  "editable_grid": 1,
+  "engine": "InnoDB",
+  "allow_import": 0,
+  "track_changes": 0,
+  "autoname": "hash",
+  "field_order": [
+    "contact"
+  ],
+  "fields": [
+    {
+      "fieldname": "contact",
+      "label": "Contact",
+      "fieldtype": "Link",
+      "options": "Contact",
+      "reqd": 1
+    }
+  ],
+  "permissions": [],
+  "sort_field": "modified",
+  "sort_order": "DESC",
+  "actions": []
+}
