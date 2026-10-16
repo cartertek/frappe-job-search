@@ -2,7 +2,7 @@
 
 - Not yet installed or tested on a writable Frappe/CRM test site. Schema and Python static validation do not verify Frappe install, CRM frontend field rendering, migrations or upgrades.
 - The inspected SEI bench runs Frappe 17.0.0-dev / CRM 2.0.0-dev. No tested stable version or exact commit pair is pinned yet.
-- CRM saved Deal view/Kanban grouping must be configured per site. Desk navigation exists; custom unified dossier pages and queue pages do not. Operator APIs return linked records.
+- Public CRM saved Deal views are seeded but still require live frontend verification. Desk navigation exists; custom unified dossier pages and queue pages do not. Operator APIs return linked records.
 - No applications are submitted or messages sent, and no job board scraping is attempted.
 - Re-registering a posting URL does not snapshot new content at the same URL automatically. Use a separate Job Search Posting record to capture changed text.
 - Active published procedures cannot be edited or retired in-place; create a new version.

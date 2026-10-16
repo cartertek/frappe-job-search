@@ -28,6 +28,7 @@ def after_migrate():
                     "red" if stage in ("Rejected", "Withdrawn", "Closed") else "blue"
                 ),
             }).insert(ignore_permissions=True)  # migration-only configuration
+    ensure_crm_views()
     path = Path(__file__).with_name("procedures.json")
     for item in json.loads(path.read_text()):
         if frappe.db.exists("Job Search Procedure", {
@@ -38,3 +39,35 @@ def after_migrate():
             ignore_permissions=True
         )  # migration-only seed data
     frappe.clear_cache()
+
+def ensure_crm_views():
+    """Create scoped public CRM Deal views once; never overwrite user changes."""
+    templates = (
+        (
+            "Job Search Pipeline",
+            "kanban",
+            {"js_is_job_search": 1},
+            "status",
+            [{"name": status_name(stage)} for stage in STAGES],
+        ),
+        (
+            "Job Search Research Queue",
+            "list",
+            {"js_is_job_search": 1, "js_stage": "Researching"},
+            None,
+            [],
+        ),
+    )
+    for label, view_type, filters, column, kanban_columns in templates:
+        if frappe.db.exists("CRM View Settings", {"label": label, "dt": "CRM Deal", "public": 1}):
+            continue
+        frappe.get_doc({
+            "doctype": "CRM View Settings",
+            "label": label, "dt": "CRM Deal", "route_name": "Deals",
+            "type": view_type, "column_field": column,
+            "filters": json.dumps(filters),
+            "kanban_columns": json.dumps(kanban_columns),
+            "columns": json.dumps([]), "rows": json.dumps([]),
+            "user": "", "public": 1, "is_standard": 1,
+            "order_by": "modified desc",
+        }).insert(ignore_permissions=True)  # app-scoped migration config

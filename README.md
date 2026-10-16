@@ -24,7 +24,7 @@ In the bench directory:
 
 Assign **Job Search Operator** and an appropriate CRM Sales role (for Deal/Organization/Task permissions) to a dedicated non-Administrator operator user. Assign **Job Search Approver** only to actual human approvers. Approvers also need CRM permissions for their interactions.
 
-Desk has a Job Search workspace and sidebar. In CRM, create a saved Deal view filtered by Job Search Opportunity = true and group by status if the frontend supports it. Job Search stages are isolated from sales stages through the JS: prefix.
+Desk has a Job Search workspace and sidebar. The app seeds public Job Search Pipeline (Kanban) and Job Search Research Queue (list) Deal views in CRM. Job Search stages are isolated from sales stages through the JS: prefix.
 
 **A real test-site install, migration, CRM frontend check, and backup/restore test remain required.** Static CI cannot replace this verification.
 

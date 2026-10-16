@@ -4,7 +4,7 @@ Use a separate bench/test site with CRM installed. Back up target site before de
 
 Give a dedicated operator Job Search Operator plus CRM Sales role as required for native CRM permissions. Assign Job Search Approver only to a human decision-maker. Verify API authentication attribution.
 
-In Desk, open the Job Search workspace. In CRM, create a saved Deal view filtered by Job Search Opportunity. Test custom field rendering, Deal creation, native Kanban status changes and the documented REST methods. Test denied transitions for missing evidence and approvals; check that ordinary CRM Deals remain unchanged.
+In Desk, open the Job Search workspace. In CRM, verify that the seeded Job Search Pipeline and Research Queue views are accessible and filter Deals correctly. Test custom field rendering, Deal creation, native Kanban status changes and the documented REST methods. Test denied transitions for missing evidence and approvals; check that ordinary CRM Deals remain unchanged.
 
 Before production use, run an end-to-end integration suite, verify site migrations, perform backup and restore into a separate test site, and test compatibility with the intended pinned CRM release. For backup, use bench --site SITE backup --with-files. Restore using documented bench restore commands on a separate site; inspect attachments, source links and approvals.
 
