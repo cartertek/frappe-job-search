@@ -8,7 +8,7 @@
   "engine": "InnoDB",
   "allow_import": 0,
   "track_changes": 1,
-  "autoname": "format:JS-.YYYY.-.#####",
+  "autoname": "JS-.YYYY.-.#####",
   "field_order": [
     "opportunity",
     "decision",
