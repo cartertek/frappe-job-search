@@ -1,14 +1,14 @@
 # Known limitations and remaining validation
 
 - Not yet installed or tested on a writable Frappe/CRM test site. Schema and Python static validation do not verify Frappe install, CRM frontend field rendering, migrations or upgrades.
-- The inspected SEI bench runs Frappe 17.0.0-dev / CRM 2.0.0-dev. No tested stable version or exact commit pair is pinned yet.
-- Public CRM saved Deal views are seeded but still require live frontend verification. Desk navigation exists; custom unified dossier pages and queue pages do not. Operator APIs return linked records.
+- Compatibility review uses Frappe v16.52.0 (`version-16`, source commit 4515014) and Frappe CRM v1.88.0 (`main`, source commit 0baa1e8), but neither stack has passed a live app install here. The target is the latest compatible releases on these stable branches; not a previously tested exact pair.
+- Public CRM views and the new Frappe 16 Dock/Sidebar files need live frontend verification. There are no custom dossier/queue UI pages; read-only operator endpoints provide the corresponding data.
 - No applications are submitted or messages sent, and no job board scraping is attempted.
-- Re-registering a posting URL does not snapshot new content at the same URL automatically. Use a separate Job Search Posting record to capture changed text.
+- Posting revisions are stored when updated descriptions are passed through register_opportunity or capture_posting. Automatic polling/scraping is still out of scope.
 - Active published procedures cannot be edited or retired in-place; create a new version.
 - Operator role does not implicitly grant the necessary CRM roles. Keep approver and operator credentials separate.
-- Stage entry currently does not automatically create follow-up tasks; an explicit CRM Task API is available. Automated alerts, aging notifications and reporting remain future work.
+- Actionable stage entry generates a linked CRM Task; work-queue APIs group overdue/freshness data. Scheduled notifications, comprehensive reporting, and custom queue UIs remain future work.
 - Direct database writes bypass Frappe document hooks and must not be used to mutate the workflow.
-- CI covers static checks. MariaDB integration, API tests against an installed bench, and backup/restore tests remain outstanding.
+- CI covers structural tests and isolated behavioral tests for posting revisions, stage-task idempotency and date bucketing. MariaDB/Frappe integration, permissions tests on a live bench, and backup/restore remain outstanding.
 
 - Rejected, Withdrawn and Closed use CRM Deal Status type On Hold to avoid forcing unrelated sales Lost Reason fields; their Job Search stage still represents the exact outcome. Sites relying on CRM native sales forecasting must validate the Deal semantics independently.

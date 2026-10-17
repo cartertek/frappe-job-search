@@ -4,8 +4,17 @@ app_publisher = "Cartertek LLC"
 app_description = "Research-first job search workflow for Frappe CRM"
 app_email = "admin@cartertek.ai"
 app_license = "MIT"
-required_apps = ["frappe/crm"]
+required_apps = ["crm"]
 source_link = "https://github.com/cartertek/frappe-job-search"
+
+# Frappe 16.50+ uses Apps -> Dock -> module Sidebar, not Workspace Sidebar.
+add_to_apps_screen = [{
+    "name": "job_search",
+    "logo": "/assets/job_search/images/logo.svg",
+    "title": "Job Search",
+    "route": "/desk/job-search",
+    "has_permission": "job_search.permissions.can_access_app",
+}]
 
 after_install = "job_search.setup.after_install"
 after_migrate = "job_search.setup.after_migrate"
@@ -26,13 +35,12 @@ fixtures = [
             "js_tab js_careers_url js_employer_category js_employer_priority "
             "js_research_status js_last_researched js_employment_notes"
         ).split()
-    ]]]},
+    ] + ["CRM Task-js_transition"]]]},
 ]
 
 doc_events = {
     "CRM Deal": {
         "validate": "job_search.workflow.validate_deal",
         "on_update": "job_search.workflow.record_transition",
-        "after_insert": "job_search.workflow.record_transition",
     }
 }

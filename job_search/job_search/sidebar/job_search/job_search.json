@@ -1,10 +1,11 @@
 {
-  "doctype": "Workspace Sidebar",
-  "app": "job_search",
+  "doctype": "Sidebar",
   "name": "Job Search",
-  "label": "Job Search",
+  "title": "Job Search",
+  "module": "Job Search",
+  "app": "job_search",
+  "standard": 1,
   "header_icon": "briefcase",
-  "for_user": "",
   "items": [
     {
       "type": "Link",
@@ -12,142 +13,158 @@
       "link_type": "Workspace",
       "link_to": "Job Search",
       "icon": "house",
-      "indent": 0,
       "child": 0,
-      "open_in_new_tab": 1
+      "indent": 0,
+      "doctype": "Sidebar Item"
     },
     {
       "type": "Section Break",
       "label": "Opportunities",
-      "link_type": "DocType",
+      "child": 0,
       "indent": 1,
-      "child": 0
+      "doctype": "Sidebar Item",
+      "collapsible": 1
     },
     {
       "type": "Link",
       "label": "Job Search Deals",
       "link_type": "DocType",
       "link_to": "CRM Deal",
+      "child": 1,
       "indent": 0,
-      "child": 1
+      "doctype": "Sidebar Item"
     },
     {
       "type": "Link",
       "label": "Employers",
       "link_type": "DocType",
       "link_to": "CRM Organization",
+      "child": 1,
       "indent": 0,
-      "child": 1
+      "doctype": "Sidebar Item"
     },
     {
       "type": "Link",
       "label": "Contacts",
       "link_type": "DocType",
       "link_to": "Contact",
+      "child": 1,
       "indent": 0,
-      "child": 1
+      "doctype": "Sidebar Item"
     },
     {
       "type": "Link",
       "label": "Follow-up Tasks",
       "link_type": "DocType",
       "link_to": "CRM Task",
+      "child": 1,
       "indent": 0,
-      "child": 1
+      "doctype": "Sidebar Item"
     },
     {
       "type": "Section Break",
       "label": "Research",
-      "link_type": "DocType",
+      "child": 0,
       "indent": 1,
-      "child": 0
+      "doctype": "Sidebar Item",
+      "collapsible": 1
     },
     {
       "type": "Link",
       "label": "Postings",
       "link_type": "DocType",
       "link_to": "Job Search Posting",
+      "child": 1,
       "indent": 0,
-      "child": 1
+      "doctype": "Sidebar Item"
     },
     {
       "type": "Link",
       "label": "Research",
       "link_type": "DocType",
       "link_to": "Job Search Research",
+      "child": 1,
       "indent": 0,
-      "child": 1
+      "doctype": "Sidebar Item"
     },
     {
       "type": "Link",
       "label": "Sources",
       "link_type": "DocType",
       "link_to": "Job Search Source",
+      "child": 1,
       "indent": 0,
-      "child": 1
+      "doctype": "Sidebar Item"
     },
     {
       "type": "Section Break",
       "label": "Execution",
-      "link_type": "DocType",
+      "child": 0,
       "indent": 1,
-      "child": 0
+      "doctype": "Sidebar Item",
+      "collapsible": 1
     },
     {
       "type": "Link",
       "label": "Procedures",
       "link_type": "DocType",
       "link_to": "Job Search Procedure",
+      "child": 1,
       "indent": 0,
-      "child": 1
+      "doctype": "Sidebar Item"
     },
     {
       "type": "Link",
       "label": "Procedure Executions",
       "link_type": "DocType",
       "link_to": "Job Search Procedure Execution",
+      "child": 1,
       "indent": 0,
-      "child": 1
+      "doctype": "Sidebar Item"
     },
     {
       "type": "Link",
       "label": "Decisions",
       "link_type": "DocType",
       "link_to": "Job Search Decision",
+      "child": 1,
       "indent": 0,
-      "child": 1
+      "doctype": "Sidebar Item"
     },
     {
       "type": "Link",
       "label": "Transition History",
       "link_type": "DocType",
       "link_to": "Job Search Transition",
+      "child": 1,
       "indent": 0,
-      "child": 1
+      "doctype": "Sidebar Item"
     },
     {
       "type": "Section Break",
       "label": "Applications",
-      "link_type": "DocType",
+      "child": 0,
       "indent": 1,
-      "child": 0
+      "doctype": "Sidebar Item",
+      "collapsible": 1
     },
     {
       "type": "Link",
       "label": "Applications",
       "link_type": "DocType",
       "link_to": "Job Search Application",
+      "child": 1,
       "indent": 0,
-      "child": 1
+      "doctype": "Sidebar Item"
     },
     {
       "type": "Link",
       "label": "Interviews",
       "link_type": "DocType",
       "link_to": "Job Search Interview",
+      "child": 1,
       "indent": 0,
-      "child": 1
+      "doctype": "Sidebar Item"
     }
-  ],
-  "roles": []
+  ]
 }

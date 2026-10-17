@@ -119,5 +119,7 @@
   "shortcuts": [],
   "charts": [],
   "number_cards": [],
-  "custom_blocks": []
+  "custom_blocks": [],
+  "standard": 1,
+  "type": "Workspace"
 }

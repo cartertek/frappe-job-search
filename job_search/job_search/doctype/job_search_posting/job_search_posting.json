@@ -22,7 +22,9 @@
     "snapshot",
     "status",
     "first_observed",
-    "last_observed"
+    "last_observed",
+    "content_hash",
+    "supersedes"
   ],
   "fields": [
     {
@@ -99,6 +101,19 @@
       "fieldname": "last_observed",
       "label": "Last Observed",
       "fieldtype": "Date"
+    },
+    {
+      "fieldname": "content_hash",
+      "label": "Content Hash",
+      "fieldtype": "Data",
+      "read_only": 1
+    },
+    {
+      "fieldname": "supersedes",
+      "label": "Supersedes Posting",
+      "fieldtype": "Link",
+      "options": "Job Search Posting",
+      "read_only": 1
     }
   ],
   "permissions": [

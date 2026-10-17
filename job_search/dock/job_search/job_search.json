@@ -1,0 +1,17 @@
+{
+  "doctype": "Dock",
+  "name": "job_search",
+  "app": "job_search",
+  "user": "",
+  "standard": 1,
+  "items": [
+    {
+      "doctype": "Dock Item",
+      "link_type": "Sidebar",
+      "link_to": "Job Search",
+      "icon": "briefcase",
+      "title": "Job Search",
+      "added": 1
+    }
+  ]
+}

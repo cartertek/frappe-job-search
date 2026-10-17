@@ -27,3 +27,11 @@ def require_operator():
 
 def require_approver():
     check_role("Job Search Approver", "System Manager")
+
+
+def can_access_app():
+    """Frappe Apps-screen visibility hook; must return a bool, not throw."""
+    return frappe.session.user != "Guest" and bool(
+        {"Job Search Operator", "Job Search Approver", "System Manager"}
+        & set(frappe.get_roles(frappe.session.user))
+    )

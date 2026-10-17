@@ -12,6 +12,8 @@ from job_search.permissions import (
     require_operator,
     require_opportunity,
 )
+from job_search.postings import capture_posting as capture_posting_record
+from job_search.queues import follow_up_queue, research_queue
 from job_search.workflow import STAGES
 
 
@@ -45,6 +47,16 @@ def register_opportunity(employer, title, source_url=None, description=None,
     return success(services.register_opportunity(
         employer=employer, title=title, source_url=source_url, description=description,
         requisition_id=requisition_id, location=location, source_name=source_name,
+    ))
+
+
+@frappe.whitelist()
+def capture_posting(opportunity, description, source_name, source_url=None,
+                    posting_title=None, requisition_id=None, snapshot=None):
+    return success(capture_posting_record(
+        opportunity, description=description, source_name=source_name,
+        source_url=source_url, posting_title=posting_title,
+        requisition_id=requisition_id, snapshot=snapshot,
     ))
 
 
@@ -177,6 +189,16 @@ def create_follow_up(opportunity, title, due_date, assigned_to=None, description
 
 
 @frappe.whitelist()
+def get_follow_up_queue(horizon=14):
+    return success(follow_up_queue(horizon))
+
+
+@frappe.whitelist()
+def get_research_queue(stale_after_days=90):
+    return success(research_queue(stale_after_days))
+
+
+@frappe.whitelist()
 def get_work_queue():
     require_operator()
     deals = frappe.get_list("CRM Deal", filters={"js_is_job_search": 1},
@@ -193,6 +215,27 @@ def get_work_queue():
         fields=["name", "opportunity", "organization", "status", "procedure"],
         limit_page_length=500)
     return success({"opportunities": deals, "tasks": tasks, "executions": executions})
+
+
+@frappe.whitelist()
+def get_company_dossier(organization):
+    require_operator()
+    company = require_doc("CRM Organization", organization)
+    deals = frappe.get_list("CRM Deal", filters={
+        "organization": company.name, "js_is_job_search": 1,
+    }, fields=["name", "js_job_title", "js_stage", "js_qualification", "js_next_action_on"],
+        limit_page_length=500)
+    postings = frappe.get_list("Job Search Posting", filters={"organization": company.name},
+        fields=["name", "opportunity", "posting_title", "retrieved_on", "status"],
+        limit_page_length=500)
+    research = frappe.get_list("Job Search Research", filters={"organization": company.name},
+        fields=["name", "opportunity", "title", "status", "last_verified"],
+        limit_page_length=500)
+    sources = frappe.get_list("Job Search Source", filters={"organization": company.name},
+        fields=["name", "opportunity", "title", "url", "verification_status"],
+        limit_page_length=500)
+    return success({"organization": company.as_dict(), "opportunities": deals,
+                    "postings": postings, "research": research, "sources": sources})
 
 
 @frappe.whitelist()

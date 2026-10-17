@@ -23,5 +23,15 @@ class JobSearchApplication(Document):
         if existing and existing != self.name:
             frappe.throw("Duplicate submission reference for opportunity")
 
+    def after_insert(self):
+        """Maintain the latest submission date on the opportunity without bypassing hooks."""
+        from frappe.utils import getdate
+
+        deal = require_opportunity(self.opportunity, "write")
+        new_date = getdate(self.submitted_on)
+        if not deal.js_applied_on or getdate(deal.js_applied_on) < new_date:
+            deal.js_applied_on = new_date
+            deal.save()
+
     def on_trash(self):
         frappe.throw("Submitted application history cannot be deleted")

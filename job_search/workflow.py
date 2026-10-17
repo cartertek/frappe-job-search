@@ -160,10 +160,13 @@ def record_transition(doc, method=None):
     authorization = ctx.get("decision") or ctx.get("override_decision")
     if new_stage in DECISIONS and not authorization:
         authorization = _decision(doc.name, DECISIONS[new_stage])
-    frappe.get_doc({
+    transition = frappe.get_doc({
         "doctype": "Job Search Transition", "opportunity": doc.name,
         "from_stage": old_stage, "to_stage": new_stage,
         "actor": frappe.session.user, "transitioned_at": now_datetime(),
         "reason": ctx.get("reason", ""), "authorization": authorization,
         "exception": ctx.get("exception", ""),
     }).insert(ignore_permissions=True)  # Server-only immutable event, called after Deal validation.
+    from job_search.tasks import create_stage_task
+
+    create_stage_task(doc, transition)

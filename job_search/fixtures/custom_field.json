@@ -325,5 +325,17 @@
     "fieldtype": "Text Editor",
     "insert_after": "js_last_researched",
     "is_system_generated": 1
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "CRM Task-js_transition",
+    "dt": "CRM Task",
+    "fieldname": "js_transition",
+    "label": "Job Search Transition",
+    "fieldtype": "Link",
+    "options": "Job Search Transition",
+    "insert_after": "reference_docname",
+    "read_only": 1,
+    "is_system_generated": 1
   }
 ]

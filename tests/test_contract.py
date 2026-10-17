@@ -48,7 +48,7 @@ class SchemaTest(unittest.TestCase):
         fields = json.loads((APP / "fixtures" / "custom_field.json").read_text())
         self.assertGreaterEqual(len(fields), 30)
         self.assertEqual(len(fields), len({f["name"] for f in fields}))
-        self.assertEqual({"CRM Deal", "CRM Organization"}, {f["dt"] for f in fields})
+        self.assertEqual({"CRM Deal", "CRM Organization", "CRM Task"}, {f["dt"] for f in fields})
         for field in fields:
             self.assertTrue(field["fieldname"].startswith("js_"))
             self.assertEqual(field["name"], field["dt"] + "-" + field["fieldname"])
@@ -74,11 +74,29 @@ class SchemaTest(unittest.TestCase):
                    and any(isinstance(d, ast.Call) and isinstance(d.func, ast.Attribute)
                            and d.func.attr == "whitelist" for d in n.decorator_list)}
         self.assertGreaterEqual(exposed, {
-            "register_opportunity", "add_research", "start_procedure",
+            "register_opportunity", "capture_posting", "add_research", "start_procedure",
             "complete_procedure_step", "complete_procedure", "transition_opportunity",
             "record_application", "record_interview", "create_follow_up",
-            "get_work_queue", "get_opportunity_context", "authorize_decision",
+            "get_work_queue", "get_research_queue", "get_follow_up_queue",
+            "get_opportunity_context", "get_company_dossier", "authorize_decision",
         })
+
+    def test_latest_v16_navigation(self):
+        dock = json.loads((APP / "dock" / "job_search" / "job_search.json").read_text())
+        sidebar = json.loads((MODULE / "sidebar" / "job_search" / "job_search.json").read_text())
+        self.assertEqual(("Dock", "job_search", 1),
+                         (dock["doctype"], dock["app"], dock["standard"]))
+        self.assertEqual("Sidebar", dock["items"][0]["link_type"])
+        self.assertEqual("Job Search", dock["items"][0]["link_to"])
+        self.assertEqual("Job Search", sidebar["module"])
+        self.assertTrue(all(item["doctype"] == "Sidebar Item" for item in sidebar["items"]))
+        self.assertFalse((APP / "workspace_sidebar").exists())
+        self.assertFalse((APP / "desktop_icon").exists())
+        hooks = (APP / "hooks.py").read_text()
+        self.assertIn('required_apps = ["crm"]', hooks)
+        self.assertIn("add_to_apps_screen", hooks)
+        # Frappe v16 calls on_update after insert; no duplicate after_insert hook.
+        self.assertNotIn('"after_insert": "job_search.workflow.record_transition"', hooks)
 
     def test_no_untracked_direct_crm_mutation(self):
         source = (APP / "services.py").read_text() + (APP / "api.py").read_text()

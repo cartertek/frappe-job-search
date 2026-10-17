@@ -13,9 +13,13 @@ class JobSearchResearch(Document):
             if self.organization and self.organization != deal.organization:
                 frappe.throw("Research employer differs from Deal employer")
             self.organization = deal.organization
+        if self.status == "Verified" and (
+            self.evidence_class not in ("Verified Fact", "Supported Interpretation") or not self.sources
+        ):
+            frappe.throw("Verified research needs cited facts or supported interpretations")
         if self.evidence_class == "Verified Fact" and not self.sources:
             frappe.throw("Verified facts must cite at least one source")
         if len({row.source for row in self.sources}) != len(self.sources):
             frappe.throw("Duplicate research source")
-        if not self.operator:
+        if self.is_new():
             self.operator = frappe.session.user
