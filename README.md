@@ -20,7 +20,7 @@ A standalone Frappe app extending Frappe CRM with a structured, source-backed jo
 
 In the bench directory:
 
-    bench get-app https://github.com/cartertek/frappe-job-search --branch main
+    bench get-app https://github.com/cartertek/frappe-job-search --branch master
     bench --site TEST-SITE install-app crm  # only if not already installed
     bench --site TEST-SITE install-app job_search
     bench --site TEST-SITE migrate
