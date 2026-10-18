@@ -161,6 +161,10 @@ def record_application(opportunity, *, submission_method, submitted_on, authoriz
         "confirmation": confirmation, "submission_url": submission_url, "status": "Submitted",
     })
     application.insert()
+    deal = require_opportunity(opportunity, "write")
+    deal.js_latest_application = application.name
+    deal.js_applied_on = submitted_on
+    deal.save()
     return application.name
 
 
@@ -175,4 +179,10 @@ def record_interview(opportunity, *, interview_type, application=None, scheduled
         "notes": notes, "outcome": "Pending",
     })
     doc.insert()
+    deal = require_opportunity(opportunity, "write")
+    deal.js_interview_schedule = (
+        f"{interview_type} — {scheduled_at or 'not scheduled'} "
+        f"({timezone or 'timezone not set'})"
+    )
+    deal.save()
     return doc.name

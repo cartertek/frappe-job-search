@@ -484,5 +484,51 @@
     "insert_after": "js_posting_text",
     "is_system_generated": 1,
     "read_only": 1
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "CRM Deal-js_last_decision",
+    "dt": "CRM Deal",
+    "fieldname": "js_last_decision",
+    "label": "Last Human Decision",
+    "fieldtype": "Small Text",
+    "read_only": 1,
+    "insert_after": "js_latest_posting",
+    "is_system_generated": 1
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "CRM Deal-js_last_decision_record",
+    "dt": "CRM Deal",
+    "fieldname": "js_last_decision_record",
+    "label": "Latest Decision Record",
+    "fieldtype": "Link",
+    "options": "Job Search Decision",
+    "read_only": 1,
+    "insert_after": "js_last_decision",
+    "is_system_generated": 1
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "CRM Deal-js_latest_application",
+    "dt": "CRM Deal",
+    "fieldname": "js_latest_application",
+    "label": "Latest Application Record",
+    "fieldtype": "Link",
+    "options": "Job Search Application",
+    "read_only": 1,
+    "insert_after": "js_last_decision_record",
+    "is_system_generated": 1
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "CRM Deal-js_interview_schedule",
+    "dt": "CRM Deal",
+    "fieldname": "js_interview_schedule",
+    "label": "Interview Schedule",
+    "fieldtype": "Small Text",
+    "read_only": 1,
+    "insert_after": "js_latest_application",
+    "is_system_generated": 1
   }
 ]

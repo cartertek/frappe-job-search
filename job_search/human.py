@@ -51,10 +51,14 @@ def save_human_action(doc, method=None):
     if not action:
         return
     # Frappe ORM enforces the human approver role and captures the real actor.
-    frappe.get_doc({
+    decision_doc = frappe.get_doc({
         "doctype": "Job Search Decision", "opportunity": doc.name,
         "decision": action, "rationale": doc.js_human_action_rationale,
     }).insert()
+    doc.db_set("js_last_decision", f"{action} by {decision_doc.authorized_by} "
+               f"at {decision_doc.authorized_at}: {doc.js_human_action_rationale}"[:1000],
+               update_modified=False)
+    doc.db_set("js_last_decision_record", decision_doc.name, update_modified=False)
     # Clear the one-shot form inputs; the immutable Decision document persists.
     doc.db_set("js_human_action", "", update_modified=False)
     doc.db_set("js_human_action_rationale", "", update_modified=False)
