@@ -51,7 +51,8 @@
     "js_last_decision_record",
     "js_latest_application",
     "js_interview_schedule",
-    "js_review_assignment"
+    "js_review_assignment",
+    "globally_rejected"
   ],
   "fields": [
     {
@@ -308,6 +309,13 @@
       "fieldtype": "Link",
       "options": "ToDo",
       "read_only": 1
+    },
+    {
+      "fieldname": "globally_rejected",
+      "label": "Rejected From All Searches",
+      "fieldtype": "Check",
+      "default": "0",
+      "in_list_view": 1
     }
   ],
   "permissions": [

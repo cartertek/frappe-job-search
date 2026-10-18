@@ -15,10 +15,10 @@ EXPECTED = {
     "Job Search Procedure Execution", "Job Search Execution Step",
     "Job Search Application", "Job Search Interview", "Job Search Interview Contact",
     "Job Search Decision", "Job Search Transition", "Job Search Opportunity",
-    "Job Search Employer", "Job Search Task",
+    "Job Search Employer", "Job Search Task", "Job Search Search", "Job Search Membership",
 }
 CHILD = {"Job Search Research Source", "Job Search Procedure Step",
-         "Job Search Execution Step", "Job Search Interview Contact"}
+         "Job Search Execution Step", "Job Search Interview Contact", "Job Search Membership"}
 
 
 class SchemaTest(unittest.TestCase):
@@ -78,7 +78,8 @@ class SchemaTest(unittest.TestCase):
             "record_application", "record_interview", "create_follow_up",
             "get_work_queue", "get_research_queue", "get_follow_up_queue",
             "get_opportunity_context", "publish_human_review", "get_human_action_queue",
-            "get_company_dossier", "authorize_decision",
+            "get_company_dossier", "authorize_decision", "get_search_results",
+            "set_search_membership", "reject_job", "reject_organization",
         })
 
     def test_standalone_ui(self):

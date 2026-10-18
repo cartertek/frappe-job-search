@@ -27,10 +27,8 @@ def after_migrate():
 
 def ensure_workspace():
     """Job Search lives in standard Frappe Desk; never create a parallel CRM UI."""
-    if frappe.db.exists("Workspace", "Job Search"):
-        return
     names = (
-        "Job Search Opportunity", "Job Search Employer", "Job Search Task",
+        "Job Search Search", "Job Search Opportunity", "Job Search Employer", "Job Search Task",
         "Job Search Posting", "Job Search Research", "Job Search Decision",
         "Job Search Application", "Job Search Interview", "Job Search Procedure Execution",
     )
@@ -39,9 +37,25 @@ def ensure_workspace():
     content = ([{"type": "header", "data": {"text": "Job Search", "col": 12}}]
                + [{"type": "shortcut", "data": {"shortcut_name": name, "col": 4}}
                   for name in names])
-    doc = frappe.get_doc({
-        "doctype": "Workspace", "label": "Job Search", "title": "Job Search",
-        "name": "Job Search", "module": "Job Search", "public": 1, "type": "Workspace",
-        "content": json.dumps(content), "shortcuts": links,
-    })
-    doc.insert(ignore_permissions=True)
+    if frappe.db.exists("Workspace", "Job Search"):
+        doc = frappe.get_doc("Workspace", "Job Search")
+        # Preserve user-added shortcuts while ensuring newly shipped lists appear.
+        existing = {item.link_to for item in doc.shortcuts}
+        for item in links:
+            if item["link_to"] not in existing:
+                doc.append("shortcuts", item)
+        current_content = frappe.parse_json(doc.content or "[]")
+        seen = {item.get("data", {}).get("shortcut_name") for item in current_content}
+        for item in content:
+            shortcut = item.get("data", {}).get("shortcut_name")
+            if shortcut and shortcut not in seen:
+                current_content.append(item)
+        doc.content = json.dumps(current_content)
+        doc.save(ignore_permissions=True)
+    else:
+        doc = frappe.get_doc({
+            "doctype": "Workspace", "label": "Job Search", "title": "Job Search",
+            "name": "Job Search", "module": "Job Search", "public": 1, "type": "Workspace",
+            "content": json.dumps(content), "shortcuts": links,
+        })
+        doc.insert(ignore_permissions=True)

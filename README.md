@@ -4,8 +4,9 @@ A **standalone Frappe v16 application** for researching and tracking job opportu
 
 ## Data model
 
-- **Job Search Opportunity** — employer, job details, stage, decision/approval state, recommendation, posting and application summaries, and review links.
-- **Job Search Employer** — employer identity, careers page and research details.
+- **Job Search Opportunity** — independent job collection: employer link, details, workflow stage, decision/approval state, posting and application summaries, and global rejection flag.
+- **Job Search Search** — named deterministic job filters, subjective researcher instructions, heuristic approval requirement, and per-search explicit Include/Exclude overrides.
+- **Job Search Employer** — independent organization collection: employer identity, careers page, research and global rejection flag.
 - **Job Search Task** — deadlines, assignees, follow-ups, and review tasks.
 - **Job Search Posting, Source, Research, Procedure, Procedure Execution, Application, Interview, Decision, Transition** — source evidence and immutable historical records.
 - Built-in Frappe Users, Contacts, Comments, ToDos and file attachments are reused where appropriate.
@@ -42,6 +43,7 @@ See [API reference](docs/api.md). Entry points live in `job_search.api`, includi
 
 ## Documentation
 
+- [Searches, filters, heuristics and rejection rules](docs/searches.md)
 - [Workflow stages and authorization](docs/workflows.md)
 - [Architecture](docs/architecture.md)
 - [Operator API](docs/api.md)

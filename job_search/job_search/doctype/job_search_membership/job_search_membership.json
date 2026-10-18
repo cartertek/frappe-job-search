@@ -1,0 +1,36 @@
+{
+  "doctype": "DocType",
+  "name": "Job Search Membership",
+  "module": "Job Search",
+  "custom": 0,
+  "istable": 1,
+  "engine": "InnoDB",
+  "autoname": "hash",
+  "track_changes": 0,
+  "field_order": [
+    "job",
+    "override"
+  ],
+  "fields": [
+    {
+      "fieldname": "job",
+      "label": "Job",
+      "fieldtype": "Link",
+      "options": "Job Search Opportunity",
+      "reqd": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "override",
+      "label": "Override",
+      "fieldtype": "Select",
+      "options": "Include\nExclude",
+      "reqd": 1,
+      "in_list_view": 1
+    }
+  ],
+  "permissions": [],
+  "sort_field": "modified",
+  "sort_order": "DESC",
+  "actions": []
+}

@@ -1,0 +1,143 @@
+{
+  "doctype": "DocType",
+  "name": "Job Search Search",
+  "module": "Job Search",
+  "custom": 0,
+  "istable": 0,
+  "engine": "InnoDB",
+  "autoname": "hash",
+  "track_changes": 1,
+  "field_order": [
+    "search_name",
+    "enabled",
+    "title_contains",
+    "location_contains",
+    "employment_type",
+    "work_arrangement",
+    "seniority",
+    "salary_min",
+    "currency",
+    "compensation_period",
+    "posted_after",
+    "heuristics",
+    "require_heuristics",
+    "overrides"
+  ],
+  "fields": [
+    {
+      "fieldname": "search_name",
+      "label": "Search Name",
+      "fieldtype": "Data",
+      "reqd": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "enabled",
+      "label": "Enabled",
+      "fieldtype": "Check",
+      "default": "1"
+    },
+    {
+      "fieldname": "title_contains",
+      "label": "Job Title Contains",
+      "fieldtype": "Data"
+    },
+    {
+      "fieldname": "location_contains",
+      "label": "Location Contains",
+      "fieldtype": "Data"
+    },
+    {
+      "fieldname": "employment_type",
+      "label": "Employment Type",
+      "fieldtype": "Select",
+      "options": "\nFull Time\nPart Time\nContract\nTemporary\nInternship"
+    },
+    {
+      "fieldname": "work_arrangement",
+      "label": "Work Arrangement",
+      "fieldtype": "Select",
+      "options": "\nRemote\nHybrid\nOn Site"
+    },
+    {
+      "fieldname": "seniority",
+      "label": "Seniority",
+      "fieldtype": "Select",
+      "options": "\nJunior\nMid\nSenior\nStaff\nPrincipal\nLead\nManager\nDirector\nExecutive"
+    },
+    {
+      "fieldname": "salary_min",
+      "label": "Minimum Compensation",
+      "fieldtype": "Currency"
+    },
+    {
+      "fieldname": "currency",
+      "label": "Currency",
+      "fieldtype": "Link",
+      "options": "Currency"
+    },
+    {
+      "fieldname": "compensation_period",
+      "label": "Compensation Period",
+      "fieldtype": "Select",
+      "options": "\nYear\nMonth\nHour\nProject"
+    },
+    {
+      "fieldname": "posted_after",
+      "label": "Posted On Or After",
+      "fieldtype": "Date"
+    },
+    {
+      "fieldname": "heuristics",
+      "label": "Researcher Heuristics",
+      "fieldtype": "Text Editor",
+      "description": "Subjective instructions for the researcher; never interpreted as deterministic SQL filters."
+    },
+    {
+      "fieldname": "require_heuristics",
+      "label": "Require Explicit Heuristic Approval",
+      "fieldtype": "Check",
+      "description": "Only explicitly included jobs appear in this search."
+    },
+    {
+      "fieldname": "overrides",
+      "label": "Explicit Job Overrides",
+      "fieldtype": "Table",
+      "options": "Job Search Membership"
+    }
+  ],
+  "permissions": [
+    {
+      "role": "Job Search Operator",
+      "read": 1,
+      "write": 1,
+      "create": 1,
+      "delete": 1,
+      "report": 1,
+      "export": 1
+    },
+    {
+      "role": "Job Search Approver",
+      "read": 1,
+      "write": 1,
+      "create": 1,
+      "delete": 1,
+      "report": 1,
+      "export": 1
+    },
+    {
+      "role": "System Manager",
+      "read": 1,
+      "write": 1,
+      "create": 1,
+      "delete": 1,
+      "report": 1,
+      "export": 1
+    }
+  ],
+  "sort_field": "modified",
+  "sort_order": "DESC",
+  "actions": [],
+  "title_field": "search_name",
+  "show_title_field_in_link": 1
+}

@@ -1,6 +1,14 @@
 frappe.ui.form.on('Job Search Opportunity', {
   refresh(frm) {
     if (frm.is_new()) return;
+    if (!frm.doc.globally_rejected) {
+      frm.add_custom_button(__('Reject Job Globally'), async () => {
+        frappe.confirm(__('Hide this job from every search?'), async () => {
+          await frappe.call({method: 'job_search.api.reject_job', args: {job: frm.doc.name}});
+          await frm.reload_doc();
+        });
+      });
+    }
     if (frm.doc.js_review_status === 'Pending') {
       const choices = {
         'Pursue or Decline': ['Pursue', 'Decline'],

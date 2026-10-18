@@ -357,3 +357,31 @@ def record_human_decision(opportunity, decision, rationale):
     deal.save()
     return success({"opportunity": deal.name, "decision": deal.js_last_decision_record,
                     "stage": frappe.db.get_value("Job Search Opportunity", deal.name, "js_stage")})
+
+
+@frappe.whitelist()
+def get_search_results(search):
+    from job_search.searches import matching_jobs
+
+    return success({'search': search, 'jobs': matching_jobs(search)})
+
+
+@frappe.whitelist()
+def set_search_membership(search, job, override):
+    from job_search.searches import set_membership
+
+    return success(set_membership(search, job, override))
+
+
+@frappe.whitelist()
+def reject_job(job):
+    from job_search.searches import reject_job as reject
+
+    return success({'job': reject(job)})
+
+
+@frappe.whitelist()
+def reject_organization(organization):
+    from job_search.searches import reject_employer
+
+    return success({'organization': reject_employer(organization)})

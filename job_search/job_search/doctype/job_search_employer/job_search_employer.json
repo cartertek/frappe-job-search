@@ -14,7 +14,8 @@
     "js_employer_priority",
     "js_research_status",
     "js_last_researched",
-    "js_employment_notes"
+    "js_employment_notes",
+    "globally_rejected"
   ],
   "fields": [
     {
@@ -58,6 +59,13 @@
       "fieldname": "js_employment_notes",
       "label": "Js Employment Notes",
       "fieldtype": "Text Editor"
+    },
+    {
+      "fieldname": "globally_rejected",
+      "label": "Rejected From All Searches",
+      "fieldtype": "Check",
+      "default": "0",
+      "in_list_view": 1
     }
   ],
   "permissions": [
