@@ -87,15 +87,19 @@ def ensure_decision_action():
     """Install a CRM-native form action without patching CRM's frontend bundle."""
     script = Path(__file__).with_name("decision_action.js").read_text()
     name = "Job Search Decision Action"
-    if frappe.db.exists("CRM Form Script", name):
+    existing = frappe.db.exists("CRM Form Script", name)
+    if existing:
         doc = frappe.get_doc("CRM Form Script", name)
     else:
-        doc = frappe.get_doc({"doctype": "CRM Form Script", "name": name,
-                              "dt": "CRM Deal", "view": "Form", "is_standard": 1})
-    if doc.script != script or not doc.enabled:
+        doc = frappe.new_doc("CRM Form Script")
+        doc.name = name
+        doc.dt = "CRM Deal"
+        doc.view = "Form"
+        doc.is_standard = 1
+    if not existing or doc.script != script or not doc.enabled:
         doc.script = script
         doc.enabled = 1
-        if doc.is_new():
-            doc.insert(ignore_permissions=True)
-        else:
+        if existing:
             doc.save(ignore_permissions=True)
+        else:
+            doc.insert(ignore_permissions=True)
