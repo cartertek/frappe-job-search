@@ -2,7 +2,7 @@
 
 A standalone Frappe app extending Frappe CRM with a structured, source-backed job-search workflow. It follows Cartertek's SEI conventions: standard DocTypes/controllers, narrowly scoped CRM Custom Field fixtures, migration-managed configuration, whitelisted service methods, and version-controlled procedures.
 
-**Package:** job_search. **Dependency:** Frappe CRM (crm). **Compatibility target:** Latest stable **Frappe `version-16`**, currently v16.52.0 (October 14, 2026), paired with stable **Frappe CRM `main`**, currently v1.88.0 (October 15, 2026), on Python 3.14. These sources were inspected; a live integration test is still required.
+**Package:** job_search. **Dependency:** Frappe CRM (crm). **Compatibility target:** Latest stable **Frappe `version-16`**, currently v16.52.0 (October 14, 2026), paired with stable **Frappe CRM `main`**, currently v1.88.0 (October 15, 2026), on Python 3.14. These sources were inspected; live runtime workflow testing completed on a deployed site; human browser acceptance remains required.
 
 ## Features
 
@@ -27,9 +27,9 @@ In the bench directory:
 
 Assign **Job Search Operator** and an appropriate CRM Sales role (for Deal/Organization/Task permissions) to a dedicated non-Administrator operator user. Assign **Job Search Approver** only to actual human approvers. Approvers also need CRM permissions for their interactions.
 
-Frappe CRM is the sole Job Search UI; its Deal quick-entry layout contains job fields. The app seeds public Job Search Pipeline (Kanban) and Job Search Research Queue (list) Deal views in CRM. Job Search stages are isolated from sales stages through the JS: prefix.
+Frappe CRM is the sole Job Search UI. Deal Quick Entry, Data and Side Panel layouts show job-specific fields, agent review material, and signed human decision inputs. Agents request assigned human reviews through the API, which creates linked CRM Tasks and a pending-review saved view. The app seeds public Job Search Pipeline (Kanban) and Job Search Research Queue (list) Deal views in CRM. Job Search stages are isolated from sales stages through the JS: prefix.
 
-**A real test-site install, migration, CRM frontend check, and backup/restore test remain required.** Static CI cannot replace this verification.
+**CRM layout metadata, deployed migration, and runtime end-to-end transaction tests have passed; human browser acceptance, clean-site installation, automated integration CI, and backup/restore checks remain.**
 
 ## Documentation
 
@@ -38,5 +38,6 @@ Frappe CRM is the sole Job Search UI; its Deal quick-entry layout contains job f
 - [Workflow and approvals](docs/workflows.md)
 - [Operator API](docs/api.md)
 - [Deployment](docs/deployment.md)
+- [Human acceptance checklist](docs/human-acceptance.md)
 - [Known limitations](docs/limitations.md)
 - [Procedures](docs/procedures/README.md)
