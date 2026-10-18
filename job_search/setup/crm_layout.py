@@ -23,7 +23,6 @@ DETAILS = (
     "js_review_task", "js_review_assignment", "js_posting_text", "js_latest_posting",
     "js_last_decision", "js_last_decision_record", "js_latest_application",
     "js_interview_schedule",
-    "js_human_action", "js_human_action_rationale",
 )
 SIDEBAR = (
     "js_is_job_search", "js_job_title", "js_stage", "js_location",
@@ -76,8 +75,16 @@ def ensure_crm_deal_layout():
                 layout = [{"name": "first_tab", "sections": layout}]
             sections = [section for tab in layout for section in tab.get("sections", [])]
 
+        # Remove legacy one-shot decision inputs: the action is now a modal.
+        obsolete = {"js_human_action", "js_human_action_rationale"}
+        had_obsolete = bool(_existing_fields(sections) & obsolete)
+        if kind == "Data Fields":
+            for section in sections:
+                for column in section.get("columns", []):
+                    column["fields"] = [f for f in column.get("fields", []) if f not in obsolete]
         missing = [field for field in fields if field not in _existing_fields(sections)]
-        if not missing:
+        changed_layout = kind == "Data Fields" and had_obsolete
+        if not missing and not changed_layout:
             continue
         section_name = "job_search_" + kind.lower().replace(" ", "_")
         section = next((s for s in sections if s.get("name") == section_name), None)

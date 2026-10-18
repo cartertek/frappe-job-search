@@ -32,6 +32,7 @@ def after_migrate():
     from job_search.setup.crm_layout import ensure_crm_deal_layout, ensure_crm_organization_layout
 
     ensure_crm_deal_layout()
+    ensure_decision_action()
     ensure_crm_organization_layout()
     path = Path(__file__).with_name("procedures.json")
     for item in json.loads(path.read_text()):
@@ -80,3 +81,18 @@ def ensure_crm_views():
             "user": "", "public": 1, "is_standard": 1,
             "order_by": "modified desc",
         }).insert(ignore_permissions=True)  # app-scoped migration config
+
+
+def ensure_decision_action():
+    """Install a CRM-native form action without patching CRM's frontend bundle."""
+    script = Path(__file__).with_name("decision_action.js").read_text()
+    name = "Job Search Decision Action"
+    if frappe.db.exists("CRM Form Script", name):
+        doc = frappe.get_doc("CRM Form Script", name)
+    else:
+        doc = frappe.get_doc({"doctype": "CRM Form Script", "name": name,
+                              "dt": "CRM Deal", "view": "Form", "is_standard": 1})
+    if doc.script != script or not doc.enabled:
+        doc.script = script
+        doc.enabled = 1
+        doc.save(ignore_permissions=True)

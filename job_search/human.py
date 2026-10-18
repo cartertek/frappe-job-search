@@ -62,6 +62,8 @@ def save_human_action(doc, method=None):
     # Clear the one-shot form inputs; the immutable Decision document persists.
     doc.db_set("js_human_action", "", update_modified=False)
     doc.db_set("js_human_action_rationale", "", update_modified=False)
+    doc.js_human_action = ""
+    doc.js_human_action_rationale = ""
     if doc.get("js_review_status") == "Pending":
         doc.db_set("js_review_status", "Completed", update_modified=False)
         if doc.get("js_review_task"):
@@ -74,3 +76,10 @@ def save_human_action(doc, method=None):
             if todo.reference_type == "CRM Deal" and todo.reference_name == doc.name:
                 todo.status = "Closed"
                 todo.save(ignore_permissions=True)
+
+    # An explicit human Decline closes the opportunity; do not leave it in
+    # Researching waiting for a second manual/agent transition.
+    if action == "Decline" and doc.js_stage not in ("Closed", "Rejected", "Withdrawn"):
+        doc.js_closure_reason = f"Human declined opportunity (decision {decision_doc.name})"
+        doc.js_stage = "Closed"
+        doc.save()

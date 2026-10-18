@@ -346,3 +346,17 @@ def request_human_review(opportunity, requested_action, reviewer, summary, due_d
     deal.save()
     return success({"opportunity": deal.name, "task": task.name,
                     "reviewer": reviewer, "requested_action": requested_action})
+
+
+@frappe.whitelist()
+def record_human_decision(opportunity, decision, rationale):
+    """Submit the one-time CRM action, without exposing its fields in Data."""
+    require_approver()
+    deal = require_opportunity(opportunity, "write")
+    if deal.js_review_status != "Pending":
+        frappe.throw("There is no pending review. Refresh the Deal before retrying")
+    deal.js_human_action = decision
+    deal.js_human_action_rationale = rationale
+    deal.save()
+    return success({"opportunity": deal.name, "decision": deal.js_last_decision_record,
+                    "stage": frappe.db.get_value("CRM Deal", deal.name, "js_stage")})
