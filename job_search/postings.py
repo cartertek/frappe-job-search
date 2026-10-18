@@ -46,7 +46,7 @@ def capture_posting(opportunity, *, description, source_name, source_url=None,
         "supersedes": preceding, "retrieved_on": now_datetime(),
         "first_observed": nowdate(), "last_observed": nowdate(), "status": "Unknown",
     }).insert()
-    # Publish the latest immutable capture into the human's CRM Deal Data tab.
+    # Publish the latest immutable capture into the human's Job Search Opportunity Data tab.
     # Older versions stay in Job Search Posting and are never overwritten.
     deal.js_posting_text = description
     deal.js_latest_posting = entry.name

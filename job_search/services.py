@@ -15,11 +15,11 @@ def register_opportunity(*, employer, title, source_url=None, description=None, 
     title = (title or "").strip()
     if not employer or not title or not (source_url or description):
         frappe.throw("Employer, title, and a posting URL or description are required")
-    existing_org = frappe.db.exists("CRM Organization", {"organization_name": employer})
+    existing_org = frappe.db.exists("Job Search Employer", {"organization_name": employer})
     if existing_org:
-        org = require_doc("CRM Organization", existing_org, "read")
+        org = require_doc("Job Search Employer", existing_org, "read")
     else:
-        org = frappe.get_doc({"doctype": "CRM Organization", "organization_name": employer})
+        org = frappe.get_doc({"doctype": "Job Search Employer", "organization_name": employer})
         org.insert()
     if source_url:
         existing = frappe.db.get_value("Job Search Posting", {"source_url": source_url}, "opportunity")
@@ -39,8 +39,8 @@ def register_opportunity(*, employer, title, source_url=None, description=None, 
                     "snapshot_created": captured["created"] if captured else False,
                     "possible_duplicates": []}
     # Strict match. Never merge on title alone or a requisition ID alone.
-    candidate_filters = {"organization": org.name, "js_is_job_search": 1}
-    candidates = frappe.get_all("CRM Deal", filters=candidate_filters,
+    candidate_filters = {"organization": org.name}
+    candidates = frappe.get_all("Job Search Opportunity", filters=candidate_filters,
                                 fields=["name", "js_job_title", "js_requisition_id", "js_location"])
     strict = [x for x in candidates if requisition_id and x.js_requisition_id == requisition_id
               and x.js_job_title.casefold() == title.casefold()
@@ -50,8 +50,8 @@ def register_opportunity(*, employer, title, source_url=None, description=None, 
         created = False
     else:
         deal = frappe.get_doc({
-            "doctype": "CRM Deal", "organization": org.name, "lead_name": title,
-            "status": status_name("Discovered"), "js_is_job_search": 1,
+            "doctype": "Job Search Opportunity", "organization": org.name, "lead_name": title,
+            "status": status_name("Discovered"),
             "js_job_title": title, "js_requisition_id": requisition_id,
             "js_posting_url": source_url, "js_location": location,
             "js_discovered_on": nowdate(), "js_stage": "Discovered",

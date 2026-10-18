@@ -15,9 +15,7 @@ def require_doc(doctype, name, ptype="read"):
 
 
 def require_opportunity(name, ptype="read"):
-    doc = require_doc("CRM Deal", name, ptype)
-    if not doc.get("js_is_job_search"):
-        frappe.throw("This Deal is not a Job Search opportunity")
+    doc = require_doc("Job Search Opportunity", name, ptype)
     return doc
 
 

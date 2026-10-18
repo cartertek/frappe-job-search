@@ -1,4 +1,4 @@
-"""CRM Deal stage invariants, independent of UI and REST mutation entrypoint."""
+"""Job Search Opportunity stage invariants, independent of UI and REST mutation entrypoint."""
 
 import frappe
 from frappe.utils import now_datetime
@@ -116,29 +116,13 @@ def _validate_transition(deal, previous, next_stage):
 
 def validate_deal(doc, method=None):
     old = doc.get_doc_before_save() if not doc.is_new() else None
-    if old and old.get("js_is_job_search") and not doc.get("js_is_job_search"):
-        frappe.throw("A Job Search opportunity cannot be converted back to an ordinary CRM Deal")
-    if not doc.get("js_is_job_search"):
-        if old and old.get("js_is_job_search"):
-            frappe.throw("Job Search flag cannot be cleared")
-        return
     if not doc.organization or not (doc.get("js_job_title") or "").strip():
         frappe.throw("A Job Search opportunity requires an employer and job title")
     old_stage = old.get("js_stage") if old else None
     stage = doc.get("js_stage") or ("Discovered" if not old else old_stage)
-    # CRM's Kanban edits 'status'; Desk can edit 'js_stage'. Never allow inconsistency.
-    incoming_status = doc.get("status")
-    mapped = (
-        incoming_status[4:]
-        if isinstance(incoming_status, str) and incoming_status.startswith("JS: ")
-        else None
-    )
-    if old and incoming_status != old.status and stage == old_stage:
-        stage = mapped
-    elif mapped and stage != mapped and (not old or incoming_status != old.status):
-        frappe.throw("Conflicting Job Search stage and CRM status")
+    # The standalone DocType owns its stage; status is read-only derived metadata.
     if stage not in STAGES:
-        frappe.throw("Invalid Job Search stage or CRM Deal Status")
+        frappe.throw("Invalid Job Search stage or Job Search Opportunity Status")
     if doc.is_new() and stage != "Discovered":
         frappe.throw("A new opportunity must begin in Discovered")
     doc.js_stage = stage
@@ -149,8 +133,6 @@ def validate_deal(doc, method=None):
 
 def record_transition(doc, method=None):
     """Only server hooks can create a transition record; cover direct REST writes."""
-    if not doc.get("js_is_job_search"):
-        return
     previous = doc.get_doc_before_save()
     old_stage = previous.get("js_stage") if previous else ""
     new_stage = doc.get("js_stage")

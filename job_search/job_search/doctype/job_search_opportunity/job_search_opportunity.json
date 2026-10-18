@@ -1,0 +1,347 @@
+{
+  "doctype": "DocType",
+  "name": "Job Search Opportunity",
+  "module": "Job Search",
+  "custom": 0,
+  "istable": 0,
+  "engine": "InnoDB",
+  "autoname": "hash",
+  "track_changes": 1,
+  "field_order": [
+    "organization",
+    "deal_owner",
+    "status",
+    "js_job_title",
+    "js_posting_url",
+    "js_requisition_id",
+    "js_employment_type",
+    "js_work_arrangement",
+    "js_location",
+    "js_compensation_min",
+    "js_compensation_max",
+    "js_currency",
+    "js_compensation_period",
+    "js_seniority",
+    "js_discovered_on",
+    "js_posted_on",
+    "js_deadline",
+    "js_qualification",
+    "js_qualification_rationale",
+    "js_applied_on",
+    "js_next_action_on",
+    "js_priority",
+    "js_stage",
+    "js_closure_reason",
+    "js_offer_details",
+    "js_posting_digest",
+    "js_research_digest",
+    "js_agent_recommendation",
+    "js_application_review",
+    "js_interview_brief",
+    "js_human_feedback",
+    "js_human_action",
+    "js_human_action_rationale",
+    "js_review_request",
+    "js_review_status",
+    "js_review_assigned_to",
+    "js_review_task",
+    "js_posting_text",
+    "js_latest_posting",
+    "js_last_decision",
+    "js_last_decision_record",
+    "js_latest_application",
+    "js_interview_schedule",
+    "js_review_assignment"
+  ],
+  "fields": [
+    {
+      "fieldname": "organization",
+      "fieldtype": "Link",
+      "options": "Job Search Employer",
+      "label": "Employer",
+      "reqd": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "deal_owner",
+      "fieldtype": "Link",
+      "options": "User",
+      "label": "Owner"
+    },
+    {
+      "fieldname": "status",
+      "fieldtype": "Data",
+      "label": "Status",
+      "read_only": 1
+    },
+    {
+      "fieldname": "js_job_title",
+      "label": "Job Title",
+      "fieldtype": "Data",
+      "reqd": 0
+    },
+    {
+      "fieldname": "js_posting_url",
+      "label": "Job Posting URL",
+      "fieldtype": "Data",
+      "options": "URL"
+    },
+    {
+      "fieldname": "js_requisition_id",
+      "label": "Requisition ID",
+      "fieldtype": "Data"
+    },
+    {
+      "fieldname": "js_employment_type",
+      "label": "Js Employment Type",
+      "fieldtype": "Select",
+      "options": "\nFull Time\nPart Time\nContract\nTemporary\nInternship"
+    },
+    {
+      "fieldname": "js_work_arrangement",
+      "label": "Js Work Arrangement",
+      "fieldtype": "Select",
+      "options": "\nRemote\nHybrid\nOn Site"
+    },
+    {
+      "fieldname": "js_location",
+      "label": "Js Location",
+      "fieldtype": "Data"
+    },
+    {
+      "fieldname": "js_compensation_min",
+      "label": "Js Compensation Min",
+      "fieldtype": "Currency",
+      "options": "js_currency"
+    },
+    {
+      "fieldname": "js_compensation_max",
+      "label": "Js Compensation Max",
+      "fieldtype": "Currency",
+      "options": "js_currency"
+    },
+    {
+      "fieldname": "js_currency",
+      "label": "Js Currency",
+      "fieldtype": "Link",
+      "options": "Currency"
+    },
+    {
+      "fieldname": "js_compensation_period",
+      "label": "Js Compensation Period",
+      "fieldtype": "Select",
+      "options": "\nYear\nMonth\nHour\nProject"
+    },
+    {
+      "fieldname": "js_seniority",
+      "label": "Js Seniority",
+      "fieldtype": "Select",
+      "options": "\nJunior\nMid\nSenior\nStaff\nPrincipal\nLead\nManager\nDirector\nExecutive"
+    },
+    {
+      "fieldname": "js_discovered_on",
+      "label": "Js Discovered On",
+      "fieldtype": "Date"
+    },
+    {
+      "fieldname": "js_posted_on",
+      "label": "Js Posted On",
+      "fieldtype": "Date"
+    },
+    {
+      "fieldname": "js_deadline",
+      "label": "Js Deadline",
+      "fieldtype": "Date"
+    },
+    {
+      "fieldname": "js_qualification",
+      "label": "Js Qualification",
+      "fieldtype": "Select",
+      "options": "\nUndecided\nPursue\nHold\nReject"
+    },
+    {
+      "fieldname": "js_qualification_rationale",
+      "label": "Js Qualification Rationale",
+      "fieldtype": "Small Text"
+    },
+    {
+      "fieldname": "js_applied_on",
+      "label": "Js Applied On",
+      "fieldtype": "Date"
+    },
+    {
+      "fieldname": "js_next_action_on",
+      "label": "Js Next Action On",
+      "fieldtype": "Date"
+    },
+    {
+      "fieldname": "js_priority",
+      "label": "Js Priority",
+      "fieldtype": "Select",
+      "options": "\nLow\nMedium\nHigh\nCritical"
+    },
+    {
+      "fieldname": "js_stage",
+      "label": "Js Stage",
+      "fieldtype": "Select",
+      "options": "Discovered\nResearching\nQualified\nPreparing\nApplied\nScreening\nInterviewing\nOffer\nAccepted\nRejected\nWithdrawn\nClosed",
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "js_closure_reason",
+      "label": "Js Closure Reason",
+      "fieldtype": "Small Text"
+    },
+    {
+      "fieldname": "js_offer_details",
+      "label": "Js Offer Details",
+      "fieldtype": "Small Text"
+    },
+    {
+      "fieldname": "js_posting_digest",
+      "label": "Job Description / Posting",
+      "fieldtype": "Small Text"
+    },
+    {
+      "fieldname": "js_research_digest",
+      "label": "Research Findings & Sources",
+      "fieldtype": "Text Editor"
+    },
+    {
+      "fieldname": "js_agent_recommendation",
+      "label": "Agent Recommendation",
+      "fieldtype": "Text Editor"
+    },
+    {
+      "fieldname": "js_application_review",
+      "label": "Application Materials for Review",
+      "fieldtype": "Text Editor"
+    },
+    {
+      "fieldname": "js_interview_brief",
+      "label": "Interview Preparation",
+      "fieldtype": "Text Editor"
+    },
+    {
+      "fieldname": "js_human_feedback",
+      "label": "Human Feedback / Instructions",
+      "fieldtype": "Text Editor"
+    },
+    {
+      "fieldname": "js_human_action",
+      "label": "Record Human Decision",
+      "fieldtype": "Select",
+      "options": "\nPursue\nDecline\nAuthorize Application\nDecline Application\nAccept Offer\nReject Offer\nWithdraw\nOverride",
+      "hidden": 1
+    },
+    {
+      "fieldname": "js_human_action_rationale",
+      "label": "Decision Rationale",
+      "fieldtype": "Small Text",
+      "hidden": 1
+    },
+    {
+      "fieldname": "js_review_request",
+      "label": "Human Review Requested",
+      "fieldtype": "Data"
+    },
+    {
+      "fieldname": "js_review_status",
+      "label": "Human Review Status",
+      "fieldtype": "Select",
+      "options": "\nPending\nCompleted"
+    },
+    {
+      "fieldname": "js_review_assigned_to",
+      "label": "Human Reviewer",
+      "fieldtype": "Link",
+      "options": "User"
+    },
+    {
+      "fieldname": "js_review_task",
+      "label": "Review Task",
+      "fieldtype": "Link",
+      "options": "Job Search Task",
+      "read_only": 1
+    },
+    {
+      "fieldname": "js_posting_text",
+      "label": "Captured Job Posting",
+      "fieldtype": "Text Editor"
+    },
+    {
+      "fieldname": "js_latest_posting",
+      "label": "Latest Posting Revision",
+      "fieldtype": "Link",
+      "options": "Job Search Posting",
+      "read_only": 1
+    },
+    {
+      "fieldname": "js_last_decision",
+      "label": "Last Human Decision",
+      "fieldtype": "Small Text",
+      "read_only": 1
+    },
+    {
+      "fieldname": "js_last_decision_record",
+      "label": "Latest Decision Record",
+      "fieldtype": "Link",
+      "options": "Job Search Decision",
+      "read_only": 1
+    },
+    {
+      "fieldname": "js_latest_application",
+      "label": "Latest Application Record",
+      "fieldtype": "Link",
+      "options": "Job Search Application",
+      "read_only": 1
+    },
+    {
+      "fieldname": "js_interview_schedule",
+      "label": "Interview Schedule",
+      "fieldtype": "Small Text",
+      "read_only": 1
+    },
+    {
+      "fieldname": "js_review_assignment",
+      "label": "Review Assignment",
+      "fieldtype": "Link",
+      "options": "ToDo",
+      "read_only": 1
+    }
+  ],
+  "permissions": [
+    {
+      "role": "Job Search Operator",
+      "read": 1,
+      "write": 1,
+      "create": 1,
+      "delete": 1,
+      "report": 1,
+      "export": 1
+    },
+    {
+      "role": "Job Search Approver",
+      "read": 1,
+      "write": 1,
+      "create": 1,
+      "delete": 1,
+      "report": 1,
+      "export": 1
+    },
+    {
+      "role": "System Manager",
+      "read": 1,
+      "write": 1,
+      "create": 1,
+      "delete": 1,
+      "report": 1,
+      "export": 1
+    }
+  ],
+  "sort_field": "modified",
+  "sort_order": "DESC",
+  "actions": [],
+  "title_field": "js_job_title",
+  "show_title_field_in_link": 1
+}

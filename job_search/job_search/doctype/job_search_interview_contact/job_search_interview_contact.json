@@ -16,8 +16,7 @@
     {
       "fieldname": "contact",
       "label": "Contact",
-      "fieldtype": "Link",
-      "options": "Contact",
+      "fieldtype": "Data",
       "reqd": 1
     }
   ],

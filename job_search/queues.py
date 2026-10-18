@@ -28,17 +28,17 @@ def follow_up_queue(horizon=14):
     horizon = int(horizon)
     if not 0 <= horizon <= 365:
         frappe.throw("Horizon must be between 0 and 365 days")
-    deals = frappe.get_list("CRM Deal", filters={"js_is_job_search": 1},
+    deals = frappe.get_list("Job Search Opportunity", filters={},
         fields=["name", "js_job_title", "organization"], limit_page_length=1000)
     names = {d.name for d in deals}
-    tasks = frappe.get_list("CRM Task", filters={
-        "reference_doctype": "CRM Deal", "status": ["not in", ["Done", "Canceled"]],
-    }, fields=["name", "title", "status", "due_date", "assigned_to", "reference_docname"],
+    tasks = frappe.get_list("Job Search Task", filters={
+        "status": ["not in", ["Done", "Canceled"]],
+    }, fields=["name", "title", "status", "due_date", "assigned_to", "opportunity"],
         limit_page_length=2000)
     buckets = {"overdue": [], "upcoming": [], "later": [], "unscheduled": []}
     today = nowdate()
     for task in tasks:
-        if task.reference_docname in names:
+        if task.opportunity in names:
             buckets[classify_due(task.due_date, today, horizon)].append(task)
     for records in buckets.values():
         records.sort(key=lambda t: (str(t.due_date or "9999"), t.name))
@@ -50,8 +50,7 @@ def research_queue(stale_after_days=90):
     stale_after_days = int(stale_after_days)
     if not 1 <= stale_after_days <= 3650:
         frappe.throw("Research freshness threshold must be between 1 and 3650 days")
-    deals = frappe.get_list("CRM Deal", filters={"js_is_job_search": 1,
-        "js_stage": ["in", OPEN_STAGES]},
+    deals = frappe.get_list("Job Search Opportunity", filters={        "js_stage": ["in", OPEN_STAGES]},
         fields=["name", "organization", "js_job_title", "js_stage", "js_priority"],
         limit_page_length=1000)
     research = frappe.get_list("Job Search Research",

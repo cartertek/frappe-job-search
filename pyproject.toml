@@ -1,6 +1,6 @@
 [project]
 name = "job_search"
-description = "Research and application workflow for Frappe CRM"
+description = "Standalone research and application workflow for Frappe"
 readme = "README.md"
 requires-python = ">=3.14,<3.15"
 authors = [{name = "Cartertek LLC"}]

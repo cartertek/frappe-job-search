@@ -1,0 +1,97 @@
+{
+  "doctype": "DocType",
+  "name": "Job Search Employer",
+  "module": "Job Search",
+  "custom": 0,
+  "istable": 0,
+  "engine": "InnoDB",
+  "autoname": "hash",
+  "track_changes": 1,
+  "field_order": [
+    "organization_name",
+    "js_careers_url",
+    "js_employer_category",
+    "js_employer_priority",
+    "js_research_status",
+    "js_last_researched",
+    "js_employment_notes"
+  ],
+  "fields": [
+    {
+      "fieldname": "organization_name",
+      "fieldtype": "Data",
+      "label": "Employer Name",
+      "reqd": 1,
+      "unique": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "js_careers_url",
+      "label": "Careers URL",
+      "fieldtype": "Data",
+      "options": "URL"
+    },
+    {
+      "fieldname": "js_employer_category",
+      "label": "Js Employer Category",
+      "fieldtype": "Select",
+      "options": "\nStartup\nEnterprise\nNonprofit\nAgency\nGovernment\nOther"
+    },
+    {
+      "fieldname": "js_employer_priority",
+      "label": "Js Employer Priority",
+      "fieldtype": "Select",
+      "options": "\nLow\nMedium\nHigh"
+    },
+    {
+      "fieldname": "js_research_status",
+      "label": "Js Research Status",
+      "fieldtype": "Select",
+      "options": "\nNot Started\nIn Progress\nComplete\nStale"
+    },
+    {
+      "fieldname": "js_last_researched",
+      "label": "Js Last Researched",
+      "fieldtype": "Date"
+    },
+    {
+      "fieldname": "js_employment_notes",
+      "label": "Js Employment Notes",
+      "fieldtype": "Text Editor"
+    }
+  ],
+  "permissions": [
+    {
+      "role": "Job Search Operator",
+      "read": 1,
+      "write": 1,
+      "create": 1,
+      "delete": 1,
+      "report": 1,
+      "export": 1
+    },
+    {
+      "role": "Job Search Approver",
+      "read": 1,
+      "write": 1,
+      "create": 1,
+      "delete": 1,
+      "report": 1,
+      "export": 1
+    },
+    {
+      "role": "System Manager",
+      "read": 1,
+      "write": 1,
+      "create": 1,
+      "delete": 1,
+      "report": 1,
+      "export": 1
+    }
+  ],
+  "sort_field": "modified",
+  "sort_order": "DESC",
+  "actions": [],
+  "title_field": "organization_name",
+  "show_title_field_in_link": 1
+}

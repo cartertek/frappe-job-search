@@ -1,4 +1,4 @@
-"""Human-only decisions entered on CRM Deal's native Data tab.
+"""Human-only decisions entered on Job Search Opportunity's native Data tab.
 
 The request fields are one-time inputs, not an authorization record. Only an
 approver's signed-in request may produce the immutable Job Search Decision.
@@ -30,7 +30,7 @@ def validate_human_action(doc, method=None):
         if rationale:
             frappe.throw("Select a human decision when entering a decision rationale")
         return
-    if not doc.get("js_is_job_search") or doc.is_new():
+    if doc.is_new():
         frappe.throw("Human decisions require an existing Job Search opportunity")
     require_approver()
     doc.check_permission("write")
@@ -67,13 +67,14 @@ def save_human_action(doc, method=None):
     if doc.get("js_review_status") == "Pending":
         doc.db_set("js_review_status", "Completed", update_modified=False)
         if doc.get("js_review_task"):
-            task = frappe.get_doc("CRM Task", doc.js_review_task)
+            task = frappe.get_doc("Job Search Task", doc.js_review_task)
+            # A signed human action can close its linked review task.
             task.check_permission("write")
             task.status = "Done"
             task.save()
         if doc.get("js_review_assignment"):
             todo = frappe.get_doc("ToDo", doc.js_review_assignment)
-            if todo.reference_type == "CRM Deal" and todo.reference_name == doc.name:
+            if todo.reference_type == "Job Search Opportunity" and todo.reference_name == doc.name:
                 todo.status = "Closed"
                 todo.save(ignore_permissions=True)
 
