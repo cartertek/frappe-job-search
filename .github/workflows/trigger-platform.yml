@@ -19,7 +19,7 @@ jobs:
         run: |
           set -euo pipefail
           if [[ -z "$GH_TOKEN" ]]; then
-            echo '::notice::Immediate cross-repository dispatch requires PLATFORM_DISPATCH_TOKEN. The platform also polls master every 15 minutes.'
-            exit 0
+            echo '::error::Configure PLATFORM_DISPATCH_TOKEN with Actions:write access to JoshuaCWebDeveloper/job_search_platform.'
+            exit 1
           fi
           gh workflow run build-platform-image.yml --repo JoshuaCWebDeveloper/job_search_platform --ref master
