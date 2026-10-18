@@ -1,0 +1,22 @@
+name: Trigger platform image after app CI
+on:
+  workflow_run:
+    workflows: ["Job Search App CI"]
+    types: [completed]
+    branches: [master]
+
+permissions:
+  contents: read
+
+jobs:
+  trigger:
+    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dispatch platform image build
+        env:
+          GH_TOKEN: ${{ secrets.PLATFORM_DISPATCH_TOKEN }}
+        run: |
+          set -euo pipefail
+          test -n "$GH_TOKEN"
+          gh workflow run build-platform-image.yml --repo JoshuaCWebDeveloper/job_search_platform --ref master
