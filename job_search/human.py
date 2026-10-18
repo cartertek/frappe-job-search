@@ -14,6 +14,15 @@ DECISION_OPTIONS = (
 )
 
 
+REQUEST_DECISIONS = {
+    "Pursue or Decline": {"Pursue", "Decline"},
+    "Authorize or Decline Application": {"Authorize Application", "Decline Application"},
+    "Accept or Reject Offer": {"Accept Offer", "Reject Offer"},
+    "Withdraw": {"Withdraw"},
+    "Override": {"Override"},
+}
+
+
 def validate_human_action(doc, method=None):
     action = (doc.get("js_human_action") or "").strip()
     rationale = (doc.get("js_human_action_rationale") or "").strip()
@@ -29,6 +38,12 @@ def validate_human_action(doc, method=None):
         frappe.throw("Invalid human decision")
     if not rationale:
         frappe.throw("Human decision rationale required")
+    if doc.get("js_review_status") == "Pending":
+        if action not in REQUEST_DECISIONS.get(doc.get("js_review_request"), set()):
+            frappe.throw("Decision does not match pending human review")
+        assignee = doc.get("js_review_assigned_to")
+        if assignee and assignee != frappe.session.user and "System Manager" not in frappe.get_roles():
+            frappe.throw("Review assigned to another human approver", frappe.PermissionError)
 
 
 def save_human_action(doc, method=None):
@@ -45,3 +60,8 @@ def save_human_action(doc, method=None):
     doc.db_set("js_human_action_rationale", "", update_modified=False)
     if doc.get("js_review_status") == "Pending":
         doc.db_set("js_review_status", "Completed", update_modified=False)
+        if doc.get("js_review_task"):
+            task = frappe.get_doc("CRM Task", doc.js_review_task)
+            task.check_permission("write")
+            task.status = "Done"
+            task.save()

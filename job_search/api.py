@@ -350,5 +350,7 @@ def request_human_review(opportunity, requested_action, reviewer, summary, due_d
         "description": f"{requested_action}: {summary}. Review the CRM Deal Data tab, "
                        "then record a human decision and rationale.",
     }).insert()
+    deal.js_review_task = task.name
+    deal.save()
     return success({"opportunity": deal.name, "task": task.name,
                     "reviewer": reviewer, "requested_action": requested_action})
