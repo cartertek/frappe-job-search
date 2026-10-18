@@ -69,3 +69,8 @@ def save_human_action(doc, method=None):
             task.check_permission("write")
             task.status = "Done"
             task.save()
+        if doc.get("js_review_assignment"):
+            todo = frappe.get_doc("ToDo", doc.js_review_assignment)
+            if todo.reference_type == "CRM Deal" and todo.reference_name == doc.name:
+                todo.status = "Closed"
+                todo.save(ignore_permissions=True)

@@ -22,7 +22,7 @@ fixtures = [
             "js_stage js_closure_reason js_offer_details js_posting_digest "
             "js_research_digest js_agent_recommendation js_application_review "
             "js_interview_brief js_human_feedback js_human_action js_human_action_rationale "
-            "js_review_request js_review_status js_review_assigned_to js_review_task "
+            "js_review_request js_review_status js_review_assigned_to js_review_task js_review_assignment "
             "js_posting_text js_latest_posting js_last_decision js_last_decision_record "
             "js_latest_application js_interview_schedule"
         ).split()

@@ -330,6 +330,18 @@ def request_human_review(opportunity, requested_action, reviewer, summary, due_d
         "description": f"{requested_action}: {summary}. Review the CRM Deal Data tab, "
                        "then record a human decision and rationale.",
     }).insert()
+    # CRM Sales User access is scoped to owned/assigned Deals. Creating the
+    # CRM Task alone does not confer Deal access to a human reviewer.
+    from frappe.desk.form.assign_to import add as assign_deal
+
+    assignments = assign_deal({
+        "doctype": "CRM Deal", "name": deal.name, "assign_to": [reviewer],
+        "description": f"Job Search human review: {requested_action}",
+    })
+    assignment = next((row.name for row in assignments if row.owner == reviewer), None)
+    if not assignment:
+        frappe.throw("Could not assign Deal access to human reviewer")
+    deal.js_review_assignment = assignment
     deal.js_review_task = task.name
     deal.save()
     return success({"opportunity": deal.name, "task": task.name,
