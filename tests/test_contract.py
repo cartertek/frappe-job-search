@@ -29,6 +29,8 @@ class SchemaTest(unittest.TestCase):
             found.add(name)
             self.assertEqual("Job Search", data["module"])
             self.assertEqual("DocType", data["doctype"])
+            if name not in CHILD:
+                self.assertEqual("JS-.YYYY.-.#####", data["autoname"])
             self.assertEqual(int(name in CHILD), data["istable"])
             fields = data["fields"]
             names = [f["fieldname"] for f in fields]
