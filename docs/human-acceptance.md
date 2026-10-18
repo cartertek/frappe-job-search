@@ -1,6 +1,6 @@
 # Standalone Job Search human acceptance
 
-Open Frappe Desk (`/app`) and the **Job Search** Workspace.
+Open Frappe Desk (`/desk`) and the **Job Search** Workspace.
 
 1. Open **Job Search Opportunity**. Confirm you can read job title, employer,
    original posting, latest revision, agent's cited research and recommendation.

@@ -21,7 +21,7 @@ bench --site YOUR-SITE install-app job_search
 bench --site YOUR-SITE migrate
 ```
 
-Open `/app` and the **Job Search** Workspace. Assign **Job Search Operator** to an agent and **Job Search Approver** to the human reviewer. Both may access the app-owned DocTypes; no CRM Sales role is necessary. Wiki is optional and deployed separately by the companion platform repository.
+Open `/desk` and the **Job Search** Workspace. Assign **Job Search Operator** to an agent and **Job Search Approver** to the human reviewer. Both may access the app-owned DocTypes; no CRM Sales role is necessary. Wiki is optional and deployed separately by the companion platform repository.
 
 ## Upgrading an existing CRM-backed Job Search site
 
