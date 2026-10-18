@@ -95,4 +95,7 @@ def ensure_decision_action():
     if doc.script != script or not doc.enabled:
         doc.script = script
         doc.enabled = 1
-        doc.save(ignore_permissions=True)
+        if doc.is_new():
+            doc.insert(ignore_permissions=True)
+        else:
+            doc.save(ignore_permissions=True)
