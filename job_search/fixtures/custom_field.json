@@ -418,5 +418,37 @@
     "fieldtype": "Small Text",
     "insert_after": "js_human_action",
     "is_system_generated": 1
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "CRM Deal-js_review_request",
+    "dt": "CRM Deal",
+    "fieldname": "js_review_request",
+    "label": "Human Review Requested",
+    "fieldtype": "Data",
+    "insert_after": "js_human_action_rationale",
+    "is_system_generated": 1
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "CRM Deal-js_review_status",
+    "dt": "CRM Deal",
+    "fieldname": "js_review_status",
+    "label": "Human Review Status",
+    "fieldtype": "Select",
+    "insert_after": "js_review_request",
+    "is_system_generated": 1,
+    "options": "\nPending\nCompleted"
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "CRM Deal-js_review_assigned_to",
+    "dt": "CRM Deal",
+    "fieldname": "js_review_assigned_to",
+    "label": "Human Reviewer",
+    "fieldtype": "Link",
+    "insert_after": "js_review_status",
+    "is_system_generated": 1,
+    "options": "User"
   }
 ]

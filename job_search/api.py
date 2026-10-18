@@ -318,3 +318,37 @@ def get_human_action_queue():
         if needed:
             results.append({**row, "action_required": needed})
     return success({"queue": results})
+
+
+@frappe.whitelist()
+def request_human_review(opportunity, requested_action, reviewer, summary, due_date=None):
+    """Create a CRM-native pending review and a task for an actual human approver."""
+    require_operator()
+    deal = require_opportunity(opportunity, "write")
+    if not (summary or "").strip():
+        frappe.throw("Human review request must explain what should be reviewed")
+    if requested_action not in ("Pursue or Decline", "Authorize or Decline Application",
+                                "Accept or Reject Offer", "Withdraw", "Override"):
+        frappe.throw("Invalid human review request")
+    reviewer_roles = set(frappe.get_roles(reviewer))
+    if not {"Job Search Approver", "System Manager"}.intersection(reviewer_roles):
+        frappe.throw("Reviewer must have the human approver role", frappe.PermissionError)
+    if not frappe.db.exists("User", {"name": reviewer, "enabled": 1}):
+        frappe.throw("Reviewer must be an enabled user")
+    if deal.js_review_status == "Pending":
+        frappe.throw("This opportunity already has a pending human review")
+    deal.js_review_request = requested_action
+    deal.js_review_status = "Pending"
+    deal.js_review_assigned_to = reviewer
+    deal.js_agent_recommendation = summary
+    deal.save()
+    task = frappe.get_doc({
+        "doctype": "CRM Task", "title": f"Human review: {deal.js_job_title}",
+        "assigned_to": reviewer, "status": "Todo", "priority": "High",
+        "due_date": due_date or deal.js_next_action_on or deal.js_deadline,
+        "reference_doctype": "CRM Deal", "reference_docname": deal.name,
+        "description": f"{requested_action}: {summary}. Review the CRM Deal Data tab, "
+                       "then record a human decision and rationale.",
+    }).insert()
+    return success({"opportunity": deal.name, "task": task.name,
+                    "reviewer": reviewer, "requested_action": requested_action})

@@ -54,6 +54,11 @@ def ensure_crm_views():
             [{"name": status_name(stage)} for stage in STAGES],
         ),
         (
+            "Job Search Human Review", "list",
+            {"js_is_job_search": 1, "js_review_status": "Pending"},
+            None, [],
+        ),
+        (
             "Job Search Research Queue",
             "list",
             {"js_is_job_search": 1, "js_stage": "Researching"},

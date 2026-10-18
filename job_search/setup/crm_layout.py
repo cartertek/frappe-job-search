@@ -7,7 +7,7 @@ import frappe
 QUICK_ENTRY = (
     "js_is_job_search", "js_job_title", "js_posting_url", "js_requisition_id",
     "js_location", "js_employment_type", "js_work_arrangement", "js_seniority",
-    "js_deadline", "js_priority",
+    "js_deadline", "js_priority", "js_review_request", "js_review_status",
 )
 DETAILS = (
     "js_is_job_search", "js_job_title", "js_posting_url", "js_requisition_id",
@@ -19,12 +19,13 @@ DETAILS = (
     "js_closure_reason", "js_offer_details",
     "js_posting_digest", "js_research_digest", "js_agent_recommendation",
     "js_application_review", "js_interview_brief", "js_human_feedback",
+    "js_review_request", "js_review_status", "js_review_assigned_to",
     "js_human_action", "js_human_action_rationale",
 )
 SIDEBAR = (
     "js_is_job_search", "js_job_title", "js_stage", "js_location",
     "js_work_arrangement", "js_posting_url", "js_deadline", "js_next_action_on",
-    "js_priority",
+    "js_priority", "js_review_request", "js_review_status",
 )
 
 

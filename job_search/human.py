@@ -43,3 +43,5 @@ def save_human_action(doc, method=None):
     # Clear the one-shot form inputs; the immutable Decision document persists.
     doc.db_set("js_human_action", "", update_modified=False)
     doc.db_set("js_human_action_rationale", "", update_modified=False)
+    if doc.get("js_review_status") == "Pending":
+        doc.db_set("js_review_status", "Completed", update_modified=False)

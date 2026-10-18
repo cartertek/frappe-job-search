@@ -21,7 +21,8 @@ fixtures = [
             "js_qualification_rationale js_applied_on js_next_action_on js_priority "
             "js_stage js_closure_reason js_offer_details js_posting_digest "
             "js_research_digest js_agent_recommendation js_application_review "
-            "js_interview_brief js_human_feedback js_human_action js_human_action_rationale"
+            "js_interview_brief js_human_feedback js_human_action js_human_action_rationale "
+            "js_review_request js_review_status js_review_assigned_to"
         ).split()
     ] + [
         "CRM Organization-" + name for name in (
