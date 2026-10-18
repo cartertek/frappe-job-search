@@ -90,6 +90,8 @@ class SchemaTest(unittest.TestCase):
         self.assertIn('required_apps = ["crm"]', hooks)
         layout = (APP / "setup" / "crm_layout.py").read_text()
         self.assertIn('"Quick Entry"', layout)
+        self.assertIn('"Data Fields"', layout)
+        self.assertIn('"Side Panel"', layout)
         self.assertIn('"js_is_job_search"', layout)
         self.assertIn('"js_job_title"', layout)
 

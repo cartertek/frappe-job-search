@@ -1,48 +1,88 @@
-"""CRM-native Deal quick entry extension; retain all existing user layout sections."""
+"""Idempotently add job fields to CRM's existing Deal layouts, retaining user edits."""
 
 import json
 
 import frappe
 
-JOB_SEARCH_FIELDS = (
+QUICK_ENTRY = (
     "js_is_job_search", "js_job_title", "js_posting_url", "js_requisition_id",
     "js_location", "js_employment_type", "js_work_arrangement", "js_seniority",
     "js_deadline", "js_priority",
 )
+DETAILS = (
+    "js_is_job_search", "js_job_title", "js_posting_url", "js_requisition_id",
+    "js_employment_type", "js_work_arrangement", "js_location",
+    "js_compensation_min", "js_compensation_max", "js_currency",
+    "js_compensation_period", "js_seniority", "js_discovered_on", "js_posted_on",
+    "js_deadline", "js_qualification", "js_qualification_rationale",
+    "js_applied_on", "js_next_action_on", "js_priority", "js_stage",
+    "js_closure_reason", "js_offer_details",
+)
+SIDEBAR = (
+    "js_is_job_search", "js_job_title", "js_stage", "js_location",
+    "js_work_arrangement", "js_posting_url", "js_deadline", "js_next_action_on",
+    "js_priority",
+)
+
+
+def _load_layout(layout_type):
+    name = frappe.db.get_value("CRM Fields Layout", {
+        "dt": "CRM Deal", "type": layout_type,
+    }, "name")
+    if name:
+        doc = frappe.get_doc("CRM Fields Layout", name)
+        sections = json.loads(doc.layout) if doc.layout else []
+    else:
+        doc = frappe.get_doc({
+            "doctype": "CRM Fields Layout", "dt": "CRM Deal", "type": layout_type,
+        })
+        if layout_type == "Side Panel":
+            # CRM side panel has a purpose-built layout; do not insert all DocType fields.
+            sections = []
+        else:
+            from crm.fcrm.doctype.crm_fields_layout.crm_fields_layout import get_default_layout
+            sections = get_default_layout("CRM Deal")
+    return doc, sections
+
+
+def _existing_fields(sections):
+    return {
+        field for section in sections
+        for column in section.get("columns", [])
+        for field in column.get("fields", []) if isinstance(field, str)
+    }
 
 
 def ensure_crm_deal_layout():
-    """Append job fields to CRM's configurable quick entry, without replacing sales fields."""
-    name = frappe.db.get_value("CRM Fields Layout", {"dt": "CRM Deal", "type": "Quick Entry"}, "name")
-    if name:
-        doc = frappe.get_doc("CRM Fields Layout", name)
-        tabs = json.loads(doc.layout) if doc.layout else []
-    else:
-        from crm.fcrm.doctype.crm_fields_layout.crm_fields_layout import get_default_layout
-        tabs = get_default_layout("CRM Deal")
-        doc = frappe.get_doc({"doctype": "CRM Fields Layout", "dt": "CRM Deal", "type": "Quick Entry"})
+    """Add Job Opportunity to Create Deal, Data tab and sidebar, without erasing CRM layout."""
+    for kind, fields in (
+        ("Quick Entry", QUICK_ENTRY), ("Data Fields", DETAILS), ("Side Panel", SIDEBAR),
+    ):
+        doc, layout = _load_layout(kind)
+        if kind == "Side Panel":
+            sections = layout
+        else:
+            if not layout:
+                frappe.throw(f"CRM Deal {kind} layout is empty; refusing to overwrite it")
+            if "sections" not in layout[0]:
+                layout = [{"name": "first_tab", "sections": layout}]
+            sections = [section for tab in layout for section in tab.get("sections", [])]
 
-    if not tabs:
-        frappe.throw("CRM Deal quick entry layout is empty; refusing to replace it")
-    if "sections" not in tabs[0]:
-        tabs = [{"name": "first_tab", "sections": tabs}]
-    existing = {
-        field
-        for tab in tabs for section in tab.get("sections", [])
-        for column in section.get("columns", [])
-        for field in column.get("fields", [])
-        if isinstance(field, str)
-    }
-    missing = [field for field in JOB_SEARCH_FIELDS if field not in existing]
-    if not missing:
-        return
-    tab = tabs[0]
-    section = next((s for s in tab["sections"] if s.get("name") == "job_search_quick_entry"), None)
-    if not section:
-        section = {"name": "job_search_quick_entry", "label": "Job Opportunity",
-                   "columns": [{"name": "job_search_column", "fields": []}]}
-        tab["sections"].append(section)
-    section["columns"][0]["fields"].extend(missing)
-    doc.layout = json.dumps(tabs)
-    doc.save(ignore_permissions=True)
+        missing = [field for field in fields if field not in _existing_fields(sections)]
+        if not missing:
+            continue
+        section_name = "job_search_" + kind.lower().replace(" ", "_")
+        section = next((s for s in sections if s.get("name") == section_name), None)
+        if not section:
+            section = {
+                "name": section_name, "label": "Job Opportunity", "opened": True,
+                "columns": [{"name": section_name + "_column", "fields": []}],
+            }
+            if kind == "Side Panel":
+                layout.append(section)
+            else:
+                layout[0]["sections"].append(section)
+        section["columns"][0]["fields"].extend(missing)
+        doc.layout = json.dumps(layout)
+        doc.save(ignore_permissions=True)
     frappe.clear_cache()
