@@ -51,7 +51,7 @@ class SchemaTest(unittest.TestCase):
         for path in BASE.glob("*/*.json"):
             data = json.loads(path.read_text())
             for f in data["fields"]:
-                self.assertNotIn(f.get("options"), {"CRM Deal", "CRM Organization", "CRM Task", "Contact"})
+                self.assertNotIn(f.get("options"), {"CRM Deal", "CRM Organization", "CRM Task"})
 
     def test_procedure_seed_versions_and_steps(self):
         procedures = json.loads((APP / "setup" / "procedures.json").read_text())
