@@ -5,101 +5,43 @@ from pathlib import Path
 
 import frappe
 
-from job_search.workflow import STAGES, status_name
-
 
 def after_install():
     after_migrate()
 
 
 def after_migrate():
-    """Idempotently create stage metadata and seed *new* procedure versions."""
-    for index, stage in enumerate(STAGES):
-        name = status_name(stage)
-        if not frappe.db.exists("CRM Deal Status", name):
-            frappe.get_doc({
-                "doctype": "CRM Deal Status",
-                "deal_status": name,
-                "position": 100 + index,
-                "type": "Won" if stage == "Accepted" else (
-                    "On Hold" if stage in ("Rejected", "Withdrawn", "Closed") else "Ongoing"
-                ),
-                "color": "green" if stage == "Accepted" else (
-                    "red" if stage in ("Rejected", "Withdrawn", "Closed") else "blue"
-                ),
-            }).insert(ignore_permissions=True)  # migration-only configuration
-    ensure_crm_views()
-    from job_search.setup.crm_layout import ensure_crm_deal_layout, ensure_crm_organization_layout
-
-    ensure_crm_deal_layout()
-    ensure_decision_action()
-    ensure_crm_organization_layout()
+    """Seed app-owned immutable procedure definitions on new or migrated sites."""
     path = Path(__file__).with_name("procedures.json")
     for item in json.loads(path.read_text()):
         if frappe.db.exists("Job Search Procedure", {
             "procedure_id": item["procedure_id"], "version": item["version"],
         }):
-            continue  # Published versions are immutable; never silently edit them.
+            continue
         frappe.get_doc({"doctype": "Job Search Procedure", **item}).insert(
             ignore_permissions=True
-        )  # migration-only seed data
+        )
+    ensure_workspace()
     frappe.clear_cache()
 
-def ensure_crm_views():
-    """Create scoped public CRM Deal views once; never overwrite user changes."""
-    templates = (
-        (
-            "Job Search Pipeline",
-            "kanban",
-            {"js_is_job_search": 1},
-            "status",
-            [{"name": status_name(stage)} for stage in STAGES],
-        ),
-        (
-            "Job Search Human Review", "list",
-            {"js_is_job_search": 1, "js_review_status": "Pending"},
-            None, [],
-        ),
-        (
-            "Job Search Research Queue",
-            "list",
-            {"js_is_job_search": 1, "js_stage": "Researching"},
-            None,
-            [],
-        ),
+
+def ensure_workspace():
+    """Job Search lives in standard Frappe Desk; never create a parallel CRM UI."""
+    if frappe.db.exists("Workspace", "Job Search"):
+        return
+    names = (
+        "Job Search Opportunity", "Job Search Employer", "Job Search Task",
+        "Job Search Posting", "Job Search Research", "Job Search Decision",
+        "Job Search Application", "Job Search Interview", "Job Search Procedure Execution",
     )
-    for label, view_type, filters, column, kanban_columns in templates:
-        if frappe.db.exists("CRM View Settings", {"label": label, "dt": "CRM Deal", "public": 1}):
-            continue
-        frappe.get_doc({
-            "doctype": "CRM View Settings",
-            "label": label, "dt": "CRM Deal", "route_name": "Deals",
-            "type": view_type, "column_field": column,
-            "filters": json.dumps(filters),
-            "kanban_columns": json.dumps(kanban_columns),
-            "columns": json.dumps([]), "rows": json.dumps([]),
-            "user": "", "public": 1, "is_standard": 1,
-            "order_by": "modified desc",
-        }).insert(ignore_permissions=True)  # app-scoped migration config
-
-
-def ensure_decision_action():
-    """Install a CRM-native form action without patching CRM's frontend bundle."""
-    script = Path(__file__).with_name("decision_action.js").read_text()
-    name = "Job Search Decision Action"
-    existing = frappe.db.exists("CRM Form Script", name)
-    if existing:
-        doc = frappe.get_doc("CRM Form Script", name)
-    else:
-        doc = frappe.new_doc("CRM Form Script")
-        doc.name = name
-        doc.dt = "CRM Deal"
-        doc.view = "Form"
-        doc.is_standard = 1
-    if not existing or doc.script != script or not doc.enabled:
-        doc.script = script
-        doc.enabled = 1
-        if existing:
-            doc.save(ignore_permissions=True)
-        else:
-            doc.insert(ignore_permissions=True)
+    links = [{"type": "DocType", "link_to": name, "label": name, "doc_view": "List"}
+             for name in names]
+    content = ([{"type": "header", "data": {"text": "Job Search", "col": 12}}]
+               + [{"type": "shortcut", "data": {"shortcut_name": name, "col": 4}}
+                  for name in names])
+    doc = frappe.get_doc({
+        "doctype": "Workspace", "label": "Job Search", "title": "Job Search",
+        "name": "Job Search", "module": "Job Search", "public": 1, "type": "Workspace",
+        "content": json.dumps(content), "shortcuts": links,
+    })
+    doc.insert(ignore_permissions=True)

@@ -14,7 +14,8 @@ EXPECTED = {
     "Job Search Research Source", "Job Search Procedure", "Job Search Procedure Step",
     "Job Search Procedure Execution", "Job Search Execution Step",
     "Job Search Application", "Job Search Interview", "Job Search Interview Contact",
-    "Job Search Decision", "Job Search Transition",
+    "Job Search Decision", "Job Search Transition", "Job Search Opportunity",
+    "Job Search Employer", "Job Search Task",
 }
 CHILD = {"Job Search Research Source", "Job Search Procedure Step",
          "Job Search Execution Step", "Job Search Interview Contact"}
@@ -30,7 +31,7 @@ class SchemaTest(unittest.TestCase):
             self.assertEqual("Job Search", data["module"])
             self.assertEqual("DocType", data["doctype"])
             if name not in CHILD:
-                self.assertEqual("JS-.YYYY.-.#####", data["autoname"])
+                self.assertIn(data["autoname"], ("JS-.YYYY.-.#####", "hash"))
             self.assertEqual(int(name in CHILD), data["istable"])
             fields = data["fields"]
             names = [f["fieldname"] for f in fields]
@@ -46,15 +47,11 @@ class SchemaTest(unittest.TestCase):
                 self.assertTrue(data["permissions"], name)
         self.assertEqual(EXPECTED, found)
 
-    def test_crm_fields_are_version_controlled_and_namespaced(self):
-        fields = json.loads((APP / "fixtures" / "custom_field.json").read_text())
-        self.assertGreaterEqual(len(fields), 30)
-        self.assertEqual(len(fields), len({f["name"] for f in fields}))
-        self.assertEqual({"CRM Deal", "CRM Organization", "CRM Task"}, {f["dt"] for f in fields})
-        for field in fields:
-            self.assertTrue(field["fieldname"].startswith("js_"))
-            self.assertEqual(field["name"], field["dt"] + "-" + field["fieldname"])
-            self.assertTrue(field["insert_after"])
+    def test_no_crm_model_links(self):
+        for path in BASE.glob("*/*.json"):
+            data = json.loads(path.read_text())
+            for f in data["fields"]:
+                self.assertNotIn(f.get("options"), {"CRM Deal", "CRM Organization", "CRM Task", "Contact"})
 
     def test_procedure_seed_versions_and_steps(self):
         procedures = json.loads((APP / "setup" / "procedures.json").read_text())
@@ -84,19 +81,12 @@ class SchemaTest(unittest.TestCase):
             "get_company_dossier", "authorize_decision",
         })
 
-    def test_crm_only_ui(self):
-        self.assertFalse((APP / "dock").exists())
-        self.assertFalse((MODULE / "sidebar").exists())
-        self.assertFalse((MODULE / "workspace").exists())
+    def test_standalone_ui(self):
         hooks = (APP / "hooks.py").read_text()
-        self.assertNotIn("add_to_apps_screen", hooks)
-        self.assertIn('required_apps = ["crm"]', hooks)
-        layout = (APP / "setup" / "crm_layout.py").read_text()
-        self.assertIn('"Quick Entry"', layout)
-        self.assertIn('"Data Fields"', layout)
-        self.assertIn('"Side Panel"', layout)
-        self.assertIn('"js_is_job_search"', layout)
-        self.assertIn('"js_job_title"', layout)
+        self.assertNotIn('required_apps = ["crm"]', hooks)
+        self.assertIn('"Job Search Opportunity"', hooks)
+        self.assertTrue((BASE / "job_search_opportunity" / "job_search_opportunity.js").exists())
+        self.assertTrue((APP / "migration.py").exists())
 
     def test_no_untracked_direct_crm_mutation(self):
         source = (APP / "services.py").read_text() + (APP / "api.py").read_text()

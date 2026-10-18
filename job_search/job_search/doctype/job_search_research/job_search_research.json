@@ -40,14 +40,14 @@
       "fieldname": "organization",
       "label": "Organization",
       "fieldtype": "Link",
-      "options": "CRM Organization",
+      "options": "Job Search Employer",
       "in_standard_filter": 1
     },
     {
       "fieldname": "opportunity",
       "label": "Opportunity",
       "fieldtype": "Link",
-      "options": "CRM Deal"
+      "options": "Job Search Opportunity"
     },
     {
       "fieldname": "content",

@@ -1,0 +1,105 @@
+{
+  "doctype": "DocType",
+  "name": "Job Search Task",
+  "module": "Job Search",
+  "custom": 0,
+  "istable": 0,
+  "engine": "InnoDB",
+  "autoname": "hash",
+  "track_changes": 1,
+  "field_order": [
+    "title",
+    "opportunity",
+    "assigned_to",
+    "status",
+    "priority",
+    "due_date",
+    "description",
+    "js_transition"
+  ],
+  "fields": [
+    {
+      "fieldname": "title",
+      "label": "Title",
+      "fieldtype": "Data",
+      "reqd": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "opportunity",
+      "label": "Opportunity",
+      "fieldtype": "Link",
+      "options": "Job Search Opportunity"
+    },
+    {
+      "fieldname": "assigned_to",
+      "label": "Assigned To",
+      "fieldtype": "Link",
+      "options": "User"
+    },
+    {
+      "fieldname": "status",
+      "label": "Status",
+      "fieldtype": "Select",
+      "options": "Backlog\nTodo\nIn Progress\nDone\nCanceled",
+      "default": "Todo"
+    },
+    {
+      "fieldname": "priority",
+      "label": "Priority",
+      "fieldtype": "Select",
+      "options": "Low\nMedium\nHigh",
+      "default": "Medium"
+    },
+    {
+      "fieldname": "due_date",
+      "label": "Due Date",
+      "fieldtype": "Datetime"
+    },
+    {
+      "fieldname": "description",
+      "label": "Description",
+      "fieldtype": "Text Editor"
+    },
+    {
+      "fieldname": "js_transition",
+      "label": "Transition",
+      "fieldtype": "Link",
+      "options": "Job Search Transition"
+    }
+  ],
+  "permissions": [
+    {
+      "role": "Job Search Operator",
+      "read": 1,
+      "write": 1,
+      "create": 1,
+      "delete": 1,
+      "report": 1,
+      "export": 1
+    },
+    {
+      "role": "Job Search Approver",
+      "read": 1,
+      "write": 1,
+      "create": 1,
+      "delete": 1,
+      "report": 1,
+      "export": 1
+    },
+    {
+      "role": "System Manager",
+      "read": 1,
+      "write": 1,
+      "create": 1,
+      "delete": 1,
+      "report": 1,
+      "export": 1
+    }
+  ],
+  "sort_field": "modified",
+  "sort_order": "DESC",
+  "actions": [],
+  "title_field": "title",
+  "show_title_field_in_link": 1
+}

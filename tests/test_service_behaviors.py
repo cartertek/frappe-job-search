@@ -129,8 +129,7 @@ class TaskBehavior(unittest.TestCase):
         second = tasks.create_stage_task(deal, transition)
         self.assertEqual(first, second)
         self.assertEqual(1, len(rows))
-        self.assertEqual("CRM Deal", rows[0].reference_doctype)
-        self.assertEqual("D-1", rows[0].reference_docname)
+        self.assertEqual("D-1", rows[0].opportunity)
         self.assertEqual("2026-10-22", rows[0].due_date)
         self.assertEqual("operator@example.org", rows[0].assigned_to)
         deal.js_stage = "Closed"

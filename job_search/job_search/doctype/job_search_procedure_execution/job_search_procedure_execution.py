@@ -9,7 +9,7 @@ class JobSearchProcedureExecution(Document):
         if not self.opportunity and not self.organization:
             frappe.throw("Execution requires an opportunity or organization")
         if self.opportunity:
-            org = frappe.db.get_value("CRM Deal", self.opportunity, "organization")
+            org = frappe.db.get_value("Job Search Opportunity", self.opportunity, "organization")
             if self.organization and org != self.organization:
                 frappe.throw("Execution organization does not match the opportunity")
             self.organization = org

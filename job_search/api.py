@@ -148,7 +148,7 @@ def transition_opportunity(opportunity, stage, reason="", decision=None,
         "exception": exception, "override_decision": override_decision,
     }):
         deal.js_stage = stage
-        deal.save()  # CRM Deal validation hook protects every UI/REST save path.
+        deal.save()  # Job Search Opportunity validation hook protects every UI/REST save path.
     return success({"opportunity": deal.name, "stage": deal.js_stage, "changed": True})
 
 
@@ -180,10 +180,10 @@ def create_follow_up(opportunity, title, due_date, assigned_to=None, description
     require_operator()
     require_opportunity(opportunity, "write")
     task = frappe.get_doc({
-        "doctype": "CRM Task", "title": title, "due_date": due_date,
+        "doctype": "Job Search Task", "title": title, "due_date": due_date,
         "assigned_to": assigned_to or frappe.session.user, "status": "Todo",
         "priority": "Medium", "description": description,
-        "reference_doctype": "CRM Deal", "reference_docname": opportunity,
+        "opportunity": opportunity,
     }).insert()
     return success({"task": task.name})
 
@@ -201,15 +201,14 @@ def get_research_queue(stale_after_days=90):
 @frappe.whitelist()
 def get_work_queue():
     require_operator()
-    deals = frappe.get_list("CRM Deal", filters={"js_is_job_search": 1},
+    deals = frappe.get_list("Job Search Opportunity", filters={},
         fields=["name", "organization", "js_job_title", "js_stage", "js_next_action_on",
                 "js_deadline", "js_priority", "js_qualification"], limit_page_length=500)
-    tasks = frappe.get_list("CRM Task", filters={"reference_doctype": "CRM Deal",
-        "status": ["not in", ["Done", "Canceled"]]},
-        fields=["name", "title", "due_date", "reference_docname", "status"],
+    tasks = frappe.get_list("Job Search Task", filters={"status": ["not in", ["Done", "Canceled"]]},
+        fields=["name", "title", "due_date", "opportunity", "status"],
         limit_page_length=500)
     ids = {d.name for d in deals}
-    tasks = [x for x in tasks if x.reference_docname in ids]
+    tasks = [x for x in tasks if x.opportunity in ids]
     executions = frappe.get_list("Job Search Procedure Execution",
         filters={"status": ["in", ["Pending", "In Progress", "Blocked"]]},
         fields=["name", "opportunity", "organization", "status", "procedure"],
@@ -220,10 +219,9 @@ def get_work_queue():
 @frappe.whitelist()
 def get_company_dossier(organization):
     require_operator()
-    company = require_doc("CRM Organization", organization)
-    deals = frappe.get_list("CRM Deal", filters={
-        "organization": company.name, "js_is_job_search": 1,
-    }, fields=["name", "js_job_title", "js_stage", "js_qualification", "js_next_action_on"],
+    company = require_doc("Job Search Employer", organization)
+    deals = frappe.get_list("Job Search Opportunity", filters={"organization": company.name},
+        fields=["name", "js_job_title", "js_stage", "js_qualification", "js_next_action_on"],
         limit_page_length=500)
     postings = frappe.get_list("Job Search Posting", filters={"organization": company.name},
         fields=["name", "opportunity", "posting_title", "retrieved_on", "status"],
@@ -242,7 +240,7 @@ def get_company_dossier(organization):
 def get_opportunity_context(opportunity):
     require_operator()
     deal = require_opportunity(opportunity)
-    employer = require_doc("CRM Organization", deal.organization)
+    employer = require_doc("Job Search Employer", deal.organization)
     related = {}
     for key, doctype in (
         ("postings", "Job Search Posting"), ("research", "Job Search Research"),
@@ -259,7 +257,7 @@ def get_opportunity_context(opportunity):
 @frappe.whitelist()
 def publish_human_review(opportunity, posting_digest=None, research_digest=None,
                          recommendation=None, application_review=None, interview_brief=None):
-    """Agent writes the human-facing summary to the CRM Deal Data tab.
+    """Agent writes the human-facing summary to the Job Search Opportunity Data tab.
 
     Only explicitly supported review fields are changed, never stage or approvals.
     Existing values are preserved when an argument is omitted.
@@ -290,8 +288,8 @@ def publish_human_review(opportunity, posting_digest=None, research_digest=None,
 def get_human_action_queue():
     """Permission-scoped pending human reviews, without guessing from CRM stages."""
     require_operator()
-    rows = frappe.get_list("CRM Deal", filters={
-        "js_is_job_search": 1, "js_review_status": "Pending",
+    rows = frappe.get_list("Job Search Opportunity", filters={
+        "js_review_status": "Pending",
     }, fields=[
         "name", "organization", "js_job_title", "js_stage", "js_review_request",
         "js_review_assigned_to", "js_review_task", "js_agent_recommendation",
@@ -323,24 +321,23 @@ def request_human_review(opportunity, requested_action, reviewer, summary, due_d
     deal.js_agent_recommendation = summary
     deal.save()
     task = frappe.get_doc({
-        "doctype": "CRM Task", "title": f"Human review: {deal.js_job_title}",
+        "doctype": "Job Search Task", "title": f"Human review: {deal.js_job_title}",
         "assigned_to": reviewer, "status": "Todo", "priority": "High",
         "due_date": due_date or deal.js_next_action_on or deal.js_deadline,
-        "reference_doctype": "CRM Deal", "reference_docname": deal.name,
-        "description": f"{requested_action}: {summary}. Review the CRM Deal Data tab, "
+        "opportunity": deal.name,
+        "description": f"{requested_action}: {summary}. Review the Job Search Opportunity Data tab, "
                        "then record a human decision and rationale.",
     }).insert()
-    # CRM Sales User access is scoped to owned/assigned Deals. Creating the
-    # CRM Task alone does not confer Deal access to a human reviewer.
+    # Use Frappe's native ToDo assignment so the reviewer sees the work item.
     from frappe.desk.form.assign_to import add as assign_deal
 
     assignments = assign_deal({
-        "doctype": "CRM Deal", "name": deal.name, "assign_to": [reviewer],
+        "doctype": "Job Search Opportunity", "name": deal.name, "assign_to": [reviewer],
         "description": f"Job Search human review: {requested_action}",
     })
     assignment = next((row.name for row in assignments if row.owner == reviewer), None)
     if not assignment:
-        frappe.throw("Could not assign Deal access to human reviewer")
+        frappe.throw("Could not assign opportunity to human reviewer")
     deal.js_review_assignment = assignment
     deal.js_review_task = task.name
     deal.save()
@@ -359,4 +356,4 @@ def record_human_decision(opportunity, decision, rationale):
     deal.js_human_action_rationale = rationale
     deal.save()
     return success({"opportunity": deal.name, "decision": deal.js_last_decision_record,
-                    "stage": frappe.db.get_value("CRM Deal", deal.name, "js_stage")})
+                    "stage": frappe.db.get_value("Job Search Opportunity", deal.name, "js_stage")})
