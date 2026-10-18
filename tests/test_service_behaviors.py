@@ -67,9 +67,22 @@ class PostingBehavior(unittest.TestCase):
         fake.get_doc = get_doc
         fake_perms = types.ModuleType("job_search.permissions")
         fake_perms.require_operator = lambda: None
-        fake_perms.require_opportunity = lambda name, ptype="read": types.SimpleNamespace(
-            name=name, organization="Example Ltd", js_job_title="Developer", js_requisition_id="42"
-        )
+        class FakeDeal:
+            name = "D-1"
+            organization = "Example Ltd"
+            js_job_title = "Developer"
+            js_requisition_id = "42"
+            js_latest_posting = None
+            js_posting_text = None
+
+            def get(self, field):
+                return getattr(self, field, None)
+
+            def save(self):
+                pass
+
+        self.fake_deal = FakeDeal()
+        fake_perms.require_opportunity = lambda name, ptype="read": self.fake_deal
         service = load_app_module("postings.py", "test_postings_module", fake,
                                   **{"job_search.permissions": fake_perms})
         return service

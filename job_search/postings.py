@@ -16,7 +16,7 @@ def content_hash(description):
 def capture_posting(opportunity, *, description, source_name, source_url=None,
                     posting_title=None, requisition_id=None, snapshot=None):
     require_operator()
-    deal = require_opportunity(opportunity, "read")
+    deal = require_opportunity(opportunity, "write")
     if not (description or "").strip():
         frappe.throw("Captured full description is required")
     if not (source_name or "").strip():
@@ -30,6 +30,10 @@ def capture_posting(opportunity, *, description, source_name, source_url=None,
                                  ["name", "content_hash"], order_by="creation desc", as_dict=True)
     digest = content_hash(description)
     if latest and latest.content_hash == digest:
+        if deal.get("js_latest_posting") != latest.name:
+            deal.js_posting_text = description
+            deal.js_latest_posting = latest.name
+            deal.save()
         return {"posting": latest.name, "created": False}
     # If text changed and later reverted, preserve the third observation as a new revision.
     preceding = latest.name if latest else None
@@ -42,4 +46,9 @@ def capture_posting(opportunity, *, description, source_name, source_url=None,
         "supersedes": preceding, "retrieved_on": now_datetime(),
         "first_observed": nowdate(), "last_observed": nowdate(), "status": "Unknown",
     }).insert()
+    # Publish the latest immutable capture into the human's CRM Deal Data tab.
+    # Older versions stay in Job Search Posting and are never overwritten.
+    deal.js_posting_text = description
+    deal.js_latest_posting = entry.name
+    deal.save()
     return {"posting": entry.name, "created": True, "supersedes": preceding}

@@ -20,7 +20,7 @@ DETAILS = (
     "js_posting_digest", "js_research_digest", "js_agent_recommendation",
     "js_application_review", "js_interview_brief", "js_human_feedback",
     "js_review_request", "js_review_status", "js_review_assigned_to",
-    "js_review_task",
+    "js_review_task", "js_posting_text", "js_latest_posting",
     "js_human_action", "js_human_action_rationale",
 )
 SIDEBAR = (
@@ -30,23 +30,23 @@ SIDEBAR = (
 )
 
 
-def _load_layout(layout_type):
+def _load_layout(layout_type, doctype="CRM Deal"):
     name = frappe.db.get_value("CRM Fields Layout", {
-        "dt": "CRM Deal", "type": layout_type,
+        "dt": doctype, "type": layout_type,
     }, "name")
     if name:
         doc = frappe.get_doc("CRM Fields Layout", name)
         sections = json.loads(doc.layout) if doc.layout else []
     else:
         doc = frappe.get_doc({
-            "doctype": "CRM Fields Layout", "dt": "CRM Deal", "type": layout_type,
+            "doctype": "CRM Fields Layout", "dt": doctype, "type": layout_type,
         })
         if layout_type == "Side Panel":
             # CRM side panel has a purpose-built layout; do not insert all DocType fields.
             sections = []
         else:
             from crm.fcrm.doctype.crm_fields_layout.crm_fields_layout import get_default_layout
-            sections = get_default_layout("CRM Deal")
+            sections = get_default_layout(doctype)
     return doc, sections
 
 
@@ -81,6 +81,42 @@ def ensure_crm_deal_layout():
         if not section:
             section = {
                 "name": section_name, "label": "Job Opportunity", "opened": True,
+                "columns": [{"name": section_name + "_column", "fields": []}],
+            }
+            if kind == "Side Panel":
+                layout.append(section)
+            else:
+                layout[0]["sections"].append(section)
+        section["columns"][0]["fields"].extend(missing)
+        doc.layout = json.dumps(layout)
+        doc.save(ignore_permissions=True)
+    frappe.clear_cache()
+
+
+def ensure_crm_organization_layout():
+    """Expose employer research fields in CRM Organization without an extra app UI."""
+    organization_fields = (
+        "js_careers_url", "js_employer_category", "js_employer_priority",
+        "js_research_status", "js_last_researched", "js_employment_notes",
+    )
+    for kind in ("Data Fields", "Side Panel"):
+        doc, layout = _load_layout(kind, "CRM Organization")
+        if kind == "Side Panel":
+            sections = layout
+        else:
+            if not layout:
+                frappe.throw("CRM Organization Data Fields layout is missing")
+            if "sections" not in layout[0]:
+                layout = [{"name": "first_tab", "sections": layout}]
+            sections = [section for tab in layout for section in tab.get("sections", [])]
+        missing = [field for field in organization_fields if field not in _existing_fields(sections)]
+        if not missing:
+            continue
+        section_name = "job_search_organization_" + kind.lower().replace(" ", "_")
+        section = next((section for section in sections if section.get("name") == section_name), None)
+        if not section:
+            section = {
+                "name": section_name, "label": "Job Search Employer", "opened": True,
                 "columns": [{"name": section_name + "_column", "fields": []}],
             }
             if kind == "Side Panel":

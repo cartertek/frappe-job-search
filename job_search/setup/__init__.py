@@ -29,9 +29,10 @@ def after_migrate():
                 ),
             }).insert(ignore_permissions=True)  # migration-only configuration
     ensure_crm_views()
-    from job_search.setup.crm_layout import ensure_crm_deal_layout
+    from job_search.setup.crm_layout import ensure_crm_deal_layout, ensure_crm_organization_layout
 
     ensure_crm_deal_layout()
+    ensure_crm_organization_layout()
     path = Path(__file__).with_name("procedures.json")
     for item in json.loads(path.read_text()):
         if frappe.db.exists("Job Search Procedure", {
