@@ -1,43 +1,50 @@
 # Frappe Job Search
 
-A standalone Frappe app extending Frappe CRM with a structured, source-backed job-search workflow. It follows Cartertek's SEI conventions: standard DocTypes/controllers, narrowly scoped CRM Custom Field fixtures, migration-managed configuration, whitelisted service methods, and version-controlled procedures.
+A **standalone Frappe v16 application** for researching and tracking job opportunities, applications, interviews, approvals, and follow-ups. **Frappe CRM is not required.** The human interface is the standard Frappe Desk **Job Search** Workspace, app-owned DocType forms and list views. Agents use permission-checked API methods.
 
-**Package:** job_search. **Dependency:** Frappe CRM (crm). **Compatibility target:** Latest stable **Frappe `version-16`**, currently v16.52.0 (October 14, 2026), paired with stable **Frappe CRM `main`**, currently v1.88.0 (October 15, 2026), on Python 3.14. These sources were inspected; live runtime workflow testing completed on a deployed site; human browser acceptance remains required.
+## Data model
 
-## Features
+- **Job Search Opportunity** — employer, job details, stage, decision/approval state, recommendation, posting and application summaries, and review links.
+- **Job Search Employer** — employer identity, careers page and research details.
+- **Job Search Task** — deadlines, assignees, follow-ups, and review tasks.
+- **Job Search Posting, Source, Research, Procedure, Procedure Execution, Application, Interview, Decision, Transition** — source evidence and immutable historical records.
+- Built-in Frappe Users, Contacts, Comments, ToDos and file attachments are reused where appropriate.
 
-- CRM Deal as the job opportunity with js_is_job_search, employer link, position details, and namespaced JS: stage status values.
-- Employer fields on CRM Organization; Frappe Contact and CRM Task reused.
-- Durable records for Posting, Source, Research, Procedure, Procedure Execution, Application, Interview, Decision, and Transition.
-- Source evidence, original job descriptions, historical applications, immutable human approvals, completed procedure steps, and stage transitions.
-- Server-side validation for CRM Deal status edits, whether from CRM UI, Desk, or standard document REST.
-- Frappe CRM as the sole user interface, with Job Search fields in CRM Deal Quick Entry and existing CRM views.
-- Automated, idempotent CRM Tasks on stage entry; API research/follow-up queues and a company dossier.
-- Posting snapshots retain their full original description. Changed descriptions append an immutable linked revision.
-- Operator API. No automated application submission or outbound email.
+A signed-in human with **Job Search Approver** authority uses the **Record Decision** button on a pending opportunity to open a one-time modal. Recording a `Decline` decision automatically closes the opportunity; other decisions are retained for agent-controlled stage transitions. Agents cannot impersonate approvers or submit external applications automatically.
 
-## Installation (on a separate test site first)
+## Install on a new Frappe site
 
-In the bench directory:
+Requires stable Frappe `version-16` and Python 3.14. After fetching this app's `master` branch:
 
-    bench get-app https://github.com/cartertek/frappe-job-search --branch master
-    bench --site TEST-SITE install-app crm  # only if not already installed
-    bench --site TEST-SITE install-app job_search
-    bench --site TEST-SITE migrate
+```sh
+bench --site YOUR-SITE install-app job_search
+bench --site YOUR-SITE migrate
+```
 
-Assign **Job Search Operator** and an appropriate CRM Sales role (for Deal/Organization/Task permissions) to a dedicated non-Administrator operator user. Assign **Job Search Approver** only to actual human approvers. Approvers also need CRM permissions for their interactions.
+Open `/app` and the **Job Search** Workspace. Assign **Job Search Operator** to an agent and **Job Search Approver** to the human reviewer. Both may access the app-owned DocTypes; no CRM Sales role is necessary. Wiki is optional and deployed separately by the companion platform repository.
 
-Frappe CRM is the sole Job Search UI. Deal Quick Entry, Data and Side Panel layouts show job-specific fields, agent review material, and signed human decision inputs. Agents request assigned human reviews through the API, which creates linked CRM Tasks and a pending-review saved view. The app seeds public Job Search Pipeline (Kanban) and Job Search Research Queue (list) Deal views in CRM. Job Search stages are isolated from sales stages through the JS: prefix.
+## Upgrading an existing CRM-backed Job Search site
 
-**CRM layout metadata, deployed migration, and runtime end-to-end transaction tests have passed; human browser acceptance, clean-site installation, automated integration CI, and backup/restore checks remain.**
+**Never uninstall CRM before migrating the Job Search data.** The old system stores opportunities in CRM Deal, employers in CRM Organization and tasks in CRM Task.
+
+1. Back up the database and public/private files, and verify the backup is accessible outside the container.
+2. While the existing CRM-containing image is still running, update the app code to this standalone release and run `bench --site YOUR-SITE migrate`. CRM remains installed during this step.
+3. Preview with `bench --site YOUR-SITE execute job_search.migration.migrate_from_crm`.
+4. Import historical records with `bench --site YOUR-SITE execute job_search.migration.migrate_from_crm --kwargs '{"confirm": True}'`. The operation is repeatable and preserves historical identifiers, timestamps and related activity links.
+5. Validate all opportunities, employers, tasks, posting/research history, approvals, and attachments in Job Search Workspace.
+6. Only after validation and once the CRM-free image is available, run `bench --site YOUR-SITE uninstall-app crm`, deploy the new image and migrate again.
+
+See the companion [`job_search_platform`](https://github.com/JoshuaCWebDeveloper/job_search_platform) repository's cutover runbook. Rolling back an image **does not** roll back schema changes; retain the original backup.
+
+## Agent API
+
+See [API reference](docs/api.md). Entry points live in `job_search.api`, including `register_opportunity`, `capture_posting`, `add_research`, `start_procedure`, `complete_procedure_step`, `complete_procedure`, `publish_human_review`, `request_human_review`, `record_human_decision`, `transition_opportunity`, `record_application`, `record_interview`, and the work/research/human-action queues.
 
 ## Documentation
 
-- [Frappe 16 compatibility](docs/compatibility.md)
+- [Workflow stages and authorization](docs/workflows.md)
 - [Architecture](docs/architecture.md)
-- [Workflow and approvals](docs/workflows.md)
 - [Operator API](docs/api.md)
 - [Deployment](docs/deployment.md)
-- [Human acceptance checklist](docs/human-acceptance.md)
+- [Human acceptance tests](docs/human-acceptance.md)
 - [Known limitations](docs/limitations.md)
-- [Procedures](docs/procedures/README.md)
