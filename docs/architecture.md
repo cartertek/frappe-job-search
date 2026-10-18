@@ -2,7 +2,7 @@
 
 The app owns the Job Search DocTypes and narrowly scoped CRM fixtures. It does not fork, edit, or monkey-patch CRM source. CRM Deal is the opportunity; CRM Organization is the employer; the Frappe Contact DocType is linked through CRM Contacts child rows; CRM Task handles follow-ups.
 
-Standard Frappe DocType metadata/controllers live in `job_search/job_search/doctype`. For Frappe 16.50+ the app registers itself on the Apps screen, ships `job_search/dock/job_search/job_search.json` and `job_search/job_search/sidebar/job_search/job_search.json`, and retains a Job Search Workspace. The earlier Workspace Sidebar / Desktop Icon files have been removed; their formats belong to the older Frappe 16 navigation. These choices retain SEI's general app conventions without copying its older navigation format. Migration hooks seed only missing namespaced CRM Deal Status values and procedure versions. They never rewrite published procedures or research data.
+Standard Frappe DocType metadata/controllers live in `job_search/job_search/doctype`. CRM Deal Quick Entry is extended using CRM Fields Layout; no separate Desk workspace, Dock, Sidebar, or app shell is installed. Migration hooks seed only missing namespaced CRM Deal Status values and procedure versions. They never rewrite published procedures or research data.
 
 The authoritative CRM Deal validation hook enforces stage and status consistency, documented prerequisites, and approvals on ordinary UI/REST document saves. The server generates immutable transition history. Low-level database mutations bypass Frappe hooks and must not be used for workflow changes.
 

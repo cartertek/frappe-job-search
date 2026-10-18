@@ -7,15 +7,6 @@ app_license = "MIT"
 required_apps = ["crm"]
 source_link = "https://github.com/cartertek/frappe-job-search"
 
-# Frappe 16.50+ uses Apps -> Dock -> module Sidebar, not Workspace Sidebar.
-add_to_apps_screen = [{
-    "name": "job_search",
-    "logo": "/assets/job_search/images/logo.svg",
-    "title": "Job Search",
-    "route": "/desk/job-search",
-    "has_permission": "job_search.permissions.can_access_app",
-}]
-
 after_install = "job_search.setup.after_install"
 after_migrate = "job_search.setup.after_migrate"
 

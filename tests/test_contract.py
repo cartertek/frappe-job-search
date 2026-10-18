@@ -81,22 +81,17 @@ class SchemaTest(unittest.TestCase):
             "get_opportunity_context", "get_company_dossier", "authorize_decision",
         })
 
-    def test_latest_v16_navigation(self):
-        dock = json.loads((APP / "dock" / "job_search" / "job_search.json").read_text())
-        sidebar = json.loads((MODULE / "sidebar" / "job_search" / "job_search.json").read_text())
-        self.assertEqual(("Dock", "job_search", 1),
-                         (dock["doctype"], dock["app"], dock["standard"]))
-        self.assertEqual("Sidebar", dock["items"][0]["link_type"])
-        self.assertEqual("Job Search", dock["items"][0]["link_to"])
-        self.assertEqual("Job Search", sidebar["module"])
-        self.assertTrue(all(item["doctype"] == "Sidebar Item" for item in sidebar["items"]))
-        self.assertFalse((APP / "workspace_sidebar").exists())
-        self.assertFalse((APP / "desktop_icon").exists())
+    def test_crm_only_ui(self):
+        self.assertFalse((APP / "dock").exists())
+        self.assertFalse((MODULE / "sidebar").exists())
+        self.assertFalse((MODULE / "workspace").exists())
         hooks = (APP / "hooks.py").read_text()
+        self.assertNotIn("add_to_apps_screen", hooks)
         self.assertIn('required_apps = ["crm"]', hooks)
-        self.assertIn("add_to_apps_screen", hooks)
-        # Frappe v16 calls on_update after insert; no duplicate after_insert hook.
-        self.assertNotIn('"after_insert": "job_search.workflow.record_transition"', hooks)
+        layout = (APP / "setup" / "crm_layout.py").read_text()
+        self.assertIn('"Quick Entry"', layout)
+        self.assertIn('"js_is_job_search"', layout)
+        self.assertIn('"js_job_title"', layout)
 
     def test_no_untracked_direct_crm_mutation(self):
         source = (APP / "services.py").read_text() + (APP / "api.py").read_text()
