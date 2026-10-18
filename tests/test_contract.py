@@ -78,7 +78,8 @@ class SchemaTest(unittest.TestCase):
             "complete_procedure_step", "complete_procedure", "transition_opportunity",
             "record_application", "record_interview", "create_follow_up",
             "get_work_queue", "get_research_queue", "get_follow_up_queue",
-            "get_opportunity_context", "publish_human_review", "get_human_action_queue", "get_company_dossier", "authorize_decision",
+            "get_opportunity_context", "publish_human_review", "get_human_action_queue",
+            "get_company_dossier", "authorize_decision",
         })
 
     def test_crm_only_ui(self):
