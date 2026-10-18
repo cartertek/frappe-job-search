@@ -254,3 +254,67 @@ def get_opportunity_context(opportunity):
         related[key] = frappe.get_list(doctype, filters={"opportunity": opportunity},
                                        fields=["name", "modified"], limit_page_length=500)
     return success({"deal": deal.as_dict(), "employer": employer.as_dict(), **related})
+
+
+@frappe.whitelist()
+def publish_human_review(opportunity, posting_digest=None, research_digest=None,
+                         recommendation=None, application_review=None, interview_brief=None):
+    """Agent writes the human-facing summary to the CRM Deal Data tab.
+
+    Only explicitly supported review fields are changed, never stage or approvals.
+    Existing values are preserved when an argument is omitted.
+    """
+    require_operator()
+    deal = require_opportunity(opportunity, "write")
+    updates = {
+        "js_posting_digest": posting_digest,
+        "js_research_digest": research_digest,
+        "js_agent_recommendation": recommendation,
+        "js_application_review": application_review,
+        "js_interview_brief": interview_brief,
+    }
+    changed = []
+    for name, value in updates.items():
+        if value is not None:
+            value = str(value)
+            if len(value) > 50000:
+                frappe.throw("Human review field exceeds 50,000 characters")
+            deal.set(name, value)
+            changed.append(name)
+    if changed:
+        deal.save()
+    return success({"opportunity": deal.name, "updated_fields": changed})
+
+
+@frappe.whitelist()
+def get_human_action_queue():
+    """Permission-scoped queue of open opportunities awaiting human review."""
+    require_operator()
+    rows = frappe.get_list("CRM Deal", filters={"js_is_job_search": 1},
+        fields=["name", "organization", "js_job_title", "js_stage",
+                "js_agent_recommendation", "js_application_review",
+                "js_next_action_on", "js_deadline", "js_human_feedback"],
+        limit_page_length=500)
+    results = []
+    for row in rows:
+        if row.js_stage in ("Accepted", "Rejected", "Withdrawn", "Closed"):
+            continue
+        decisions = frappe.get_list("Job Search Decision", filters={"opportunity": row.name},
+            fields=["decision"], limit_page_length=100)
+        existing = {d.decision for d in decisions}
+        needed = None
+        if row.js_stage == "Researching" and row.js_agent_recommendation and not (
+            "Pursue" in existing or "Decline" in existing
+        ):
+            needed = "Pursue or Decline"
+        elif row.js_stage == "Preparing" and row.js_application_review and not (
+            "Authorize Application" in existing or "Decline Application" in existing
+        ):
+            needed = "Authorize or Decline Application"
+        elif row.js_stage == "Offer" and not (
+            "Accept Offer" in existing or "Reject Offer" in existing
+        ):
+            needed = "Accept or Reject Offer"
+        if needed:
+            results.append({**row, "action_required": needed})
+    return success({"queue": results})

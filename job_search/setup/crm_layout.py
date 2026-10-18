@@ -17,6 +17,9 @@ DETAILS = (
     "js_deadline", "js_qualification", "js_qualification_rationale",
     "js_applied_on", "js_next_action_on", "js_priority", "js_stage",
     "js_closure_reason", "js_offer_details",
+    "js_posting_digest", "js_research_digest", "js_agent_recommendation",
+    "js_application_review", "js_interview_brief", "js_human_feedback",
+    "js_human_action", "js_human_action_rationale",
 )
 SIDEBAR = (
     "js_is_job_search", "js_job_title", "js_stage", "js_location",

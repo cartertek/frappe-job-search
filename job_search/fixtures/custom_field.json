@@ -337,5 +337,86 @@
     "insert_after": "reference_docname",
     "read_only": 1,
     "is_system_generated": 1
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "CRM Deal-js_posting_digest",
+    "dt": "CRM Deal",
+    "fieldname": "js_posting_digest",
+    "label": "Job Description / Posting",
+    "fieldtype": "Small Text",
+    "insert_after": "js_offer_details",
+    "is_system_generated": 1
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "CRM Deal-js_research_digest",
+    "dt": "CRM Deal",
+    "fieldname": "js_research_digest",
+    "label": "Research Findings & Sources",
+    "fieldtype": "Text Editor",
+    "insert_after": "js_posting_digest",
+    "is_system_generated": 1
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "CRM Deal-js_agent_recommendation",
+    "dt": "CRM Deal",
+    "fieldname": "js_agent_recommendation",
+    "label": "Agent Recommendation",
+    "fieldtype": "Text Editor",
+    "insert_after": "js_research_digest",
+    "is_system_generated": 1
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "CRM Deal-js_application_review",
+    "dt": "CRM Deal",
+    "fieldname": "js_application_review",
+    "label": "Application Materials for Review",
+    "fieldtype": "Text Editor",
+    "insert_after": "js_agent_recommendation",
+    "is_system_generated": 1
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "CRM Deal-js_interview_brief",
+    "dt": "CRM Deal",
+    "fieldname": "js_interview_brief",
+    "label": "Interview Preparation",
+    "fieldtype": "Text Editor",
+    "insert_after": "js_application_review",
+    "is_system_generated": 1
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "CRM Deal-js_human_feedback",
+    "dt": "CRM Deal",
+    "fieldname": "js_human_feedback",
+    "label": "Human Feedback / Instructions",
+    "fieldtype": "Text Editor",
+    "insert_after": "js_interview_brief",
+    "is_system_generated": 1
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "CRM Deal-js_human_action",
+    "dt": "CRM Deal",
+    "fieldname": "js_human_action",
+    "label": "Record Human Decision",
+    "fieldtype": "Select",
+    "insert_after": "js_human_feedback",
+    "is_system_generated": 1,
+    "options": "\nPursue\nDecline\nAuthorize Application\nDecline Application\nAccept Offer\nReject Offer\nWithdraw\nOverride"
+  },
+  {
+    "doctype": "Custom Field",
+    "name": "CRM Deal-js_human_action_rationale",
+    "dt": "CRM Deal",
+    "fieldname": "js_human_action_rationale",
+    "label": "Decision Rationale",
+    "fieldtype": "Small Text",
+    "insert_after": "js_human_action",
+    "is_system_generated": 1
   }
 ]

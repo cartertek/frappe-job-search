@@ -19,7 +19,9 @@ fixtures = [
             "js_compensation_max js_currency js_compensation_period js_seniority "
             "js_discovered_on js_posted_on js_deadline js_qualification "
             "js_qualification_rationale js_applied_on js_next_action_on js_priority "
-            "js_stage js_closure_reason js_offer_details"
+            "js_stage js_closure_reason js_offer_details js_posting_digest "
+            "js_research_digest js_agent_recommendation js_application_review "
+            "js_interview_brief js_human_feedback js_human_action js_human_action_rationale"
         ).split()
     ] + [
         "CRM Organization-" + name for name in (
@@ -32,6 +34,7 @@ fixtures = [
 doc_events = {
     "CRM Deal": {
         "validate": "job_search.workflow.validate_deal",
-        "on_update": "job_search.workflow.record_transition",
+        "before_save": "job_search.human.validate_human_action",
+        "on_update": ["job_search.workflow.record_transition", "job_search.human.save_human_action"],
     }
 }

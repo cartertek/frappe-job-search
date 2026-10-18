@@ -30,7 +30,7 @@
       "fieldname": "decision",
       "label": "Decision",
       "fieldtype": "Select",
-      "options": "Pursue\nAuthorize Application\nAccept Offer\nWithdraw\nOverride",
+      "options": "Pursue\nDecline\nAuthorize Application\nDecline Application\nAccept Offer\nReject Offer\nWithdraw\nOverride",
       "reqd": 1
     },
     {
