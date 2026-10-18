@@ -47,6 +47,43 @@ def _copy_tasks():
     )
 
 
+def _remap_history_references():
+    """Preserve native Desk activity, attachments and assigned reviews.
+
+    Only remap rows pointing at the already-copied Job Search documents;
+    ordinary unrelated CRM records must never be touched.
+    """
+    changed = {}
+    targets = (
+        ("CRM Deal", "Job Search Opportunity"),
+        ("CRM Task", "Job Search Task"),
+        ("CRM Organization", "Job Search Employer"),
+    )
+    reference_types = (
+        ("ToDo", "reference_type", "reference_name"),
+        ("File", "attached_to_doctype", "attached_to_name"),
+        ("Comment", "reference_doctype", "reference_name"),
+        ("Communication", "reference_doctype", "reference_name"),
+        ("DocShare", "share_doctype", "share_name"),
+        ("Version", "ref_doctype", "docname"),
+    )
+    for old_type, new_type in targets:
+        for document_type, doctype_field, name_field in reference_types:
+            if not frappe.db.exists("DocType", document_type):
+                continue
+            columns = set(frappe.db.get_table_columns(document_type))
+            if not {doctype_field, name_field}.issubset(columns):
+                continue
+            affected = frappe.db.sql(
+                f"UPDATE `tab{document_type}` r "
+                f"JOIN `tab{new_type}` migrated ON migrated.name = r.`{name_field}` "
+                f"SET r.`{doctype_field}` = %s WHERE r.`{doctype_field}` = %s",
+                (new_type, old_type),
+            )
+            changed[f"{document_type}: {old_type}"] = affected
+    return changed
+
+
 def _counts():
     return {
         "opportunities": frappe.db.count("Job Search Opportunity"),
@@ -73,8 +110,8 @@ def migrate_from_crm(confirm=False):
         _copy("CRM Organization", "Job Search Employer", EMPLOYER_WHERE)
         _copy("CRM Deal", "Job Search Opportunity", "src.js_is_job_search = 1")
         _copy_tasks()
-        # Align Frappe attachment and assignment references with new DocTypes.
-        # Old CRM data is not deleted by this operation.
+        remapped = _remap_history_references()
+        # Old CRM business records are not deleted by this operation.
         opp_names = frappe.get_all("Job Search Opportunity", pluck="name")
         # Preserve count/link integrity before any irreversible CRM uninstall.
         orphan_orgs = frappe.db.sql("""
@@ -89,8 +126,13 @@ def migrate_from_crm(confirm=False):
         """, as_list=True)
         if orphan_orgs or missing:
             frappe.throw(f"Unmigrated records: opportunities={missing}, employers={orphan_orgs}")
-        return {"verified": True, "counts": _counts(), "opportunity_names": opp_names,
-                "note": "CRM remains installed. Verify records and attachments before uninstalling."}
+        return {
+            "verified": True,
+            "counts": _counts(),
+            "opportunity_names": opp_names,
+            "reference_remaps": remapped,
+            "note": "CRM remains installed. Verify records and attachments before uninstalling.",
+        }
     except Exception:
         frappe.db.rollback(save_point="job_search_standalone_migration")
         raise
