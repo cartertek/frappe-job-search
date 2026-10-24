@@ -20,7 +20,7 @@ def obj(**kwargs):
 
 
 def search(**kwargs):
-    fields = dict(title_contains='Python', location_contains='Portland',
+    fields = dict(title_matches='Python Engineer', location_match='Portland, OR',
                   employment_type='Full Time', work_arrangement='Remote',
                   seniority='Senior', posted_after='2026-09-01', salary_min=120000,
                   currency='USD', compensation_period='Year')
@@ -56,6 +56,21 @@ class SearchRules(unittest.TestCase):
                        dict(js_currency='EUR'), dict(js_compensation_period='Hour')]:
             with self.subTest(change=change):
                 self.assertFalse(self.module.matches(obj(**change), search()))
+
+    def test_exact_title_and_location(self):
+        self.assertTrue(self.module.matches(obj(), search()))
+        self.assertFalse(self.module.matches(obj(js_job_title='Senior Python Engineer'), search()))
+        self.assertFalse(self.module.matches(obj(js_location='Portland, OR, USA'), search()))
+        self.assertTrue(self.module.matches(
+            obj(js_job_title='PYTHON ENGINEER', js_location=' portland, or '), search()
+        ))
+
+    def test_multiple_titles_match_any_full_title(self):
+        criteria = search(title_matches='Frontend Developer\nPython Engineer\nSoftware Engineer')
+        self.assertTrue(self.module.matches(obj(), criteria))
+        self.assertTrue(self.module.matches(obj(js_job_title='Software Engineer'), criteria))
+        self.assertFalse(self.module.matches(obj(js_job_title='Senior Software Engineer'), criteria))
+        self.assertTrue(self.module.matches(obj(), search(title_matches='\n  Python Engineer  \n\n')))
 
     def test_no_filters(self):
         self.assertTrue(self.module.matches(obj(), search(**{k:None for k in vars(search())})))

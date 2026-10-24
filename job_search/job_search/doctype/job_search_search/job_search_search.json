@@ -10,8 +10,8 @@
   "field_order": [
     "search_name",
     "enabled",
-    "title_contains",
-    "location_contains",
+    "title_matches",
+    "location_match",
     "employment_type",
     "work_arrangement",
     "seniority",
@@ -38,14 +38,16 @@
       "default": "1"
     },
     {
-      "fieldname": "title_contains",
-      "label": "Job Title Contains",
-      "fieldtype": "Data"
+      "fieldname": "title_matches",
+      "label": "Job Titles to Match",
+      "fieldtype": "Small Text",
+      "description": "One complete job title per line. A job matches if its title equals any line (case-insensitive)."
     },
     {
-      "fieldname": "location_contains",
-      "label": "Location Contains",
-      "fieldtype": "Data"
+      "fieldname": "location_match",
+      "label": "Location to Match",
+      "fieldtype": "Data",
+      "description": "Match the complete job location, ignoring case and surrounding whitespace."
     },
     {
       "fieldname": "employment_type",

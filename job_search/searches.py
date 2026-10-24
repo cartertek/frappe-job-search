@@ -12,12 +12,14 @@ SEARCH = 'Job Search Search'
 
 def matches(job, search):
     """Pure deterministic predicate; subjective heuristics are never executed."""
-    for candidate, pattern in (
-        (job.js_job_title, search.title_contains),
-        (job.js_location, search.location_contains),
+    # One of the exact job titles is sufficient; location is one exact match.
+    titles = [item.strip().casefold() for item in (search.title_matches or '').splitlines() if item.strip()]
+    if titles and (job.js_job_title or '').strip().casefold() not in titles:
+        return False
+    if search.location_match and (
+        (job.js_location or '').strip().casefold() != search.location_match.strip().casefold()
     ):
-        if pattern and pattern.casefold() not in (candidate or '').casefold():
-            return False
+        return False
     for job_value, needed in (
         (job.js_employment_type, search.employment_type),
         (job.js_work_arrangement, search.work_arrangement),
