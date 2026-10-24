@@ -86,6 +86,10 @@ class SchemaTest(unittest.TestCase):
         hooks = (APP / "hooks.py").read_text()
         self.assertNotIn('required_apps = ["crm"]', hooks)
         self.assertIn('"Job Search Opportunity"', hooks)
+        self.assertIn('add_to_apps_screen = [', hooks)
+        self.assertIn('"route": app_home', hooks)
+        self.assertIn('"has_permission": "job_search.permissions.can_access_app"', hooks)
+        self.assertTrue((APP / "public" / "images" / "job-search.svg").exists())
         self.assertTrue((BASE / "job_search_opportunity" / "job_search_opportunity.js").exists())
         self.assertTrue((APP / "migration.py").exists())
 
