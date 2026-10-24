@@ -20,35 +20,35 @@
       "type": "Link",
       "link_type": "DocType",
       "link_to": "Job Search Search",
-      "label": "Searches"
+      "label": "Search"
     },
     {
       "doctype": "Sidebar Item",
       "type": "Link",
       "link_type": "DocType",
       "link_to": "Job Search Opportunity",
-      "label": "Jobs"
+      "label": "Job"
     },
     {
       "doctype": "Sidebar Item",
       "type": "Link",
       "link_type": "DocType",
       "link_to": "Job Search Employer",
-      "label": "Organizations"
+      "label": "Organization"
     },
     {
       "doctype": "Sidebar Item",
       "type": "Link",
       "link_type": "DocType",
       "link_to": "Job Search Task",
-      "label": "Tasks"
+      "label": "Task"
     },
     {
       "doctype": "Sidebar Item",
       "type": "Link",
       "link_type": "DocType",
       "link_to": "Job Search Posting",
-      "label": "Postings"
+      "label": "Posting"
     },
     {
       "doctype": "Sidebar Item",
@@ -62,42 +62,42 @@
       "type": "Link",
       "link_type": "DocType",
       "link_to": "Job Search Decision",
-      "label": "Decisions"
+      "label": "Decision"
     },
     {
       "doctype": "Sidebar Item",
       "type": "Link",
       "link_type": "DocType",
       "link_to": "Job Search Application",
-      "label": "Applications"
+      "label": "Application"
     },
     {
       "doctype": "Sidebar Item",
       "type": "Link",
       "link_type": "DocType",
       "link_to": "Job Search Interview",
-      "label": "Interviews"
+      "label": "Interview"
     },
     {
       "doctype": "Sidebar Item",
       "type": "Link",
       "link_type": "DocType",
       "link_to": "Job Search Procedure Execution",
-      "label": "Procedure Runs"
+      "label": "Procedure Run"
     },
     {
       "doctype": "Sidebar Item",
       "type": "Link",
       "link_type": "DocType",
       "link_to": "Job Search Procedure",
-      "label": "Procedures"
+      "label": "Procedure"
     },
     {
       "doctype": "Sidebar Item",
       "type": "Link",
       "link_type": "DocType",
       "link_to": "Job Search Source",
-      "label": "Sources"
+      "label": "Source"
     },
     {
       "doctype": "Sidebar Item",

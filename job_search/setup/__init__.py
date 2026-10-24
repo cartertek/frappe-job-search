@@ -33,18 +33,18 @@ def after_migrate():
 
 
 WORKSPACE_LABELS = {
-    'Job Search Search': 'Searches',
-    'Job Search Opportunity': 'Jobs',
-    'Job Search Employer': 'Organizations',
-    'Job Search Task': 'Tasks',
-    'Job Search Posting': 'Postings',
+    'Job Search Search': 'Search',
+    'Job Search Opportunity': 'Job',
+    'Job Search Employer': 'Organization',
+    'Job Search Task': 'Task',
+    'Job Search Posting': 'Posting',
     'Job Search Research': 'Research',
-    'Job Search Decision': 'Decisions',
-    'Job Search Application': 'Applications',
-    'Job Search Interview': 'Interviews',
-    'Job Search Procedure Execution': 'Procedure Runs',
-    'Job Search Procedure': 'Procedures',
-    'Job Search Source': 'Sources',
+    'Job Search Decision': 'Decision',
+    'Job Search Application': 'Application',
+    'Job Search Interview': 'Interview',
+    'Job Search Procedure Execution': 'Procedure Run',
+    'Job Search Procedure': 'Procedure',
+    'Job Search Source': 'Source',
     'Job Search Transition': 'Stage History',
 }
 
@@ -69,7 +69,14 @@ def ensure_workspace():
                 by_doctype[item["link_to"]].label = item["label"]
             else:
                 doc.append("shortcuts", item)
+        legacy_plural = {
+            "Searches": "Search", "Jobs": "Job", "Organizations": "Organization",
+            "Tasks": "Task", "Postings": "Posting", "Decisions": "Decision",
+            "Applications": "Application", "Interviews": "Interview",
+            "Procedure Runs": "Procedure Run",
+        }
         old_to_new = {name: WORKSPACE_LABELS[name] for name in names}
+        old_to_new.update(legacy_plural)
         current = frappe.parse_json(doc.content or "[]")
         seen = set()
         for item in current:
