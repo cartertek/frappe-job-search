@@ -1,0 +1,110 @@
+{
+  "doctype": "Sidebar",
+  "name": "Job Search",
+  "title": "Job Search",
+  "module": "Job Search",
+  "app": "job_search",
+  "standard": 1,
+  "header_icon": "\ud83d\udcbc",
+  "items": [
+    {
+      "doctype": "Sidebar Item",
+      "type": "Link",
+      "link_type": "Workspace",
+      "link_to": "Job Search",
+      "label": "Home",
+      "is_default_module": 1
+    },
+    {
+      "doctype": "Sidebar Item",
+      "type": "Link",
+      "link_type": "DocType",
+      "link_to": "Job Search Search",
+      "label": "Searches"
+    },
+    {
+      "doctype": "Sidebar Item",
+      "type": "Link",
+      "link_type": "DocType",
+      "link_to": "Job Search Opportunity",
+      "label": "Jobs"
+    },
+    {
+      "doctype": "Sidebar Item",
+      "type": "Link",
+      "link_type": "DocType",
+      "link_to": "Job Search Employer",
+      "label": "Organizations"
+    },
+    {
+      "doctype": "Sidebar Item",
+      "type": "Link",
+      "link_type": "DocType",
+      "link_to": "Job Search Task",
+      "label": "Tasks"
+    },
+    {
+      "doctype": "Sidebar Item",
+      "type": "Link",
+      "link_type": "DocType",
+      "link_to": "Job Search Posting",
+      "label": "Postings"
+    },
+    {
+      "doctype": "Sidebar Item",
+      "type": "Link",
+      "link_type": "DocType",
+      "link_to": "Job Search Research",
+      "label": "Research"
+    },
+    {
+      "doctype": "Sidebar Item",
+      "type": "Link",
+      "link_type": "DocType",
+      "link_to": "Job Search Decision",
+      "label": "Decisions"
+    },
+    {
+      "doctype": "Sidebar Item",
+      "type": "Link",
+      "link_type": "DocType",
+      "link_to": "Job Search Application",
+      "label": "Applications"
+    },
+    {
+      "doctype": "Sidebar Item",
+      "type": "Link",
+      "link_type": "DocType",
+      "link_to": "Job Search Interview",
+      "label": "Interviews"
+    },
+    {
+      "doctype": "Sidebar Item",
+      "type": "Link",
+      "link_type": "DocType",
+      "link_to": "Job Search Procedure Execution",
+      "label": "Procedure Runs"
+    },
+    {
+      "doctype": "Sidebar Item",
+      "type": "Link",
+      "link_type": "DocType",
+      "link_to": "Job Search Procedure",
+      "label": "Procedures"
+    },
+    {
+      "doctype": "Sidebar Item",
+      "type": "Link",
+      "link_type": "DocType",
+      "link_to": "Job Search Source",
+      "label": "Sources"
+    },
+    {
+      "doctype": "Sidebar Item",
+      "type": "Link",
+      "link_type": "DocType",
+      "link_to": "Job Search Transition",
+      "label": "Stage History"
+    }
+  ]
+}

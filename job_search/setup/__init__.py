@@ -26,32 +26,58 @@ def after_migrate():
     frappe.clear_cache()
 
 
+WORKSPACE_LABELS = {
+    'Job Search Search': 'Searches',
+    'Job Search Opportunity': 'Jobs',
+    'Job Search Employer': 'Organizations',
+    'Job Search Task': 'Tasks',
+    'Job Search Posting': 'Postings',
+    'Job Search Research': 'Research',
+    'Job Search Decision': 'Decisions',
+    'Job Search Application': 'Applications',
+    'Job Search Interview': 'Interviews',
+    'Job Search Procedure Execution': 'Procedure Runs',
+    'Job Search Procedure': 'Procedures',
+    'Job Search Source': 'Sources',
+    'Job Search Transition': 'Stage History',
+}
+
+
 def ensure_workspace():
-    """Job Search lives in standard Frappe Desk; never create a parallel CRM UI."""
+    """Keep display labels friendly while retaining stable underlying DocTypes."""
     names = (
         "Job Search Search", "Job Search Opportunity", "Job Search Employer", "Job Search Task",
         "Job Search Posting", "Job Search Research", "Job Search Decision",
         "Job Search Application", "Job Search Interview", "Job Search Procedure Execution",
     )
-    links = [{"type": "DocType", "link_to": name, "label": name, "doc_view": "List"}
-             for name in names]
+    links = [{"type": "DocType", "link_to": name,
+              "label": WORKSPACE_LABELS[name], "doc_view": "List"} for name in names]
     content = ([{"type": "header", "data": {"text": "Job Search", "col": 12}}]
-               + [{"type": "shortcut", "data": {"shortcut_name": name, "col": 4}}
+               + [{"type": "shortcut", "data": {"shortcut_name": WORKSPACE_LABELS[name], "col": 4}}
                   for name in names])
     if frappe.db.exists("Workspace", "Job Search"):
         doc = frappe.get_doc("Workspace", "Job Search")
-        # Preserve user-added shortcuts while ensuring newly shipped lists appear.
-        existing = {item.link_to for item in doc.shortcuts}
+        by_doctype = {row.link_to: row for row in doc.shortcuts if row.type == "DocType"}
         for item in links:
-            if item["link_to"] not in existing:
+            if item["link_to"] in by_doctype:
+                by_doctype[item["link_to"]].label = item["label"]
+            else:
                 doc.append("shortcuts", item)
-        current_content = frappe.parse_json(doc.content or "[]")
-        seen = {item.get("data", {}).get("shortcut_name") for item in current_content}
+        old_to_new = {name: WORKSPACE_LABELS[name] for name in names}
+        current = frappe.parse_json(doc.content or "[]")
+        seen = set()
+        for item in current:
+            shortcut = item.get("data", {}).get("shortcut_name")
+            if shortcut in old_to_new:
+                item["data"]["shortcut_name"] = old_to_new[shortcut]
+                shortcut = item["data"]["shortcut_name"]
+            if shortcut:
+                seen.add(shortcut)
         for item in content:
             shortcut = item.get("data", {}).get("shortcut_name")
             if shortcut and shortcut not in seen:
-                current_content.append(item)
-        doc.content = json.dumps(current_content)
+                current.append(item)
+        doc.content = json.dumps(current)
         doc.save(ignore_permissions=True)
     else:
         doc = frappe.get_doc({
