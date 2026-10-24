@@ -6,7 +6,7 @@ app_email = "admin@cartertek.ai"
 app_license = "MIT"
 source_link = "https://github.com/cartertek/frappe-job-search"
 
-app_logo_url = "/assets/job_search/images/job-search.svg"
+app_logo_url = "/files/job-search.svg"
 app_home = "/desk/job-search"
 
 add_to_apps_screen = [

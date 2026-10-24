@@ -22,6 +22,7 @@ def after_migrate():
             ignore_permissions=True
         )
     ensure_workspace()
+    ensure_app_logo()
     frappe.clear_cache()
 
 
@@ -59,3 +60,17 @@ def ensure_workspace():
             "content": json.dumps(content), "shortcuts": links,
         })
         doc.insert(ignore_permissions=True)
+
+
+def ensure_app_logo():
+    """Publish launcher icon in each site's shared public files for Frappe/Nginx.
+
+    In Docker deployments the frontend and backend image asset directories can
+    differ; /files is a site-shared volume exposed by the frontend.
+    """
+    source = Path(__file__).resolve().parents[1] / "public" / "images" / "job-search.svg"
+    destination = Path(frappe.get_site_path("public", "files", "job-search.svg"))
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    logo = source.read_bytes()
+    if not destination.exists() or destination.read_bytes() != logo:
+        destination.write_bytes(logo)
