@@ -1,14 +1,9 @@
-"""Retain configured criteria from searches created before issue #1."""
+"""Column migration is handled after schema synchronization in setup.
 
-import frappe
+Frappe executes patch files before DocType sync; the matching field data is
+copied by `job_search.setup.migrate_legacy_search_filters` in after_migrate.
+"""
 
 
 def execute():
-    table = 'tabJob Search Search'
-    columns = set(frappe.db.get_table_columns('Job Search Search'))
-    for old, new in (('title_contains', 'title_matches'), ('location_contains', 'location_match')):
-        if old in columns and new in columns:
-            frappe.db.sql(
-                f"UPDATE `{table}` SET `{new}` = `{old}` "
-                f"WHERE COALESCE(`{new}`, '') = '' AND COALESCE(`{old}`, '') != ''"
-            )
+    pass

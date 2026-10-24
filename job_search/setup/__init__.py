@@ -21,6 +21,7 @@ def after_migrate():
         frappe.get_doc({"doctype": "Job Search Procedure", **item}).insert(
             ignore_permissions=True
         )
+    migrate_legacy_search_filters()
     ensure_workspace()
     ensure_app_logo()
     frappe.clear_cache()
@@ -105,3 +106,24 @@ def ensure_app_logo():
     logo = source.read_bytes()
     if not destination.exists() or destination.read_bytes() != logo:
         destination.write_bytes(logo)
+
+
+def migrate_legacy_search_filters():
+    """Move old search filters after schema sync, then clear legacy values.
+
+    Frappe executes patches before DocType sync, so a schema-changing patch
+    cannot reliably copy a newly added column. Clearing old values prevents
+    subsequent migrations from restoring a filter intentionally cleared by a user.
+    """
+    columns = set(frappe.db.get_table_columns("Job Search Search"))
+    for old, new in (("title_contains", "title_matches"),
+                     ("location_contains", "location_match")):
+        if {old, new}.issubset(columns):
+            frappe.db.sql(
+                f"UPDATE `tabJob Search Search` SET `{new}` = `{old}` "
+                f"WHERE COALESCE(`{new}`, '') = '' AND COALESCE(`{old}`, '') != ''"
+            )
+            frappe.db.sql(
+                f"UPDATE `tabJob Search Search` SET `{old}` = NULL "
+                f"WHERE `{old}` IS NOT NULL AND `{old}` != ''"
+            )
