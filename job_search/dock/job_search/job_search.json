@@ -1,0 +1,18 @@
+{
+  "doctype": "Dock",
+  "name": "job_search",
+  "app": "job_search",
+  "user": "",
+  "standard": 1,
+  "items": [
+    {
+      "doctype": "Dock Item",
+      "link_type": "Workspace",
+      "link_to": "Job Search",
+      "title": "Job Search",
+      "icon": "💼",
+      "added": 1,
+      "hidden": 0
+    }
+  ]
+}
