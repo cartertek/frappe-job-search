@@ -24,6 +24,11 @@ def after_migrate():
     ensure_workspace()
     ensure_app_logo()
     frappe.clear_cache()
+    # Frappe's merged language dictionary has its own cache, independent of
+    # the Desk/doctype caches. Refresh it when app translations change.
+    from frappe.translate import clear_cache as clear_translation_cache
+
+    clear_translation_cache()
 
 
 WORKSPACE_LABELS = {

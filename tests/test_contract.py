@@ -82,6 +82,19 @@ class SchemaTest(unittest.TestCase):
             "set_search_membership", "reject_job", "reject_organization",
         })
 
+    def test_global_display_names_are_consistent(self):
+        import csv
+
+        translations = APP / "translations" / "en.csv"
+        with translations.open(newline="") as f:
+            labels = dict(csv.reader(f))
+        from ast import literal_eval
+
+        setup = (APP / "setup" / "__init__.py").read_text()
+        block = setup.split("WORKSPACE_LABELS = ", 1)[1].split('\n\ndef ensure_workspace', 1)[0]
+        self.assertEqual(labels, literal_eval(block))
+        self.assertIn("clear_translation_cache()", setup)
+
     def test_standalone_ui(self):
         hooks = (APP / "hooks.py").read_text()
         self.assertNotIn('required_apps = ["crm"]', hooks)
