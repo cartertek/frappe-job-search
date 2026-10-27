@@ -1,4 +1,37 @@
+// Frappe's default child grid strips rich text and truncates static cells.
+// Render a sanitized, full-height rich-text preview inside each heuristic row.
+function show_heuristic_description(gridRow) {
+  if (gridRow.grid?.df?.fieldname !== 'heuristics' || !gridRow.doc) return;
+  const column = gridRow.columns?.description;
+  if (!column?.static_area) return;
+  const html = gridRow.doc.description || '';
+  const safe = frappe.utils.sanitize_html ? frappe.utils.sanitize_html(html)
+    : frappe.utils.escape_html(html);
+  column.static_area.html(`<div class="job-search-heuristic-richtext">${safe}</div>`);
+  $(gridRow.row).addClass('job-search-heuristic-row');
+}
+
 frappe.ui.form.on('Job Search Search', {
+  onload(frm) {
+    if (!document.getElementById('job-search-heuristic-grid-css')) {
+      $('<style id="job-search-heuristic-grid-css">' +
+        '.job-search-heuristic-row, .job-search-heuristic-row .grid-static-col {' +
+        'height:auto!important;min-height:38px;align-items:flex-start!important}' +
+        '.job-search-heuristic-row .static-area {' +
+        'height:auto!important;max-height:none!important;overflow:visible!important;' +
+        'white-space:normal!important;text-overflow:clip!important}' +
+        '.job-search-heuristic-richtext {white-space:normal;overflow-wrap:anywhere;' +
+        'line-height:1.5;padding:4px 0}' +
+        '.job-search-heuristic-richtext p {margin:0 0 6px}' +
+        '.job-search-heuristic-richtext ul,.job-search-heuristic-richtext ol {' +
+        'padding-left:24px;margin:0 0 6px}' +
+        '</style>').appendTo('head');
+    }
+    $(frm.wrapper).off('grid-row-render.job-search-heuristics')
+      .on('grid-row-render.job-search-heuristics', (_event, row) => {
+        show_heuristic_description(row);
+      });
+  },
   refresh(frm) {
     if (frm.is_new()) return;
     frm.add_custom_button(__('View Matching Jobs'), async () => {

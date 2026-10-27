@@ -23,7 +23,7 @@
     {
       "fieldname": "description",
       "label": "Description",
-      "fieldtype": "Small Text",
+      "fieldtype": "Text Editor",
       "reqd": 1,
       "in_list_view": 1
     }
