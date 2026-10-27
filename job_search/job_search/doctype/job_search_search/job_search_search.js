@@ -1,24 +1,4 @@
 frappe.ui.form.on('Job Search Search', {
-  onload(frm) {
-    if (!document.getElementById('job-search-heuristic-grid-css')) {
-      $('<style id="job-search-heuristic-grid-css">' +
-        '.job-search-heuristic-preview {padding:8px 16px 12px 56px;' +
-        'border-top:1px solid var(--border-color);overflow:visible;' +
-        'height:auto!important;max-height:none!important}' +
-        '.job-search-heuristic-row.grid-row-open .job-search-heuristic-preview {' +
-        'display:none!important}' +
-        '.job-search-heuristic-richtext {white-space:normal;overflow-wrap:anywhere;' +
-        'line-height:1.5;padding:4px 0}' +
-        '.job-search-heuristic-richtext p {margin:0 0 6px}' +
-        '.job-search-heuristic-richtext ul,.job-search-heuristic-richtext ol {' +
-        'padding-left:24px;margin:0 0 6px}' +
-        '</style>').appendTo('head');
-    }
-    $(frm.wrapper).off('grid-row-render.job-search-heuristics')
-      .on('grid-row-render.job-search-heuristics', (_event, row) => {
-        show_heuristic_description(row);
-      });
-  },
   refresh(frm) {
     if (frm.is_new()) return;
     frm.add_custom_button(__('View Matching Jobs'), async () => {
