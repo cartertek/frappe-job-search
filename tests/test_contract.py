@@ -166,7 +166,7 @@ class SchemaTest(unittest.TestCase):
         self.assertIn("{% if (doc) { %}", template)
         self.assertIn("{% } else { %}", template)
         self.assertIn("doc.description", template)
-        self.assertIn('__("Name and Description")', template)
+        self.assertIn('__("Research Heuristic")', template)
         setup = (APP / "setup" / "__init__.py").read_text()
         self.assertIn('frappe.client_cache.delete_value("doctype_form_meta::Job Search Search")', setup)
 
