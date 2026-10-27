@@ -9,12 +9,12 @@
   "track_changes": 1,
   "field_order": [
     "organization_name",
-    "js_careers_url",
-    "js_employer_category",
-    "js_employer_priority",
-    "js_research_status",
-    "js_last_researched",
-    "js_employment_notes",
+    "careers_url",
+    "employer_category",
+    "employer_priority",
+    "research_status",
+    "last_researched",
+    "employment_notes",
     "globally_rejected"
   ],
   "fields": [
@@ -27,37 +27,37 @@
       "in_list_view": 1
     },
     {
-      "fieldname": "js_careers_url",
+      "fieldname": "careers_url",
       "label": "Careers URL",
       "fieldtype": "Data",
       "options": "URL"
     },
     {
-      "fieldname": "js_employer_category",
-      "label": "Js Employer Category",
+      "fieldname": "employer_category",
+      "label": "Employer Category",
       "fieldtype": "Select",
       "options": "\nStartup\nEnterprise\nNonprofit\nAgency\nGovernment\nOther"
     },
     {
-      "fieldname": "js_employer_priority",
-      "label": "Js Employer Priority",
+      "fieldname": "employer_priority",
+      "label": "Employer Priority",
       "fieldtype": "Select",
       "options": "\nLow\nMedium\nHigh"
     },
     {
-      "fieldname": "js_research_status",
-      "label": "Js Research Status",
+      "fieldname": "research_status",
+      "label": "Research Status",
       "fieldtype": "Select",
       "options": "\nNot Started\nIn Progress\nComplete\nStale"
     },
     {
-      "fieldname": "js_last_researched",
-      "label": "Js Last Researched",
+      "fieldname": "last_researched",
+      "label": "Last Researched",
       "fieldtype": "Date"
     },
     {
-      "fieldname": "js_employment_notes",
-      "label": "Js Employment Notes",
+      "fieldname": "employment_notes",
+      "label": "Employment Notes",
       "fieldtype": "Text Editor"
     },
     {

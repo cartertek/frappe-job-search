@@ -29,8 +29,8 @@ class JobSearchApplication(Document):
 
         deal = require_opportunity(self.opportunity, "write")
         new_date = getdate(self.submitted_on)
-        if not deal.js_applied_on or getdate(deal.js_applied_on) < new_date:
-            deal.js_applied_on = new_date
+        if not deal.applied_on or getdate(deal.applied_on) < new_date:
+            deal.applied_on = new_date
             deal.save()
 
     def on_trash(self):

@@ -70,10 +70,10 @@ class PostingBehavior(unittest.TestCase):
         class FakeDeal:
             name = "D-1"
             organization = "Example Ltd"
-            js_job_title = "Developer"
-            js_requisition_id = "42"
-            js_latest_posting = None
-            js_posting_text = None
+            job_title = "Developer"
+            requisition_id = "42"
+            latest_posting = None
+            posting_text = None
 
             def get(self, field):
                 return getattr(self, field, None)
@@ -118,12 +118,12 @@ class TaskBehavior(unittest.TestCase):
         fake = types.ModuleType("frappe")
         fake.session = types.SimpleNamespace(user="operator@example.org")
         fake.db = types.SimpleNamespace(get_value=lambda dt, filters, field: next(
-            (r.name for r in rows if r.js_transition == filters["js_transition"]), None
+            (r.name for r in rows if r.transition == filters["transition"]), None
         ))
         fake.get_doc = lambda data: FakeDocument(data, rows)
         tasks = load_app_module("tasks.py", "test_tasks_module", fake)
-        deal = types.SimpleNamespace(js_stage="Applied", js_job_title="Engineer", name="D-1",
-             deal_owner=None, js_next_action_on="2026-10-22", js_deadline="2026-11-01")
+        deal = types.SimpleNamespace(status="Applied", job_title="Engineer", name="D-1",
+             deal_owner=None, next_action_on="2026-10-22", deadline="2026-11-01")
         transition = types.SimpleNamespace(name="T-1")
         first = tasks.create_stage_task(deal, transition)
         second = tasks.create_stage_task(deal, transition)
@@ -132,7 +132,7 @@ class TaskBehavior(unittest.TestCase):
         self.assertEqual("D-1", rows[0].opportunity)
         self.assertEqual("2026-10-22", rows[0].due_date)
         self.assertEqual("operator@example.org", rows[0].assigned_to)
-        deal.js_stage = "Closed"
+        deal.status = "Closed"
         self.assertIsNone(tasks.create_stage_task(deal, types.SimpleNamespace(name="T-2")))
         self.assertEqual(1, len(rows))
 

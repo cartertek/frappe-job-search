@@ -29,7 +29,7 @@ def follow_up_queue(horizon=14):
     if not 0 <= horizon <= 365:
         frappe.throw("Horizon must be between 0 and 365 days")
     deals = frappe.get_list("Job Search Opportunity", filters={},
-        fields=["name", "js_job_title", "organization"], limit_page_length=1000)
+        fields=["name", "job_title", "organization"], limit_page_length=1000)
     names = {d.name for d in deals}
     tasks = frappe.get_list("Job Search Task", filters={
         "status": ["not in", ["Done", "Canceled"]],
@@ -50,8 +50,8 @@ def research_queue(stale_after_days=90):
     stale_after_days = int(stale_after_days)
     if not 1 <= stale_after_days <= 3650:
         frappe.throw("Research freshness threshold must be between 1 and 3650 days")
-    deals = frappe.get_list("Job Search Opportunity", filters={        "js_stage": ["in", OPEN_STAGES]},
-        fields=["name", "organization", "js_job_title", "js_stage", "js_priority"],
+    deals = frappe.get_list("Job Search Opportunity", filters={        "status": ["in", OPEN_STAGES]},
+        fields=["name", "organization", "job_title", "status", "priority"],
         limit_page_length=1000)
     research = frappe.get_list("Job Search Research",
         fields=["name", "opportunity", "organization", "status", "last_verified",
@@ -78,12 +78,12 @@ def research_queue(stale_after_days=90):
             reasons.append("No verified research")
         if stale:
             reasons.append("Research needs re-verification")
-        if d.js_stage in ("Discovered", "Researching"):
+        if d.status in ("Discovered", "Researching"):
             reasons.append("Research stage outstanding")
         if reasons:
             result.append({"opportunity": d.name, "organization": d.organization,
-                           "job_title": d.js_job_title, "stage": d.js_stage,
-                           "priority": d.js_priority, "reasons": reasons,
+                           "job_title": d.job_title, "stage": d.status,
+                           "priority": d.priority, "reasons": reasons,
                            "research_records": [r.name for r in items],
                            "stale_records": [r.name for r in stale]})
     return {"as_of": nowdate(), "stale_after_days": stale_after_days, "queue": result}

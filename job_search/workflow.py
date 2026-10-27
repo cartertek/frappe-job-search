@@ -80,7 +80,7 @@ def _validate_transition(deal, previous, next_stage):
             frappe.throw("An override must include a reason")
 
     if next_stage == "Qualified":
-        if deal.js_qualification != "Pursue" or not (deal.js_qualification_rationale or "").strip():
+        if deal.qualification != "Pursue" or not (deal.qualification_rationale or "").strip():
             frappe.throw("Qualification decision and rationale are required")
         require_decision(deal.name, "Pursue", ctx.get("decision"))
         if not override and not (_has_research(deal) and _has_completed_research_procedure(deal)):
@@ -99,11 +99,11 @@ def _validate_transition(deal, previous, next_stage):
             frappe.throw("Applied requires a submission date and identified application materials")
     if next_stage == "Interviewing" and not _count("Job Search Interview", deal.name):
         frappe.throw("Interviewing requires an interview record")
-    if next_stage == "Offer" and not (deal.js_offer_details or "").strip():
+    if next_stage == "Offer" and not (deal.offer_details or "").strip():
         frappe.throw("Offer details are required")
     if next_stage in DECISIONS and next_stage not in ("Qualified", "Applied"):
         require_decision(deal.name, DECISIONS[next_stage], ctx.get("decision"))
-    if next_stage == "Closed" and not (deal.js_closure_reason or "").strip():
+    if next_stage == "Closed" and not (deal.closure_reason or "").strip():
         frappe.throw("Closure reason is required")
     if previous in TERMINAL and next_stage == "Researching" and not override:
         frappe.throw("Reopening a terminal opportunity requires an approved exception")
@@ -112,16 +112,16 @@ def _validate_transition(deal, previous, next_stage):
 
 def validate_deal(doc, method=None):
     old = doc.get_doc_before_save() if not doc.is_new() else None
-    if not doc.organization or not (doc.get("js_job_title") or "").strip():
+    if not doc.organization or not (doc.get("job_title") or "").strip():
         frappe.throw("A Job Search opportunity requires an employer and job title")
-    old_stage = old.get("js_stage") if old else None
-    stage = doc.get("js_stage") or ("Discovered" if not old else old_stage)
+    old_stage = old.get("status") if old else None
+    stage = doc.get("status") or ("Discovered" if not old else old_stage)
     # The standalone DocType owns its stage; status is read-only derived metadata.
     if stage not in STAGES:
         frappe.throw("Invalid Job Search status")
     if doc.is_new() and stage != "Discovered":
         frappe.throw("A new opportunity must begin in Discovered")
-    doc.js_stage = stage
+    doc.status = stage
     if old_stage and old_stage != stage:
         _validate_transition(doc, old_stage, stage)
 
@@ -129,8 +129,8 @@ def validate_deal(doc, method=None):
 def record_transition(doc, method=None):
     """Only server hooks can create a transition record; cover direct REST writes."""
     previous = doc.get_doc_before_save()
-    old_stage = previous.get("js_stage") if previous else ""
-    new_stage = doc.get("js_stage")
+    old_stage = previous.get("status") if previous else ""
+    new_stage = doc.get("status")
     if old_stage == new_stage:
         return
     ctx = getattr(frappe.flags, "job_search_transition_context", None) or {}

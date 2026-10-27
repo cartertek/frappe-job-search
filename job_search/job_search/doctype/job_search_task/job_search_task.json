@@ -15,7 +15,7 @@
     "priority",
     "due_date",
     "description",
-    "js_transition"
+    "transition"
   ],
   "fields": [
     {
@@ -62,7 +62,7 @@
       "fieldtype": "Text Editor"
     },
     {
-      "fieldname": "js_transition",
+      "fieldname": "transition",
       "label": "Transition",
       "fieldtype": "Link",
       "options": "Job Search Transition"

@@ -11,10 +11,10 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def obj(**kwargs):
-    fields = dict(js_job_title='Python Engineer', js_location='Portland, OR',
-                  js_employment_type='Full Time', js_work_arrangement='Remote',
-                  js_seniority='Senior', js_posted_on='2026-10-01', js_compensation_min=130000,
-                  js_currency='USD', js_compensation_period='Year')
+    fields = dict(job_title='Python Engineer', location='Portland, OR',
+                  employment_type='Full Time', work_arrangement='Remote',
+                  seniority='Senior', posted_on='2026-10-01', compensation_min=130000,
+                  currency='USD', compensation_period='Year')
     fields.update(kwargs)
     return types.SimpleNamespace(**fields)
 
@@ -49,27 +49,27 @@ class SearchRules(unittest.TestCase):
 
     def test_deterministic_all_filters(self):
         self.assertTrue(self.module.matches(obj(), search()))
-        for change in [dict(js_job_title='Designer'), dict(js_location='Austin'),
-                       dict(js_employment_type='Contract'), dict(js_work_arrangement='Hybrid'),
-                       dict(js_seniority='Junior'), dict(js_posted_on=None),
-                       dict(js_compensation_min=None), dict(js_compensation_min=115000),
-                       dict(js_currency='EUR'), dict(js_compensation_period='Hour')]:
+        for change in [dict(job_title='Designer'), dict(location='Austin'),
+                       dict(employment_type='Contract'), dict(work_arrangement='Hybrid'),
+                       dict(seniority='Junior'), dict(posted_on=None),
+                       dict(compensation_min=None), dict(compensation_min=115000),
+                       dict(currency='EUR'), dict(compensation_period='Hour')]:
             with self.subTest(change=change):
                 self.assertFalse(self.module.matches(obj(**change), search()))
 
     def test_exact_title_and_location(self):
         self.assertTrue(self.module.matches(obj(), search()))
-        self.assertFalse(self.module.matches(obj(js_job_title='Senior Python Engineer'), search()))
-        self.assertFalse(self.module.matches(obj(js_location='Portland, OR, USA'), search()))
+        self.assertFalse(self.module.matches(obj(job_title='Senior Python Engineer'), search()))
+        self.assertFalse(self.module.matches(obj(location='Portland, OR, USA'), search()))
         self.assertTrue(self.module.matches(
-            obj(js_job_title='PYTHON ENGINEER', js_location=' portland, or '), search()
+            obj(job_title='PYTHON ENGINEER', location=' portland, or '), search()
         ))
 
     def test_multiple_titles_match_any_full_title(self):
         criteria = search(title_matches='Frontend Developer\nPython Engineer\nSoftware Engineer')
         self.assertTrue(self.module.matches(obj(), criteria))
-        self.assertTrue(self.module.matches(obj(js_job_title='Software Engineer'), criteria))
-        self.assertFalse(self.module.matches(obj(js_job_title='Senior Software Engineer'), criteria))
+        self.assertTrue(self.module.matches(obj(job_title='Software Engineer'), criteria))
+        self.assertFalse(self.module.matches(obj(job_title='Senior Software Engineer'), criteria))
         self.assertTrue(self.module.matches(obj(), search(title_matches='\n  Python Engineer  \n\n')))
 
     def test_no_filters(self):
@@ -78,12 +78,12 @@ class SearchRules(unittest.TestCase):
     def test_global_and_explicit_precedence(self):
         from types import SimpleNamespace as NS
         module = self.module
-        jobs = [dict(vars(obj()), name='a', organization='one', globally_rejected=0, js_stage='Discovered'),
-                dict(vars(obj(js_job_title='Designer')), name='b', organization='one',
-                     globally_rejected=0, js_stage='Discovered'),
-                dict(vars(obj()), name='c', organization='two', globally_rejected=1, js_stage='Discovered'),
+        jobs = [dict(vars(obj()), name='a', organization='one', globally_rejected=0, status='Discovered'),
+                dict(vars(obj(job_title='Designer')), name='b', organization='one',
+                     globally_rejected=0, status='Discovered'),
+                dict(vars(obj()), name='c', organization='two', globally_rejected=1, status='Discovered'),
                 dict(vars(obj()), name='d', organization='blocked',
-                     globally_rejected=0, js_stage='Discovered')]
+                     globally_rejected=0, status='Discovered')]
         class Row(dict):
             __getattr__ = dict.get
         dataset = [Row(x) for x in jobs]

@@ -1,5 +1,14 @@
 frappe.ui.form.on('Job Search Opportunity', {
   refresh(frm) {
+    if (frm.doc.status) {
+      const indicators = {
+        Discovered: 'blue', Researching: 'orange', Qualified: 'green',
+        Preparing: 'blue', Applied: 'blue', Screening: 'orange',
+        Interviewing: 'orange', Offer: 'purple', Accepted: 'green',
+        Rejected: 'red', Withdrawn: 'gray', Closed: 'gray',
+      };
+      frm.page.set_indicator(__(frm.doc.status), indicators[frm.doc.status] || 'blue');
+    }
     if (frm.is_new()) return;
     if (!frm.doc.globally_rejected) {
       frm.add_custom_button(__('Reject Job Globally'), async () => {
@@ -9,14 +18,14 @@ frappe.ui.form.on('Job Search Opportunity', {
         });
       });
     }
-    if (frm.doc.js_review_status === 'Pending') {
+    if (frm.doc.review_status === 'Pending') {
       const choices = {
         'Pursue or Decline': ['Pursue', 'Decline'],
         'Authorize or Decline Application': ['Authorize Application', 'Decline Application'],
         'Accept or Reject Offer': ['Accept Offer', 'Reject Offer'],
         'Withdraw': ['Withdraw'],
         'Override': ['Override'],
-      }[frm.doc.js_review_request] || [];
+      }[frm.doc.review_request] || [];
       if (choices.length) {
         frm.add_custom_button(__('Record Decision'), () => {
           const dialog = new frappe.ui.Dialog({

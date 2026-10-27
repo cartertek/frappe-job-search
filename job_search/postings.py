@@ -30,9 +30,9 @@ def capture_posting(opportunity, *, description, source_name, source_url=None,
                                  ["name", "content_hash"], order_by="creation desc", as_dict=True)
     digest = content_hash(description)
     if latest and latest.content_hash == digest:
-        if deal.get("js_latest_posting") != latest.name:
-            deal.js_posting_text = description
-            deal.js_latest_posting = latest.name
+        if deal.get("latest_posting") != latest.name:
+            deal.posting_text = description
+            deal.latest_posting = latest.name
             deal.save()
         return {"posting": latest.name, "created": False}
     # If text changed and later reverted, preserve the third observation as a new revision.
@@ -40,15 +40,15 @@ def capture_posting(opportunity, *, description, source_name, source_url=None,
     entry = frappe.get_doc({
         "doctype": "Job Search Posting", "opportunity": deal.name,
         "organization": deal.organization, "source_name": source_name,
-        "source_url": source_url, "posting_title": posting_title or deal.js_job_title,
-        "requisition_id": requisition_id or deal.js_requisition_id,
+        "source_url": source_url, "posting_title": posting_title or deal.job_title,
+        "requisition_id": requisition_id or deal.requisition_id,
         "description": description, "snapshot": snapshot,
         "supersedes": preceding, "retrieved_on": now_datetime(),
         "first_observed": nowdate(), "last_observed": nowdate(), "status": "Unknown",
     }).insert()
     # Publish the latest immutable capture into the human's Job Search Opportunity Data tab.
     # Older versions stay in Job Search Posting and are never overwritten.
-    deal.js_posting_text = description
-    deal.js_latest_posting = entry.name
+    deal.posting_text = description
+    deal.latest_posting = entry.name
     deal.save()
     return {"posting": entry.name, "created": True, "supersedes": preceding}

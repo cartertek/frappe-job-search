@@ -8,52 +8,60 @@
   "autoname": "hash",
   "track_changes": 1,
   "field_order": [
+    "status",
     "organization",
     "deal_owner",
-    "js_job_title",
-    "js_posting_url",
-    "js_requisition_id",
-    "js_employment_type",
-    "js_work_arrangement",
-    "js_location",
-    "js_compensation_min",
-    "js_compensation_max",
-    "js_currency",
-    "js_compensation_period",
-    "js_seniority",
-    "js_discovered_on",
-    "js_posted_on",
-    "js_deadline",
-    "js_qualification",
-    "js_qualification_rationale",
-    "js_applied_on",
-    "js_next_action_on",
-    "js_priority",
-    "js_stage",
-    "js_closure_reason",
-    "js_offer_details",
-    "js_posting_digest",
-    "js_research_digest",
-    "js_agent_recommendation",
-    "js_application_review",
-    "js_interview_brief",
-    "js_human_feedback",
-    "js_human_action",
-    "js_human_action_rationale",
-    "js_review_request",
-    "js_review_status",
-    "js_review_assigned_to",
-    "js_review_task",
-    "js_posting_text",
-    "js_latest_posting",
-    "js_last_decision",
-    "js_last_decision_record",
-    "js_latest_application",
-    "js_interview_schedule",
-    "js_review_assignment",
+    "job_title",
+    "posting_url",
+    "requisition_id",
+    "employment_type",
+    "work_arrangement",
+    "location",
+    "compensation_min",
+    "compensation_max",
+    "currency",
+    "compensation_period",
+    "seniority",
+    "discovered_on",
+    "posted_on",
+    "deadline",
+    "qualification",
+    "qualification_rationale",
+    "applied_on",
+    "next_action_on",
+    "priority",
+    "closure_reason",
+    "offer_details",
+    "posting_digest",
+    "research_digest",
+    "agent_recommendation",
+    "application_review",
+    "interview_brief",
+    "human_feedback",
+    "human_action",
+    "human_action_rationale",
+    "review_request",
+    "review_status",
+    "review_assigned_to",
+    "review_task",
+    "posting_text",
+    "latest_posting",
+    "last_decision",
+    "last_decision_record",
+    "latest_application",
+    "interview_schedule",
+    "review_assignment",
     "globally_rejected"
   ],
   "fields": [
+    {
+      "fieldname": "status",
+      "label": "Status",
+      "fieldtype": "Select",
+      "options": "Discovered\nResearching\nQualified\nPreparing\nApplied\nScreening\nInterviewing\nOffer\nAccepted\nRejected\nWithdrawn\nClosed",
+      "in_list_view": 1,
+      "in_standard_filter": 1
+    },
     {
       "fieldname": "organization",
       "fieldtype": "Link",
@@ -69,235 +77,228 @@
       "label": "Owner"
     },
     {
-      "fieldname": "js_job_title",
+      "fieldname": "job_title",
       "label": "Job Title",
       "fieldtype": "Data",
       "reqd": 0
     },
     {
-      "fieldname": "js_posting_url",
+      "fieldname": "posting_url",
       "label": "Job Posting URL",
       "fieldtype": "Data",
       "options": "URL"
     },
     {
-      "fieldname": "js_requisition_id",
+      "fieldname": "requisition_id",
       "label": "Requisition ID",
       "fieldtype": "Data"
     },
     {
-      "fieldname": "js_employment_type",
-      "label": "Js Employment Type",
+      "fieldname": "employment_type",
+      "label": "Employment Type",
       "fieldtype": "Select",
       "options": "\nFull Time\nPart Time\nContract\nTemporary\nInternship"
     },
     {
-      "fieldname": "js_work_arrangement",
-      "label": "Js Work Arrangement",
+      "fieldname": "work_arrangement",
+      "label": "Work Arrangement",
       "fieldtype": "Select",
       "options": "\nRemote\nHybrid\nOn Site"
     },
     {
-      "fieldname": "js_location",
-      "label": "Js Location",
+      "fieldname": "location",
+      "label": "Location",
       "fieldtype": "Data"
     },
     {
-      "fieldname": "js_compensation_min",
-      "label": "Js Compensation Min",
+      "fieldname": "compensation_min",
+      "label": "Compensation Min",
       "fieldtype": "Currency",
-      "options": "js_currency"
+      "options": "currency"
     },
     {
-      "fieldname": "js_compensation_max",
-      "label": "Js Compensation Max",
+      "fieldname": "compensation_max",
+      "label": "Compensation Max",
       "fieldtype": "Currency",
-      "options": "js_currency"
+      "options": "currency"
     },
     {
-      "fieldname": "js_currency",
-      "label": "Js Currency",
+      "fieldname": "currency",
+      "label": "Currency",
       "fieldtype": "Link",
       "options": "Currency"
     },
     {
-      "fieldname": "js_compensation_period",
-      "label": "Js Compensation Period",
+      "fieldname": "compensation_period",
+      "label": "Compensation Period",
       "fieldtype": "Select",
       "options": "\nYear\nMonth\nHour\nProject"
     },
     {
-      "fieldname": "js_seniority",
-      "label": "Js Seniority",
+      "fieldname": "seniority",
+      "label": "Seniority",
       "fieldtype": "Select",
       "options": "\nJunior\nMid\nSenior\nStaff\nPrincipal\nLead\nManager\nDirector\nExecutive"
     },
     {
-      "fieldname": "js_discovered_on",
-      "label": "Js Discovered On",
+      "fieldname": "discovered_on",
+      "label": "Discovered On",
       "fieldtype": "Date"
     },
     {
-      "fieldname": "js_posted_on",
-      "label": "Js Posted On",
+      "fieldname": "posted_on",
+      "label": "Posted On",
       "fieldtype": "Date"
     },
     {
-      "fieldname": "js_deadline",
-      "label": "Js Deadline",
+      "fieldname": "deadline",
+      "label": "Deadline",
       "fieldtype": "Date"
     },
     {
-      "fieldname": "js_qualification",
-      "label": "Js Qualification",
+      "fieldname": "qualification",
+      "label": "Qualification",
       "fieldtype": "Select",
       "options": "\nUndecided\nPursue\nHold\nReject"
     },
     {
-      "fieldname": "js_qualification_rationale",
-      "label": "Js Qualification Rationale",
+      "fieldname": "qualification_rationale",
+      "label": "Qualification Rationale",
       "fieldtype": "Small Text"
     },
     {
-      "fieldname": "js_applied_on",
-      "label": "Js Applied On",
+      "fieldname": "applied_on",
+      "label": "Applied On",
       "fieldtype": "Date"
     },
     {
-      "fieldname": "js_next_action_on",
-      "label": "Js Next Action On",
+      "fieldname": "next_action_on",
+      "label": "Next Action On",
       "fieldtype": "Date"
     },
     {
-      "fieldname": "js_priority",
-      "label": "Js Priority",
+      "fieldname": "priority",
+      "label": "Priority",
       "fieldtype": "Select",
       "options": "\nLow\nMedium\nHigh\nCritical"
     },
     {
-      "fieldname": "js_stage",
-      "label": "Status",
-      "fieldtype": "Select",
-      "options": "Discovered\nResearching\nQualified\nPreparing\nApplied\nScreening\nInterviewing\nOffer\nAccepted\nRejected\nWithdrawn\nClosed",
-      "in_list_view": 1
-    },
-    {
-      "fieldname": "js_closure_reason",
-      "label": "Js Closure Reason",
+      "fieldname": "closure_reason",
+      "label": "Closure Reason",
       "fieldtype": "Small Text"
     },
     {
-      "fieldname": "js_offer_details",
-      "label": "Js Offer Details",
+      "fieldname": "offer_details",
+      "label": "Offer Details",
       "fieldtype": "Small Text"
     },
     {
-      "fieldname": "js_posting_digest",
+      "fieldname": "posting_digest",
       "label": "Job Description / Posting",
       "fieldtype": "Small Text"
     },
     {
-      "fieldname": "js_research_digest",
+      "fieldname": "research_digest",
       "label": "Research Findings & Sources",
       "fieldtype": "Text Editor"
     },
     {
-      "fieldname": "js_agent_recommendation",
+      "fieldname": "agent_recommendation",
       "label": "Agent Recommendation",
       "fieldtype": "Text Editor"
     },
     {
-      "fieldname": "js_application_review",
+      "fieldname": "application_review",
       "label": "Application Materials for Review",
       "fieldtype": "Text Editor"
     },
     {
-      "fieldname": "js_interview_brief",
+      "fieldname": "interview_brief",
       "label": "Interview Preparation",
       "fieldtype": "Text Editor"
     },
     {
-      "fieldname": "js_human_feedback",
+      "fieldname": "human_feedback",
       "label": "Human Feedback / Instructions",
       "fieldtype": "Text Editor"
     },
     {
-      "fieldname": "js_human_action",
+      "fieldname": "human_action",
       "label": "Record Human Decision",
       "fieldtype": "Select",
       "options": "\nPursue\nDecline\nAuthorize Application\nDecline Application\nAccept Offer\nReject Offer\nWithdraw\nOverride",
       "hidden": 1
     },
     {
-      "fieldname": "js_human_action_rationale",
+      "fieldname": "human_action_rationale",
       "label": "Decision Rationale",
       "fieldtype": "Small Text",
       "hidden": 1
     },
     {
-      "fieldname": "js_review_request",
+      "fieldname": "review_request",
       "label": "Human Review Requested",
       "fieldtype": "Data"
     },
     {
-      "fieldname": "js_review_status",
-      "label": "Human Review Status",
+      "fieldname": "review_status",
+      "label": "Review",
       "fieldtype": "Select",
       "options": "\nPending\nCompleted"
     },
     {
-      "fieldname": "js_review_assigned_to",
+      "fieldname": "review_assigned_to",
       "label": "Human Reviewer",
       "fieldtype": "Link",
       "options": "User"
     },
     {
-      "fieldname": "js_review_task",
+      "fieldname": "review_task",
       "label": "Review Task",
       "fieldtype": "Link",
       "options": "Job Search Task",
       "read_only": 1
     },
     {
-      "fieldname": "js_posting_text",
+      "fieldname": "posting_text",
       "label": "Captured Job Posting",
       "fieldtype": "Text Editor"
     },
     {
-      "fieldname": "js_latest_posting",
+      "fieldname": "latest_posting",
       "label": "Latest Posting Revision",
       "fieldtype": "Link",
       "options": "Job Search Posting",
       "read_only": 1
     },
     {
-      "fieldname": "js_last_decision",
+      "fieldname": "last_decision",
       "label": "Last Human Decision",
       "fieldtype": "Small Text",
       "read_only": 1
     },
     {
-      "fieldname": "js_last_decision_record",
+      "fieldname": "last_decision_record",
       "label": "Latest Decision Record",
       "fieldtype": "Link",
       "options": "Job Search Decision",
       "read_only": 1
     },
     {
-      "fieldname": "js_latest_application",
+      "fieldname": "latest_application",
       "label": "Latest Application Record",
       "fieldtype": "Link",
       "options": "Job Search Application",
       "read_only": 1
     },
     {
-      "fieldname": "js_interview_schedule",
+      "fieldname": "interview_schedule",
       "label": "Interview Schedule",
       "fieldtype": "Small Text",
       "read_only": 1
     },
     {
-      "fieldname": "js_review_assignment",
+      "fieldname": "review_assignment",
       "label": "Review Assignment",
       "fieldtype": "Link",
       "options": "ToDo",
@@ -343,6 +344,6 @@
   "sort_field": "modified",
   "sort_order": "DESC",
   "actions": [],
-  "title_field": "js_job_title",
+  "title_field": "job_title",
   "show_title_field_in_link": 1
 }

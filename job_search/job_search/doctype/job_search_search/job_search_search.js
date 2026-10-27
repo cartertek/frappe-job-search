@@ -10,9 +10,9 @@ frappe.ui.form.on('Job Search Search', {
       const esc = (value) => frappe.utils.escape_html(String(value || ''));
       const rows = jobs.map(job => `
         <tr>
-          <td><a href="/desk/job-search-opportunity/${encodeURIComponent(job.name)}">${esc(job.js_job_title)}</a></td>
+          <td><a href="/desk/job-search-opportunity/${encodeURIComponent(job.name)}">${esc(job.job_title)}</a></td>
           <td>${esc(job.organization)}</td>
-          <td>${esc(job.js_location)}</td>
+          <td>${esc(job.location)}</td>
           <td>${esc(job.match_reason)}</td>
           <td><button type="button" class="btn btn-xs btn-default" data-remove="${esc(job.name)}">Remove</button></td>
         </tr>`).join('');

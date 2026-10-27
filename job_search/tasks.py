@@ -15,21 +15,21 @@ STAGE_ACTIONS = {
 
 
 def create_stage_task(deal, transition):
-    action = STAGE_ACTIONS.get(deal.js_stage)
+    action = STAGE_ACTIONS.get(deal.status)
     if not action:
         return None
     # A stable record link prevents retries from creating a second task.
-    existing = frappe.db.get_value("Job Search Task", {"js_transition": transition.name}, "name")
+    existing = frappe.db.get_value("Job Search Task", {"transition": transition.name}, "name")
     if existing:
         return existing
-    due = deal.js_next_action_on or deal.js_deadline
+    due = deal.next_action_on or deal.deadline
     doc = frappe.get_doc({
-        "doctype": "Job Search Task", "title": f"{action}: {deal.js_job_title}",
-        "status": "Todo", "priority": "High" if deal.js_stage == "Offer" else "Medium",
+        "doctype": "Job Search Task", "title": f"{action}: {deal.job_title}",
+        "status": "Todo", "priority": "High" if deal.status == "Offer" else "Medium",
         "due_date": due, "assigned_to": deal.deal_owner or frappe.session.user,
         "opportunity": deal.name,
-        "js_transition": transition.name,
-        "description": f"Generated on entry to Job Search stage {deal.js_stage}. "
+        "transition": transition.name,
+        "description": f"Generated on entry to Job Search stage {deal.status}. "
                        f"Source transition: {transition.name}. Complete or cancel as appropriate.",
     })
     doc.insert()  # Enforce Job Search Task permissions and retain the real initiating user.

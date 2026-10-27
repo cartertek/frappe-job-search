@@ -100,11 +100,11 @@ class SchemaTest(unittest.TestCase):
 
         data = json.loads((BASE / "job_search_opportunity" / "job_search_opportunity.json").read_text())
         fields = {field["fieldname"]: field for field in data["fields"]}
-        self.assertNotIn("status", fields)
-        self.assertEqual("Status", fields["js_stage"]["label"])
+        self.assertNotIn("js_stage", fields)
+        self.assertEqual("Status", fields["status"]["label"])
         workflow = (APP / "workflow.py").read_text()
         self.assertNotIn("JS: ", workflow)
-        self.assertNotIn("doc.status =", workflow)
+        self.assertNotIn("JS: ", workflow)
 
     def test_standalone_ui(self):
         hooks = (APP / "hooks.py").read_text()

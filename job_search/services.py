@@ -41,19 +41,19 @@ def register_opportunity(*, employer, title, source_url=None, description=None, 
     # Strict match. Never merge on title alone or a requisition ID alone.
     candidate_filters = {"organization": org.name}
     candidates = frappe.get_all("Job Search Opportunity", filters=candidate_filters,
-                                fields=["name", "js_job_title", "js_requisition_id", "js_location"])
-    strict = [x for x in candidates if requisition_id and x.js_requisition_id == requisition_id
-              and x.js_job_title.casefold() == title.casefold()
-              and (x.js_location or "").casefold() == (location or "").casefold()]
+                                fields=["name", "job_title", "requisition_id", "location"])
+    strict = [x for x in candidates if requisition_id and x.requisition_id == requisition_id
+              and x.job_title.casefold() == title.casefold()
+              and (x.location or "").casefold() == (location or "").casefold()]
     if len(strict) == 1:
         deal = require_opportunity(strict[0].name, "write")
         created = False
     else:
         deal = frappe.get_doc({
             "doctype": "Job Search Opportunity", "organization": org.name, "lead_name": title,
-            "js_job_title": title, "js_requisition_id": requisition_id,
-            "js_posting_url": source_url, "js_location": location,
-            "js_discovered_on": nowdate(), "js_stage": "Discovered",
+            "job_title": title, "requisition_id": requisition_id,
+            "posting_url": source_url, "location": location,
+            "discovered_on": nowdate(), "status": "Discovered",
         })
         deal.insert()
         created = True
@@ -74,7 +74,7 @@ def register_opportunity(*, employer, title, source_url=None, description=None, 
         "opportunity": deal.name, "organization": org.name,
         "posting": posting["posting"] if posting else None, "created": created,
         "possible_duplicates": [x.name for x in candidates if x.name != deal.name and
-                                (x.js_job_title or "").casefold() == title.casefold()],
+                                (x.job_title or "").casefold() == title.casefold()],
     }
 
 
@@ -161,8 +161,8 @@ def record_application(opportunity, *, submission_method, submitted_on, authoriz
     })
     application.insert()
     deal = require_opportunity(opportunity, "write")
-    deal.js_latest_application = application.name
-    deal.js_applied_on = submitted_on
+    deal.latest_application = application.name
+    deal.applied_on = submitted_on
     deal.save()
     return application.name
 
@@ -179,7 +179,7 @@ def record_interview(opportunity, *, interview_type, application=None, scheduled
     })
     doc.insert()
     deal = require_opportunity(opportunity, "write")
-    deal.js_interview_schedule = (
+    deal.interview_schedule = (
         f"{interview_type} — {scheduled_at or 'not scheduled'} "
         f"({timezone or 'timezone not set'})"
     )

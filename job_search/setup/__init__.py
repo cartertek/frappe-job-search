@@ -21,6 +21,7 @@ def after_migrate():
         frappe.get_doc({"doctype": "Job Search Procedure", **item}).insert(
             ignore_permissions=True
         )
+    migrate_prefixed_fields()
     migrate_legacy_search_filters()
     ensure_workspace()
     ensure_app_logo()
@@ -134,3 +135,90 @@ def migrate_legacy_search_filters():
                 f"UPDATE `tabJob Search Search` SET `{old}` = NULL "
                 f"WHERE `{old}` IS NOT NULL AND `{old}` != ''"
             )
+
+
+def migrate_prefixed_fields():
+    """Copy historical js_-prefixed columns to their unprefixed replacements.
+
+    Do not delete legacy columns: this is idempotent, preserving rollback data.
+    Re-runs only copy into NULL replacement cells. A dedicated migration marker
+    prevents reinstating values that users later deliberately clear.
+    """
+    mapping = {
+        'Job Search Opportunity': {
+            'js_job_title': 'job_title',
+            'js_posting_url': 'posting_url',
+            'js_requisition_id': 'requisition_id',
+            'js_employment_type': 'employment_type',
+            'js_work_arrangement': 'work_arrangement',
+            'js_location': 'location',
+            'js_compensation_min': 'compensation_min',
+            'js_compensation_max': 'compensation_max',
+            'js_currency': 'currency',
+            'js_compensation_period': 'compensation_period',
+            'js_seniority': 'seniority',
+            'js_discovered_on': 'discovered_on',
+            'js_posted_on': 'posted_on',
+            'js_deadline': 'deadline',
+            'js_qualification': 'qualification',
+            'js_qualification_rationale': 'qualification_rationale',
+            'js_applied_on': 'applied_on',
+            'js_next_action_on': 'next_action_on',
+            'js_priority': 'priority',
+            'js_stage': 'status',
+            'js_closure_reason': 'closure_reason',
+            'js_offer_details': 'offer_details',
+            'js_posting_digest': 'posting_digest',
+            'js_research_digest': 'research_digest',
+            'js_agent_recommendation': 'agent_recommendation',
+            'js_application_review': 'application_review',
+            'js_interview_brief': 'interview_brief',
+            'js_human_feedback': 'human_feedback',
+            'js_human_action': 'human_action',
+            'js_human_action_rationale': 'human_action_rationale',
+            'js_review_request': 'review_request',
+            'js_review_status': 'review_status',
+            'js_review_assigned_to': 'review_assigned_to',
+            'js_review_task': 'review_task',
+            'js_posting_text': 'posting_text',
+            'js_latest_posting': 'latest_posting',
+            'js_last_decision': 'last_decision',
+            'js_last_decision_record': 'last_decision_record',
+            'js_latest_application': 'latest_application',
+            'js_interview_schedule': 'interview_schedule',
+            'js_review_assignment': 'review_assignment',
+        },
+        'Job Search Employer': {
+            'js_careers_url': 'careers_url',
+            'js_employer_category': 'employer_category',
+            'js_employer_priority': 'employer_priority',
+            'js_research_status': 'research_status',
+            'js_last_researched': 'last_researched',
+            'js_employment_notes': 'employment_notes',
+        },
+        'Job Search Task': {
+            'js_priority': 'priority',
+            'js_stage': 'status',
+            'js_transition': 'transition',
+        },
+    }
+    marker = "job_search:prefixed_fields_copied_v1"
+    if frappe.db.get_default(marker):
+        return
+    for doctype, replacements in mapping.items():
+        columns = set(frappe.db.get_table_columns(doctype))
+        for previous, current in replacements.items():
+            if {previous, current}.issubset(columns):
+                if previous == "js_stage" and current == "status":
+                    # The old duplicate status holds values like "JS: Discovered".
+                    # Always replace it with the authoritative previous stage.
+                    frappe.db.sql(
+                        f"UPDATE `tab{doctype}` SET `status` = `js_stage` "
+                        "WHERE `js_stage` IS NOT NULL"
+                    )
+                else:
+                    frappe.db.sql(
+                        f"UPDATE `tab{doctype}` SET `{current}` = `{previous}` "
+                        f"WHERE `{current}` IS NULL AND `{previous}` IS NOT NULL"
+                    )
+    frappe.db.set_default(marker, "1")

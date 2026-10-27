@@ -14,30 +14,30 @@ def matches(job, search):
     """Pure deterministic predicate; subjective heuristics are never executed."""
     # One of the exact job titles is sufficient; location is one exact match.
     titles = [item.strip().casefold() for item in (search.title_matches or '').splitlines() if item.strip()]
-    if titles and (job.js_job_title or '').strip().casefold() not in titles:
+    if titles and (job.job_title or '').strip().casefold() not in titles:
         return False
     if search.location_match and (
-        (job.js_location or '').strip().casefold() != search.location_match.strip().casefold()
+        (job.location or '').strip().casefold() != search.location_match.strip().casefold()
     ):
         return False
     for job_value, needed in (
-        (job.js_employment_type, search.employment_type),
-        (job.js_work_arrangement, search.work_arrangement),
-        (job.js_seniority, search.seniority),
+        (job.employment_type, search.employment_type),
+        (job.work_arrangement, search.work_arrangement),
+        (job.seniority, search.seniority),
     ):
         if needed and (job_value or '').casefold() != needed.casefold():
             return False
     if search.posted_after and (
-        not job.js_posted_on or getdate(job.js_posted_on) < getdate(search.posted_after)
+        not job.posted_on or getdate(job.posted_on) < getdate(search.posted_after)
     ):
         return False
-    if search.compensation_period and job.js_compensation_period != search.compensation_period:
+    if search.compensation_period and job.compensation_period != search.compensation_period:
         return False
     if search.salary_min:
-        if search.currency and job.js_currency != search.currency:
+        if search.currency and job.currency != search.currency:
             return False
         # Unknown salary doesn't satisfy a minimum; don't silently assume it does.
-        if not job.js_compensation_min or float(job.js_compensation_min) < float(search.salary_min):
+        if not job.compensation_min or float(job.compensation_min) < float(search.salary_min):
             return False
     return True
 
@@ -47,9 +47,9 @@ def matching_jobs(search_name):
     search = require_doc(SEARCH, search_name)
     # Avoid leaking any jobs not readable to this user through membership records.
     jobs = frappe.get_list(JOB, fields=[
-        'name', 'organization', 'js_job_title', 'js_location', 'js_employment_type',
-        'js_work_arrangement', 'js_seniority', 'js_posted_on', 'js_compensation_min',
-        'js_currency', 'js_compensation_period', 'globally_rejected', 'js_stage',
+        'name', 'organization', 'job_title', 'location', 'employment_type',
+        'work_arrangement', 'seniority', 'posted_on', 'compensation_min',
+        'currency', 'compensation_period', 'globally_rejected', 'status',
     ], limit_page_length=100000)
     employers = {j.organization for j in jobs if j.organization}
     rejected = set()
