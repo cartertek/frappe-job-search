@@ -161,6 +161,13 @@ class SchemaTest(unittest.TestCase):
         setup = (APP / "setup" / "__init__.py").read_text()
         self.assertIn("migrate_heuristics_table()", setup)
 
+    def test_heuristic_template_supports_header_row(self):
+        template = (APP / "templates" / "includes" / "search_heuristic_row.html").read_text()
+        self.assertIn("{% if (doc) { %}", template)
+        self.assertIn("{% } else { %}", template)
+        self.assertIn("doc.description", template)
+        self.assertIn('__("Name and Description")', template)
+
     def test_standalone_ui(self):
         hooks = (APP / "hooks.py").read_text()
         self.assertNotIn('required_apps = ["crm"]', hooks)
