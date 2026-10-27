@@ -13,3 +13,10 @@ class JobSearchSearch(Document):
                 frappe.throw("Invalid job override")
         if self.salary_min is not None and self.salary_min < 0:
             frappe.throw("Minimum compensation cannot be negative")
+
+
+# Native Frappe non-editable child-grid row template. Unlike static grid columns,
+# templates render full rich text and remain stable after opening/closing a row.
+form_grid_templates = {
+    "heuristics": "job_search/templates/includes/search_heuristic_row.html",
+}

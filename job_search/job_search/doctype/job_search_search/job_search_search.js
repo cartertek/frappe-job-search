@@ -1,25 +1,3 @@
-// Frappe's default child grid strips rich text and truncates static cells.
-// Render a sanitized, full-height rich-text preview inside each heuristic row.
-function show_heuristic_description(gridRow) {
-  if (gridRow.grid?.df?.fieldname !== 'heuristics' || !gridRow.doc) return;
-  const column = gridRow.columns?.description;
-  if (!column?.static_area) return;
-  const html = gridRow.doc.description || '';
-  // HTML comes from Frappe's server-sanitized Text Editor field.
-  const safe = frappe.utils.sanitize_html ? frappe.utils.sanitize_html(html) : html;
-  // Frappe fixes the grid's cell heights; putting rich text inside a cell
-  // still clips it. Display the full value in a block below that row instead.
-  column.static_area.empty();
-  const wrapper = $(gridRow.wrapper).addClass('job-search-heuristic-row');
-  let preview = wrapper.children('.job-search-heuristic-preview');
-  if (!preview.length) {
-    preview = $('<div class="job-search-heuristic-preview"></div>').appendTo(wrapper);
-  }
-  preview.html(`<div class="job-search-heuristic-richtext">${safe}</div>`);
-  preview.toggle(!wrapper.hasClass('grid-row-open'));
-
-}
-
 frappe.ui.form.on('Job Search Search', {
   onload(frm) {
     if (!document.getElementById('job-search-heuristic-grid-css')) {
