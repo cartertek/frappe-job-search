@@ -1,10 +1,45 @@
 {% if (doc) { %}
-<div style="min-width:0;max-width:100%;width:100%;box-sizing:border-box;white-space:normal;overflow-wrap:anywhere;padding:4px 8px 8px;">
-  <div style="font-weight:600;margin-bottom:8px;">{%= frappe.utils.escape_html(doc.heuristic_name || "") %}</div>
-  <div class="ql-editor read-mode" style="min-width:0;max-width:100%;width:100%;box-sizing:border-box;padding:0;white-space:normal;overflow-wrap:anywhere;overflow-x:hidden;height:auto;">
-    {%= doc.description || "" %}
-  </div>
+<div class="job-search-heuristic-content">
+  <div class="job-search-heuristic-name">{%= frappe.utils.escape_html(doc.heuristic_name || "") %}</div>
+  <div class="ql-editor read-mode job-search-heuristic-description">{%= doc.description || "" %}</div>
 </div>
 {% } else { %}
-<div style="padding:4px 8px;font-weight:600;">{%= __("Research Heuristic") %}</div>
+<style>
+/* Frappe's default data-row width is max-content for horizontally scrollable
+   column grids. Template rows need a constrained width to wrap rich text. */
+.form-grid:has(.job-search-heuristic-content) .grid-row .data-row.row {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+.form-grid:has(.job-search-heuristic-content) .grid-row .template-row {
+  min-width: 0;
+  max-width: calc(100% - 30px);
+  box-sizing: border-box;
+}
+.job-search-heuristic-content {
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+.job-search-heuristic-name {font-weight: 600; margin-bottom: 8px;}
+.job-search-heuristic-description.ql-editor.read-mode {
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  max-height: none;
+  overflow-wrap: anywhere;
+  overflow-x: visible;
+  white-space: normal;
+  padding: 0;
+}
+.job-search-heuristic-description.ql-editor.read-mode p,
+.job-search-heuristic-description.ql-editor.read-mode li {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+</style>
+<div style="font-weight:600;">{%= __("Research Heuristic") %}</div>
 {% } %}
