@@ -73,7 +73,6 @@ class PostingBehavior(unittest.TestCase):
             job_title = "Developer"
             requisition_id = "42"
             latest_posting = None
-            posting_text = None
 
             def get(self, field):
                 return getattr(self, field, None)

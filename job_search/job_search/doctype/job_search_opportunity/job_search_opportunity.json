@@ -35,19 +35,11 @@
     "application_review",
     "interview_brief",
     "human_feedback",
-    "human_action",
-    "human_action_rationale",
-    "review_request",
-    "review_status",
-    "review_assigned_to",
-    "review_task",
-    "posting_text",
     "latest_posting",
     "last_decision",
     "last_decision_record",
     "latest_application",
     "interview_schedule",
-    "review_assignment",
     "globally_rejected"
   ],
   "fields": [
@@ -204,50 +196,8 @@
       "fieldtype": "Text Editor"
     },
     {
-      "fieldname": "human_action",
-      "label": "Record Human Decision",
-      "fieldtype": "Select",
-      "options": "\nPursue\nDecline\nAuthorize Application\nDecline Application\nAccept Offer\nReject Offer\nWithdraw\nOverride",
-      "hidden": 1
-    },
-    {
-      "fieldname": "human_action_rationale",
-      "label": "Decision Rationale",
-      "fieldtype": "Small Text",
-      "hidden": 1
-    },
-    {
-      "fieldname": "review_request",
-      "label": "Human Review Requested",
-      "fieldtype": "Data"
-    },
-    {
-      "fieldname": "review_status",
-      "label": "Review",
-      "fieldtype": "Select",
-      "options": "\nPending\nCompleted"
-    },
-    {
-      "fieldname": "review_assigned_to",
-      "label": "Human Reviewer",
-      "fieldtype": "Link",
-      "options": "User"
-    },
-    {
-      "fieldname": "review_task",
-      "label": "Review Task",
-      "fieldtype": "Link",
-      "options": "Job Search Task",
-      "read_only": 1
-    },
-    {
-      "fieldname": "posting_text",
-      "label": "Captured Job Posting",
-      "fieldtype": "Text Editor"
-    },
-    {
       "fieldname": "latest_posting",
-      "label": "Latest Posting Revision",
+      "label": "Job Posting",
       "fieldtype": "Link",
       "options": "Job Search Posting",
       "read_only": 1
@@ -276,13 +226,6 @@
       "fieldname": "interview_schedule",
       "label": "Interview Schedule",
       "fieldtype": "Small Text",
-      "read_only": 1
-    },
-    {
-      "fieldname": "review_assignment",
-      "label": "Review Assignment",
-      "fieldtype": "Link",
-      "options": "ToDo",
       "read_only": 1
     },
     {

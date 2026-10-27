@@ -126,13 +126,25 @@ class SchemaTest(unittest.TestCase):
 
         data = json.loads((BASE / "job_search_opportunity" / "job_search_opportunity.json").read_text())
         field_names = {f["fieldname"] for f in data["fields"]}
-        self.assertTrue({"status", "review_assigned_to"}.issubset(field_names))
+        self.assertTrue({"status", "latest_posting"}.issubset(field_names))
         self.assertFalse({"deal_owner", "qualification", "qualification_rationale"} & field_names)
         workflow = (APP / "workflow.py").read_text()
         self.assertIn('require_decision(deal.name, "Pursue"', workflow)
         self.assertNotIn('deal.qualification', workflow)
         tasks = (APP / "tasks.py").read_text()
         self.assertNotIn('deal.deal_owner', tasks)
+
+    def test_no_duplicate_review_or_posting_fields(self):
+        import json
+
+        schema = json.loads((BASE / "job_search_opportunity" / "job_search_opportunity.json").read_text())
+        fields = {f["fieldname"] for f in schema["fields"]}
+        obsolete = {"review_request", "review_status", "review_assigned_to", "review_task",
+                    "review_assignment", "human_action", "human_action_rationale", "posting_text"}
+        self.assertFalse(fields & obsolete)
+        self.assertIn("latest_posting", fields)
+        self.assertEqual("Job Posting", next(f["label"] for f in schema["fields"]
+                         if f["fieldname"] == "latest_posting"))
 
     def test_standalone_ui(self):
         hooks = (APP / "hooks.py").read_text()

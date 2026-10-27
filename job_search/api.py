@@ -286,21 +286,19 @@ def publish_human_review(opportunity, posting_digest=None, research_digest=None,
 
 @frappe.whitelist()
 def get_human_action_queue():
-    """Permission-scoped pending human reviews, without guessing from CRM stages."""
+    """Pending review tasks, rather than a duplicate status on each Job."""
     require_operator()
-    rows = frappe.get_list("Job Search Opportunity", filters={
-        "review_status": "Pending",
-    }, fields=[
-        "name", "organization", "job_title", "status", "review_request",
-        "review_assigned_to", "review_task", "agent_recommendation",
-        "application_review", "next_action_on", "deadline",
-    ], limit_page_length=500)
-    return success({"queue": [dict(**row, action_required=row.review_request) for row in rows]})
+    tasks = frappe.get_list("Job Search Task", filters={
+        "status": ["not in", ["Done", "Canceled"]],
+        "title": ["like", "Human review:%"],
+    }, fields=["name", "opportunity", "assigned_to", "title", "status", "due_date"],
+        limit_page_length=500)
+    return success({"queue": tasks})
 
 
 @frappe.whitelist()
 def request_human_review(opportunity, requested_action, reviewer, summary, due_date=None):
-    """Create a CRM-native pending review and a task for an actual human approver."""
+    """Create a native review task and assignment without another Job status."""
     require_operator()
     deal = require_opportunity(opportunity, "write")
     if not (summary or "").strip():
@@ -308,55 +306,54 @@ def request_human_review(opportunity, requested_action, reviewer, summary, due_d
     if requested_action not in ("Pursue or Decline", "Authorize or Decline Application",
                                 "Accept or Reject Offer", "Withdraw", "Override"):
         frappe.throw("Invalid human review request")
-    reviewer_roles = set(frappe.get_roles(reviewer))
-    if not {"Job Search Approver", "System Manager"}.intersection(reviewer_roles):
+    if not {"Job Search Approver", "System Manager"}.intersection(frappe.get_roles(reviewer)):
         frappe.throw("Reviewer must have the human approver role", frappe.PermissionError)
     if not frappe.db.exists("User", {"name": reviewer, "enabled": 1}):
         frappe.throw("Reviewer must be an enabled user")
-    if deal.review_status == "Pending":
-        frappe.throw("This opportunity already has a pending human review")
-    deal.review_request = requested_action
-    deal.review_status = "Pending"
-    deal.review_assigned_to = reviewer
-    deal.agent_recommendation = summary
-    deal.save()
     task = frappe.get_doc({
         "doctype": "Job Search Task", "title": f"Human review: {deal.job_title}",
         "assigned_to": reviewer, "status": "Todo", "priority": "High",
         "due_date": due_date or deal.next_action_on or deal.deadline,
         "opportunity": deal.name,
-        "description": f"{requested_action}: {summary}. Review the Job Search Opportunity Data tab, "
-                       "then record a human decision and rationale.",
+        "description": f"{requested_action}: {summary}",
     }).insert()
-    # Use Frappe's native ToDo assignment so the reviewer sees the work item.
     from frappe.desk.form.assign_to import add as assign_deal
 
-    assignments = assign_deal({
+    assign_deal({
         "doctype": "Job Search Opportunity", "name": deal.name, "assign_to": [reviewer],
         "description": f"Job Search human review: {requested_action}",
     })
-    assignment = next((row.name for row in assignments if row.owner == reviewer), None)
-    if not assignment:
-        frappe.throw("Could not assign opportunity to human reviewer")
-    deal.review_assignment = assignment
-    deal.review_task = task.name
-    deal.save()
     return success({"opportunity": deal.name, "task": task.name,
                     "reviewer": reviewer, "requested_action": requested_action})
 
 
 @frappe.whitelist()
 def record_human_decision(opportunity, decision, rationale):
-    """Submit the one-time CRM action, without exposing its fields in Data."""
+    """Persist the actual signed-in approver's immutable decision."""
     require_approver()
     deal = require_opportunity(opportunity, "write")
-    if deal.review_status != "Pending":
-        frappe.throw("There is no pending review. Refresh the Deal before retrying")
-    deal.human_action = decision
-    deal.human_action_rationale = rationale
-    deal.save()
-    return success({"opportunity": deal.name, "decision": deal.last_decision_record,
-                    "stage": frappe.db.get_value("Job Search Opportunity", deal.name, "status")})
+    if not (rationale or "").strip():
+        frappe.throw("Decision rationale required")
+    from job_search.human import DECISION_OPTIONS
+
+    if decision not in DECISION_OPTIONS:
+        frappe.throw("Invalid human decision")
+    record = frappe.get_doc({
+        "doctype": "Job Search Decision", "opportunity": deal.name,
+        "decision": decision, "rationale": rationale.strip(),
+    }).insert()
+    deal.db_set("last_decision_record", record.name, update_modified=False)
+    deal.db_set("last_decision", f"{decision}: {rationale.strip()}"[:1000], update_modified=False)
+    # Close only review work assigned to this actual approver.
+    tasks = frappe.get_list("Job Search Task", filters={
+        "opportunity": deal.name, "assigned_to": frappe.session.user,
+        "status": ["not in", ["Done", "Canceled"]], "title": ["like", "Human review:%"],
+    }, pluck="name")
+    for name in tasks:
+        task = frappe.get_doc("Job Search Task", name)
+        task.status = "Done"
+        task.save()
+    return success({"opportunity": deal.name, "decision": record.name, "stage": deal.status})
 
 
 @frappe.whitelist()

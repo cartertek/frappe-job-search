@@ -27,7 +27,6 @@ fixtures = [{"dt": "Role", "filters": [["name", "in", ["Job Search Operator", "J
 doc_events = {
     "Job Search Opportunity": {
         "validate": "job_search.workflow.validate_deal",
-        "before_save": "job_search.human.validate_human_action",
-        "on_update": ["job_search.workflow.record_transition", "job_search.human.save_human_action"],
+        "on_update": "job_search.workflow.record_transition",
     }
 }

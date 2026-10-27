@@ -31,7 +31,6 @@ def capture_posting(opportunity, *, description, source_name, source_url=None,
     digest = content_hash(description)
     if latest and latest.content_hash == digest:
         if deal.get("latest_posting") != latest.name:
-            deal.posting_text = description
             deal.latest_posting = latest.name
             deal.save()
         return {"posting": latest.name, "created": False}
@@ -46,9 +45,7 @@ def capture_posting(opportunity, *, description, source_name, source_url=None,
         "supersedes": preceding, "retrieved_on": now_datetime(),
         "first_observed": nowdate(), "last_observed": nowdate(), "status": "Unknown",
     }).insert()
-    # Publish the latest immutable capture into the human's Job Search Opportunity Data tab.
-    # Older versions stay in Job Search Posting and are never overwritten.
-    deal.posting_text = description
+    # Link the immutable latest revision; its description is the single source of truth.
     deal.latest_posting = entry.name
     deal.save()
     return {"posting": entry.name, "created": True, "supersedes": preceding}
