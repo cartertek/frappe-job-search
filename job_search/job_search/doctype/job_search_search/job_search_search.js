@@ -7,20 +7,28 @@ function show_heuristic_description(gridRow) {
   const html = gridRow.doc.description || '';
   // HTML comes from Frappe's server-sanitized Text Editor field.
   const safe = frappe.utils.sanitize_html ? frappe.utils.sanitize_html(html) : html;
-  column.static_area.removeClass('ellipsis')
-    .html(`<div class="job-search-heuristic-richtext">${safe}</div>`);
-  $(gridRow.row).addClass('job-search-heuristic-row');
+  // Frappe fixes the grid's cell heights; putting rich text inside a cell
+  // still clips it. Display the full value in a block below that row instead.
+  column.static_area.empty();
+  const wrapper = $(gridRow.wrapper).addClass('job-search-heuristic-row');
+  let preview = wrapper.children('.job-search-heuristic-preview');
+  if (!preview.length) {
+    preview = $('<div class="job-search-heuristic-preview"></div>').appendTo(wrapper);
+  }
+  preview.html(`<div class="job-search-heuristic-richtext">${safe}</div>`);
+  preview.toggle(!wrapper.hasClass('grid-row-open'));
+
 }
 
 frappe.ui.form.on('Job Search Search', {
   onload(frm) {
     if (!document.getElementById('job-search-heuristic-grid-css')) {
       $('<style id="job-search-heuristic-grid-css">' +
-        '.job-search-heuristic-row, .job-search-heuristic-row .grid-static-col {' +
-        'height:auto!important;min-height:38px;align-items:flex-start!important}' +
-        '.job-search-heuristic-row .static-area {' +
-        'height:auto!important;max-height:none!important;overflow:visible!important;' +
-        'white-space:normal!important;text-overflow:clip!important}' +
+        '.job-search-heuristic-preview {padding:8px 16px 12px 56px;' +
+        'border-top:1px solid var(--border-color);overflow:visible;' +
+        'height:auto!important;max-height:none!important}' +
+        '.job-search-heuristic-row.grid-row-open .job-search-heuristic-preview {' +
+        'display:none!important}' +
         '.job-search-heuristic-richtext {white-space:normal;overflow-wrap:anywhere;' +
         'line-height:1.5;padding:4px 0}' +
         '.job-search-heuristic-richtext p {margin:0 0 6px}' +
