@@ -91,9 +91,10 @@
     },
     {
       "fieldname": "heuristics",
-      "label": "Researcher Heuristics",
-      "fieldtype": "Text Editor",
-      "description": "Subjective instructions for the researcher; never interpreted as deterministic SQL filters."
+      "label": "Research Heuristics",
+      "fieldtype": "Table",
+      "description": "Subjective research criteria. Each row has a name and a description; these instructions are evaluated by the researcher, not by deterministic filters.",
+      "options": "Job Search Heuristic"
     },
     {
       "fieldname": "require_heuristics",

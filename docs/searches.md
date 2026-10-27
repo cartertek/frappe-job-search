@@ -10,7 +10,7 @@ By default, all non-rejected jobs matching these filters appear in the search. C
 
 ## Subjective heuristics
 
-`Researcher Heuristics` contains instructions to the researching agent for subjective criteria. The application does **not** pretend to evaluate those instructions deterministically. When `Require Explicit Heuristic Approval` is enabled, only jobs explicitly added via an **Include** override appear in the search. The agent must evaluate the instructions and explicitly include jobs using the API or the Overrides table.
+`Research Heuristics` is a child table on each search. Each row has a required **Name** and **Description**, recording an individual subjective criterion for the researching agent. The application does **not** pretend to evaluate those instructions deterministically. When `Require Explicit Heuristic Approval` is enabled, only jobs explicitly added via an **Include** override appear in the search. The agent must evaluate the instructions and explicitly include jobs using the API or the Overrides table.
 
 ## Override and rejection precedence
 

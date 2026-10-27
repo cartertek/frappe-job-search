@@ -24,6 +24,7 @@ def after_migrate():
     migrate_prefixed_fields()
     migrate_workflow_statuses()
     migrate_legacy_search_filters()
+    migrate_heuristics_table()
     ensure_workspace()
     ensure_app_logo()
     frappe.clear_cache()
@@ -242,3 +243,31 @@ def migrate_workflow_statuses():
             "UPDATE `tabJob Search Opportunity` SET status=%s WHERE status=%s", (new, old)
         )
     frappe.db.set_default(marker, "1")
+
+
+def migrate_heuristics_table():
+    """Preserve old free-text instructions as a named heuristic child row.
+
+    The old SQL column is kept for rollback. The migration is idempotent and
+    never overwrites manually edited child rows.
+    """
+    if "heuristics" not in frappe.db.get_table_columns("Job Search Search"):
+        return
+    if not frappe.db.exists("DocType", "Job Search Heuristic"):
+        return
+    existing = frappe.db.sql(
+        "SELECT name, heuristics FROM `tabJob Search Search` "
+        "WHERE COALESCE(heuristics, '') != ''", as_dict=True
+    )
+    for record in existing:
+        if frappe.db.exists("Job Search Heuristic", {
+            "parent": record.name, "parenttype": "Job Search Search",
+            "parentfield": "heuristics",
+        }):
+            continue
+        doc = frappe.get_doc("Job Search Search", record.name)
+        doc.append("heuristics", {
+            "heuristic_name": "Existing Research Heuristics",
+            "description": record.heuristics,
+        })
+        doc.save(ignore_permissions=True)

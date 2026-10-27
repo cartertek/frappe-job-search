@@ -16,8 +16,10 @@ EXPECTED = {
     "Job Search Application", "Job Search Interview", "Job Search Interview Contact",
     "Job Search Decision", "Job Search Transition", "Job Search Opportunity",
     "Job Search Employer", "Job Search Task", "Job Search Search", "Job Search Membership",
+    "Job Search Heuristic",
 }
-CHILD = {"Job Search Research Source", "Job Search Procedure Step",
+CHILD = {"Job Search Heuristic",
+         "Job Search Research Source", "Job Search Procedure Step",
          "Job Search Execution Step", "Job Search Interview Contact", "Job Search Membership"}
 
 
@@ -145,6 +147,19 @@ class SchemaTest(unittest.TestCase):
         self.assertIn("latest_posting", fields)
         self.assertEqual("Job Posting", next(f["label"] for f in schema["fields"]
                          if f["fieldname"] == "latest_posting"))
+
+    def test_heuristics_are_named_child_rows(self):
+        import json
+
+        search = json.loads((BASE / "job_search_search" / "job_search_search.json").read_text())
+        field = next(f for f in search["fields"] if f["fieldname"] == "heuristics")
+        self.assertEqual((field["fieldtype"], field["options"]),
+                         ("Table", "Job Search Heuristic"))
+        heuristic = json.loads((BASE / "job_search_heuristic" / "job_search_heuristic.json").read_text())
+        self.assertEqual(heuristic["field_order"], ["heuristic_name", "description"])
+        self.assertTrue(all(f["reqd"] for f in heuristic["fields"]))
+        setup = (APP / "setup" / "__init__.py").read_text()
+        self.assertIn("migrate_heuristics_table()", setup)
 
     def test_standalone_ui(self):
         hooks = (APP / "hooks.py").read_text()
