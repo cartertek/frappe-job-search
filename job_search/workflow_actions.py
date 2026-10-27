@@ -65,8 +65,6 @@ def perform_action(opportunity, action, rationale=None, scope=None, search=None,
     if action == "qualify":
         if not (_has_research(job) and _has_completed_research_procedure(job)):
             frappe.throw("Complete cited research and a research procedure before qualifying")
-        job.qualification = "Pursue"
-        job.qualification_rationale = rationale
         _decision(job, "Pursue", rationale)
     elif action == "accept_offer":
         if offer_details:

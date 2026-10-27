@@ -10,7 +10,6 @@
   "field_order": [
     "status",
     "organization",
-    "deal_owner",
     "job_title",
     "posting_url",
     "requisition_id",
@@ -25,8 +24,6 @@
     "discovered_on",
     "posted_on",
     "deadline",
-    "qualification",
-    "qualification_rationale",
     "applied_on",
     "next_action_on",
     "priority",
@@ -70,12 +67,6 @@
       "label": "Employer",
       "reqd": 1,
       "in_list_view": 1
-    },
-    {
-      "fieldname": "deal_owner",
-      "fieldtype": "Link",
-      "options": "User",
-      "label": "Owner"
     },
     {
       "fieldname": "job_title",
@@ -155,17 +146,6 @@
       "fieldname": "deadline",
       "label": "Deadline",
       "fieldtype": "Date"
-    },
-    {
-      "fieldname": "qualification",
-      "label": "Qualification",
-      "fieldtype": "Select",
-      "options": "\nUndecided\nPursue\nHold\nReject"
-    },
-    {
-      "fieldname": "qualification_rationale",
-      "label": "Qualification Rationale",
-      "fieldtype": "Small Text"
     },
     {
       "fieldname": "applied_on",

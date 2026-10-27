@@ -203,7 +203,7 @@ def get_work_queue():
     require_operator()
     deals = frappe.get_list("Job Search Opportunity", filters={},
         fields=["name", "organization", "job_title", "status", "next_action_on",
-                "deadline", "priority", "qualification"], limit_page_length=500)
+                "deadline", "priority"], limit_page_length=500)
     tasks = frappe.get_list("Job Search Task", filters={"status": ["not in", ["Done", "Canceled"]]},
         fields=["name", "title", "due_date", "opportunity", "status"],
         limit_page_length=500)
@@ -221,7 +221,7 @@ def get_company_dossier(organization):
     require_operator()
     company = require_doc("Job Search Employer", organization)
     deals = frappe.get_list("Job Search Opportunity", filters={"organization": company.name},
-        fields=["name", "job_title", "status", "qualification", "next_action_on"],
+        fields=["name", "job_title", "status", "next_action_on"],
         limit_page_length=500)
     postings = frappe.get_list("Job Search Posting", filters={"organization": company.name},
         fields=["name", "opportunity", "posting_title", "retrieved_on", "status"],

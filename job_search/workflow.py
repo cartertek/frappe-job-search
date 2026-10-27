@@ -76,8 +76,6 @@ def _validate_transition(deal, previous, next_stage):
             frappe.throw("An override must include a reason")
 
     if next_stage == "Qualified":
-        if deal.qualification != "Pursue" or not (deal.qualification_rationale or "").strip():
-            frappe.throw("Qualification decision and rationale are required")
         require_decision(deal.name, "Pursue", ctx.get("decision"))
         if not override and not (_has_research(deal) and _has_completed_research_procedure(deal)):
             frappe.throw(

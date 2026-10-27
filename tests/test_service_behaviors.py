@@ -123,7 +123,7 @@ class TaskBehavior(unittest.TestCase):
         fake.get_doc = lambda data: FakeDocument(data, rows)
         tasks = load_app_module("tasks.py", "test_tasks_module", fake)
         deal = types.SimpleNamespace(status="Applied", job_title="Engineer", name="D-1",
-             deal_owner=None, next_action_on="2026-10-22", deadline="2026-11-01")
+             next_action_on="2026-10-22", deadline="2026-11-01")
         transition = types.SimpleNamespace(name="T-1")
         first = tasks.create_stage_task(deal, transition)
         second = tasks.create_stage_task(deal, transition)

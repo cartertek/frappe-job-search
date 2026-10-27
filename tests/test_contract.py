@@ -121,6 +121,19 @@ class SchemaTest(unittest.TestCase):
                        "Begin Interviewing", "Accept Offer", "More Actions"):
             self.assertIn(action, ui)
 
+    def test_no_duplicate_owner_or_qualification(self):
+        import json
+
+        data = json.loads((BASE / "job_search_opportunity" / "job_search_opportunity.json").read_text())
+        field_names = {f["fieldname"] for f in data["fields"]}
+        self.assertTrue({"status", "review_assigned_to"}.issubset(field_names))
+        self.assertFalse({"deal_owner", "qualification", "qualification_rationale"} & field_names)
+        workflow = (APP / "workflow.py").read_text()
+        self.assertIn('require_decision(deal.name, "Pursue"', workflow)
+        self.assertNotIn('deal.qualification', workflow)
+        tasks = (APP / "tasks.py").read_text()
+        self.assertNotIn('deal.deal_owner', tasks)
+
     def test_standalone_ui(self):
         hooks = (APP / "hooks.py").read_text()
         self.assertNotIn('required_apps = ["crm"]', hooks)
