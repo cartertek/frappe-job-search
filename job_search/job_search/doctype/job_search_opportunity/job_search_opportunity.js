@@ -10,6 +10,9 @@ frappe.ui.form.on('Job Search Opportunity', {
     if (frm.is_new()) return;
 
     const execute = async (action, values = {}) => {
+      const scopes = {'Search Only':'search','Job Globally':'job',
+        'Entire Organization':'organization'};
+      if (values.scope) values.scope = scopes[values.scope] || values.scope;
       await frappe.call({
         method: 'job_search.api.perform_job_action',
         args: {opportunity: frm.doc.name, action, ...values},
@@ -39,10 +42,10 @@ frappe.ui.form.on('Job Search Opportunity', {
     const reject = () => {
       dialog('Reject', [
         {fieldname:'scope', label:__('Reject From'),fieldtype:'Select',reqd:1,
-          options:'search\njob\norganization', default:'search',
+          options:'Search Only\nJob Globally\nEntire Organization', default:'Search Only',
           description:__('Search only, all searches for this job, or all jobs at the organization')},
         {fieldname:'search',label:__('Search'),fieldtype:'Link',options:'Job Search Search',
-          depends_on:'eval:doc.scope=="search"',mandatory_depends_on:'eval:doc.scope=="search"'},
+          depends_on:'eval:doc.scope=="Search Only"',mandatory_depends_on:'eval:doc.scope=="Search Only"'},
         ...rationale,
       ], 'reject');
     };
@@ -58,7 +61,7 @@ frappe.ui.form.on('Job Search Opportunity', {
       {fieldname:'offer_details',label:__('Offer Details'),fieldtype:'Small Text',reqd:1,
         default:frm.doc.offer_details || ''}, ...rationale,
     ]);
-    if (status !== 'Ready to Review' && status !== 'Rejected' && status !== 'Accepted') {
+    if (status !== 'Ready to Review' && status !== 'Rejected') {
       frm.add_custom_button(__('Reject'), reject, __('More Actions'));
     }
   },

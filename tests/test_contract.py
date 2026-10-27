@@ -106,6 +106,21 @@ class SchemaTest(unittest.TestCase):
         self.assertNotIn("JS: ", workflow)
         self.assertNotIn("JS: ", workflow)
 
+    def test_simplified_status_actions(self):
+        import json
+
+        data = json.loads((BASE / "job_search_opportunity" / "job_search_opportunity.json").read_text())
+        status = next(f for f in data["fields"] if f["fieldname"] == "status")
+        self.assertEqual(status["options"].splitlines(), [
+            "Discovered", "Researching", "Ready to Review", "Qualified",
+            "Applied", "Interviewing", "Accepted", "Rejected",
+        ])
+        self.assertTrue(status["read_only"])
+        ui = (BASE / "job_search_opportunity" / "job_search_opportunity.js").read_text()
+        for action in ("Mark Qualified", "Needs Research", "Mark Applied",
+                       "Begin Interviewing", "Accept Offer", "More Actions"):
+            self.assertIn(action, ui)
+
     def test_standalone_ui(self):
         hooks = (APP / "hooks.py").read_text()
         self.assertNotIn('required_apps = ["crm"]', hooks)
