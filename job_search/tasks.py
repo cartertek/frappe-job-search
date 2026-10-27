@@ -5,12 +5,10 @@ import frappe
 STAGE_ACTIONS = {
     "Discovered": "Research new opportunity",
     "Researching": "Complete employer and role research",
+    "Ready to Review": "Review research and decide qualification",
     "Qualified": "Prepare application requirements",
-    "Preparing": "Assemble and review application materials",
     "Applied": "Plan application follow-up",
-    "Screening": "Prepare for employer screening",
     "Interviewing": "Prepare for interview and record outcome",
-    "Offer": "Review offer and make a decision",
 }
 
 
@@ -25,7 +23,7 @@ def create_stage_task(deal, transition):
     due = deal.next_action_on or deal.deadline
     doc = frappe.get_doc({
         "doctype": "Job Search Task", "title": f"{action}: {deal.job_title}",
-        "status": "Todo", "priority": "High" if deal.status == "Offer" else "Medium",
+        "status": "Todo", "priority": "High" if deal.status == "Ready to Review" else "Medium",
         "due_date": due, "assigned_to": deal.deal_owner or frappe.session.user,
         "opportunity": deal.name,
         "transition": transition.name,

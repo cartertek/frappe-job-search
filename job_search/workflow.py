@@ -4,26 +4,22 @@ import frappe
 from frappe.utils import now_datetime
 
 STAGES = (
-    "Discovered", "Researching", "Qualified", "Preparing", "Applied",
-    "Screening", "Interviewing", "Offer", "Accepted", "Rejected", "Withdrawn", "Closed",
+    "Discovered", "Researching", "Ready to Review", "Qualified",
+    "Applied", "Interviewing", "Accepted", "Rejected",
 )
-TERMINAL = {"Accepted", "Rejected", "Withdrawn", "Closed"}
+TERMINAL = {"Accepted", "Rejected"}
 TRANSITIONS = {
-    "Discovered": {"Researching", "Closed", "Withdrawn"},
-    "Researching": {"Qualified", "Closed", "Withdrawn"},
-    "Qualified": {"Preparing", "Closed", "Withdrawn"},
-    "Preparing": {"Applied", "Closed", "Withdrawn"},
-    "Applied": {"Screening", "Interviewing", "Offer", "Rejected", "Withdrawn", "Closed"},
-    "Screening": {"Interviewing", "Offer", "Rejected", "Withdrawn", "Closed"},
-    "Interviewing": {"Offer", "Rejected", "Withdrawn", "Closed"},
-    "Offer": {"Accepted", "Rejected", "Withdrawn", "Closed"},
-    "Accepted": {"Closed"},
-    "Rejected": {"Researching", "Closed"},
-    "Withdrawn": {"Researching", "Closed"},
-    "Closed": {"Researching"},
+    "Discovered": {"Researching", "Rejected"},
+    "Researching": {"Ready to Review", "Rejected"},
+    "Ready to Review": {"Researching", "Qualified", "Rejected"},
+    "Qualified": {"Applied", "Rejected"},
+    "Applied": {"Interviewing", "Rejected"},
+    "Interviewing": {"Accepted", "Rejected"},
+    "Accepted": {"Rejected"},
+    "Rejected": {"Researching"},
 }
 DECISIONS = {"Qualified": "Pursue", "Applied": "Authorize Application",
-             "Accepted": "Accept Offer", "Withdrawn": "Withdraw"}
+             "Accepted": "Accept Offer"}
 
 
 def _decision(opportunity, decision, requested=None):
@@ -99,12 +95,10 @@ def _validate_transition(deal, previous, next_stage):
             frappe.throw("Applied requires a submission date and identified application materials")
     if next_stage == "Interviewing" and not _count("Job Search Interview", deal.name):
         frappe.throw("Interviewing requires an interview record")
-    if next_stage == "Offer" and not (deal.offer_details or "").strip():
+    if next_stage == "Accepted" and not (deal.offer_details or "").strip():
         frappe.throw("Offer details are required")
     if next_stage in DECISIONS and next_stage not in ("Qualified", "Applied"):
         require_decision(deal.name, DECISIONS[next_stage], ctx.get("decision"))
-    if next_stage == "Closed" and not (deal.closure_reason or "").strip():
-        frappe.throw("Closure reason is required")
     if previous in TERMINAL and next_stage == "Researching" and not override:
         frappe.throw("Reopening a terminal opportunity requires an approved exception")
     return ctx, override

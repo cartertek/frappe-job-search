@@ -22,6 +22,7 @@ def after_migrate():
             ignore_permissions=True
         )
     migrate_prefixed_fields()
+    migrate_workflow_statuses()
     migrate_legacy_search_filters()
     ensure_workspace()
     ensure_app_logo()
@@ -221,4 +222,23 @@ def migrate_prefixed_fields():
                         f"UPDATE `tab{doctype}` SET `{current}` = `{previous}` "
                         f"WHERE `{current}` IS NULL AND `{previous}` IS NOT NULL"
                     )
+    frappe.db.set_default(marker, "1")
+
+
+def migrate_workflow_statuses():
+    """Collapse removed workflow stages after DocType sync, preserving history."""
+    marker = "job_search:workflow_v2_statuses"
+    if frappe.db.get_default(marker):
+        return
+    mapping = {
+        "Preparing": "Qualified",
+        "Screening": "Applied",
+        "Offer": "Interviewing",
+        "Withdrawn": "Rejected",
+        "Closed": "Rejected",
+    }
+    for old, new in mapping.items():
+        frappe.db.sql(
+            "UPDATE `tabJob Search Opportunity` SET status=%s WHERE status=%s", (new, old)
+        )
     frappe.db.set_default(marker, "1")

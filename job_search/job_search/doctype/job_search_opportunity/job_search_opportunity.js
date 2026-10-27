@@ -1,59 +1,65 @@
 frappe.ui.form.on('Job Search Opportunity', {
   refresh(frm) {
-    if (frm.doc.status) {
-      const indicators = {
-        Discovered: 'blue', Researching: 'orange', Qualified: 'green',
-        Preparing: 'blue', Applied: 'blue', Screening: 'orange',
-        Interviewing: 'orange', Offer: 'purple', Accepted: 'green',
-        Rejected: 'red', Withdrawn: 'gray', Closed: 'gray',
-      };
-      frm.page.set_indicator(__(frm.doc.status), indicators[frm.doc.status] || 'blue');
-    }
+    const status = frm.doc.status;
+    const colors = {
+      Discovered: 'blue', Researching: 'orange', 'Ready to Review': 'orange',
+      Qualified: 'green', Applied: 'blue', Interviewing: 'orange',
+      Accepted: 'green', Rejected: 'red',
+    };
+    if (status) frm.page.set_indicator(__(status), colors[status] || 'blue');
     if (frm.is_new()) return;
-    if (!frm.doc.globally_rejected) {
-      frm.add_custom_button(__('Reject Job Globally'), async () => {
-        frappe.confirm(__('Hide this job from every search?'), async () => {
-          await frappe.call({method: 'job_search.api.reject_job', args: {job: frm.doc.name}});
-          await frm.reload_doc();
-        });
+
+    const execute = async (action, values = {}) => {
+      await frappe.call({
+        method: 'job_search.api.perform_job_action',
+        args: {opportunity: frm.doc.name, action, ...values},
       });
+      await frm.reload_doc();
+    };
+    const dialog = (title, fields, action, label = title) => {
+      const modal = new frappe.ui.Dialog({
+        title: __(title), fields, primary_action_label: __(label),
+        primary_action: async values => {
+          modal.get_primary_btn().prop('disabled', true);
+          try {
+            await execute(action, values);
+            modal.hide();
+          } finally { modal.get_primary_btn().prop('disabled', false); }
+        },
+      });
+      modal.show();
+    };
+    const rationale = [{fieldname:'rationale',label:__('Rationale'),fieldtype:'Small Text',reqd:1}];
+    const primary = (label, action, fields = []) => {
+      frm.page.set_primary_action(__(label), () => {
+        if (fields.length) dialog(label, fields, action);
+        else execute(action);
+      });
+    };
+    const reject = () => {
+      dialog('Reject', [
+        {fieldname:'scope', label:__('Reject From'),fieldtype:'Select',reqd:1,
+          options:'search\njob\norganization', default:'search',
+          description:__('Search only, all searches for this job, or all jobs at the organization')},
+        {fieldname:'search',label:__('Search'),fieldtype:'Link',options:'Job Search Search',
+          depends_on:'eval:doc.scope=="search"',mandatory_depends_on:'eval:doc.scope=="search"'},
+        ...rationale,
+      ], 'reject');
+    };
+    if (status === 'Researching') primary('Ready to Review', 'ready_to_review');
+    if (status === 'Ready to Review') {
+      primary('Mark Qualified', 'qualify', rationale);
+      frm.add_custom_button(__('Needs Research'), () => execute('needs_research'));
+      frm.add_custom_button(__('Reject'), reject);
     }
-    if (frm.doc.review_status === 'Pending') {
-      const choices = {
-        'Pursue or Decline': ['Pursue', 'Decline'],
-        'Authorize or Decline Application': ['Authorize Application', 'Decline Application'],
-        'Accept or Reject Offer': ['Accept Offer', 'Reject Offer'],
-        'Withdraw': ['Withdraw'],
-        'Override': ['Override'],
-      }[frm.doc.review_request] || [];
-      if (choices.length) {
-        frm.add_custom_button(__('Record Decision'), () => {
-          const dialog = new frappe.ui.Dialog({
-            title: __('Record Human Decision'),
-            fields: [
-              {fieldname: 'decision', label: __('Decision'), fieldtype: 'Select',
-                options: choices.join('\n'), reqd: 1},
-              {fieldname: 'rationale', label: __('Rationale'), fieldtype: 'Small Text', reqd: 1},
-            ],
-            primary_action_label: __('Submit Decision'),
-            primary_action: async (values) => {
-              if (!values?.decision || !values?.rationale?.trim()) return;
-              dialog.get_primary_btn().prop('disabled', true);
-              try {
-                await frappe.call({method: 'job_search.api.record_human_decision',
-                  args: {opportunity: frm.doc.name, decision: values.decision,
-                    rationale: values.rationale.trim()}});
-                dialog.hide();
-                await frm.reload_doc();
-                frappe.show_alert({message: __('Decision recorded'), indicator: 'green'});
-              } finally {
-                dialog.get_primary_btn().prop('disabled', false);
-              }
-            },
-          });
-          dialog.show();
-        });
-      }
+    if (status === 'Qualified') primary('Mark Applied', 'mark_applied');
+    if (status === 'Applied') primary('Begin Interviewing', 'begin_interviewing');
+    if (status === 'Interviewing') primary('Accept Offer', 'accept_offer', [
+      {fieldname:'offer_details',label:__('Offer Details'),fieldtype:'Small Text',reqd:1,
+        default:frm.doc.offer_details || ''}, ...rationale,
+    ]);
+    if (status !== 'Ready to Review' && status !== 'Rejected' && status !== 'Accepted') {
+      frm.add_custom_button(__('Reject'), reject, __('More Actions'));
     }
   },
 });

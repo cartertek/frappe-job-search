@@ -132,7 +132,7 @@ class TaskBehavior(unittest.TestCase):
         self.assertEqual("D-1", rows[0].opportunity)
         self.assertEqual("2026-10-22", rows[0].due_date)
         self.assertEqual("operator@example.org", rows[0].assigned_to)
-        deal.status = "Closed"
+        deal.status = "Rejected"
         self.assertIsNone(tasks.create_stage_task(deal, types.SimpleNamespace(name="T-2")))
         self.assertEqual(1, len(rows))
 

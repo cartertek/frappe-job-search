@@ -1,24 +1,18 @@
-# Workflow
+# Job workflow
 
-Primary Deal stages are Discovered, Researching, Qualified, Preparing, Applied, Screening, Interviewing, Offer, Accepted, Rejected, Withdrawn, and Closed. Rejection, withdrawal or closure can be reached directly from several active stages; no fictitious intermediate stages are created. Reopening a terminal stage requires a documented approved exception.
+The Job has eight statuses: **Discovered → Researching → Ready to Review → Qualified → Applied → Interviewing → Accepted**, plus **Rejected**. It does not have Preparing, Screening, Offer, Withdrawn or Closed statuses.
 
-The standalone Job Search Opportunity has one **Status** field (stored internally as `js_stage`). It is not duplicated, and statuses have no `JS:` prefix.
+| Current status | Human action | Result |
+|---|---|---|
+| Discovered | Agent begins research | Researching |
+| Researching | Ready to Review | Ready to Review |
+| Ready to Review | **Mark Qualified** (primary) | Qualified; requires research, completed procedure and a reasoned human approval |
+| Ready to Review | **Needs Research** | Researching |
+| Ready to Review | **Reject** | Scoped exclusion or global rejection; see below |
+| Qualified | **Mark Applied** (primary) | Applied, only after a confirmed, authorized application is recorded |
+| Applied | **Begin Interviewing** (primary) | Interviewing, requires an interview record |
+| Interviewing | **Accept Offer** (primary) | Accepted, requires offer details and a reasoned human approval |
 
-Protected transitions:
+Reject is also in **More Actions** on Discovered, Researching, Qualified, Applied and Interviewing. The rejection modal takes a rationale and scope: **this search** (explicit Exclude), **this job globally** (global rejection and Rejected status), or **this organization globally** (all its jobs excluded). Search-specific exclusion leaves the job's global workflow status unchanged; global organization rejection hides every job from the organization's searches. Global rejection overrides explicit search inclusion.
 
-- Into Qualified: the qualification is Pursue, rationale exists, a human Pursue decision exists, and cited research plus a completed research/qualification procedure are present. An approved Override with rationale can waive the process and evidence requirement, not the human decision.
-- Into Applied: a prior Authorize Application decision and confirmed saved application including date and materials.
-- Into Interviewing: a saved interview or screening record.
-- Into Offer: offer details.
-- Into Accepted: an Accept Offer decision.
-- Into Withdrawn: a Withdraw decision.
-- Into Closed: closure rationale.
-- Terminal to Researching: an Override decision with documented exception and reason.
-
-Procedure executions cannot complete unless every required step is completed and the assessment is present. Moving the Job Search Opportunity does not complete procedures automatically. Decisions, transitions, postings, and application records are historical, retained artifacts.
-
-Always use the Frappe document save path. Raw SQL and frappe.db.set_value bypass framework validation and are prohibited for changing workflow statuses.
-
-## Follow-up work
-
-Entering Discovered, Researching, Qualified, Preparing, Applied, Screening, Interviewing or Offer creates a native Job Search Task with the current Deal as its reference. Its `js_transition` link identifies which stage transition produced it, making retries idempotent. It is assigned to the Deal owner or the initiating user and uses `js_next_action_on` or, when absent, `js_deadline` as a due date. Closing/withdrawing does not produce external contact or a new task. The read-only follow-up queue classifies unfinished tasks into overdue, upcoming, later and unscheduled.
+The agent APIs and form edits are subject to the same server-side transition validations. Historical transition records are retained. Existing old statuses migrate as follows: Preparing → Qualified, Screening → Applied, Offer → Interviewing, Withdrawn and Closed → Rejected. No history is discarded. Reopening a Rejected job to Researching still requires an approved exception.

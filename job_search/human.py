@@ -78,9 +78,8 @@ def save_human_action(doc, method=None):
                 todo.status = "Closed"
                 todo.save(ignore_permissions=True)
 
-    # An explicit human Decline closes the opportunity; do not leave it in
-    # Researching waiting for a second manual/agent transition.
-    if action == "Decline" and doc.status not in ("Closed", "Rejected", "Withdrawn"):
+    if action == "Decline" and doc.status not in ("Rejected", "Accepted"):
         doc.closure_reason = f"Human declined opportunity (decision {decision_doc.name})"
-        doc.status = "Closed"
+        doc.globally_rejected = 1
+        doc.status = "Rejected"
         doc.save()

@@ -7,8 +7,8 @@ from frappe.utils import getdate, nowdate
 
 from job_search.permissions import require_operator
 
-OPEN_STAGES = ["Discovered", "Researching", "Qualified", "Preparing", "Applied",
-               "Screening", "Interviewing", "Offer"]
+OPEN_STAGES = ["Discovered", "Researching", "Ready to Review", "Qualified",
+               "Applied", "Interviewing"]
 
 
 def classify_due(due_date, today, horizon=14):

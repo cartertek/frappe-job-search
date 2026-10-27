@@ -385,3 +385,11 @@ def reject_organization(organization):
     from job_search.searches import reject_employer
 
     return success({'organization': reject_employer(organization)})
+
+
+@frappe.whitelist()
+def perform_job_action(opportunity, action, rationale=None, scope=None, search=None,
+                       offer_details=None):
+    from job_search.workflow_actions import perform_action
+
+    return success(perform_action(opportunity, action, rationale, scope, search, offer_details))
