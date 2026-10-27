@@ -5,7 +5,7 @@ from frappe.utils import now_datetime, nowdate
 
 from job_search.permissions import require_doc, require_operator, require_opportunity
 from job_search.postings import capture_posting
-from job_search.workflow import require_decision, status_name
+from job_search.workflow import require_decision
 
 
 def register_opportunity(*, employer, title, source_url=None, description=None, requisition_id=None,
@@ -51,7 +51,6 @@ def register_opportunity(*, employer, title, source_url=None, description=None, 
     else:
         deal = frappe.get_doc({
             "doctype": "Job Search Opportunity", "organization": org.name, "lead_name": title,
-            "status": status_name("Discovered"),
             "js_job_title": title, "js_requisition_id": requisition_id,
             "js_posting_url": source_url, "js_location": location,
             "js_discovered_on": nowdate(), "js_stage": "Discovered",

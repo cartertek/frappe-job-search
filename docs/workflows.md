@@ -2,7 +2,7 @@
 
 Primary Deal stages are Discovered, Researching, Qualified, Preparing, Applied, Screening, Interviewing, Offer, Accepted, Rejected, Withdrawn, and Closed. Rejection, withdrawal or closure can be reached directly from several active stages; no fictitious intermediate stages are created. Reopening a terminal stage requires a documented approved exception.
 
-The corresponding native Job Search Opportunity Status records are prefixed JS: to avoid confusing them with ordinary sales statuses. Both js_stage and native status stay synchronized by the Job Search Opportunity validate hook.
+The standalone Job Search Opportunity has one **Status** field (stored internally as `js_stage`). It is not duplicated, and statuses have no `JS:` prefix.
 
 Protected transitions:
 

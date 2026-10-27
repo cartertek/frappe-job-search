@@ -26,10 +26,6 @@ DECISIONS = {"Qualified": "Pursue", "Applied": "Authorize Application",
              "Accepted": "Accept Offer", "Withdrawn": "Withdraw"}
 
 
-def status_name(stage):
-    return f"JS: {stage}"
-
-
 def _decision(opportunity, decision, requested=None):
     if requested:
         found = frappe.db.get_value(
@@ -122,11 +118,10 @@ def validate_deal(doc, method=None):
     stage = doc.get("js_stage") or ("Discovered" if not old else old_stage)
     # The standalone DocType owns its stage; status is read-only derived metadata.
     if stage not in STAGES:
-        frappe.throw("Invalid Job Search stage or Job Search Opportunity Status")
+        frappe.throw("Invalid Job Search status")
     if doc.is_new() and stage != "Discovered":
         frappe.throw("A new opportunity must begin in Discovered")
     doc.js_stage = stage
-    doc.status = status_name(stage)
     if old_stage and old_stage != stage:
         _validate_transition(doc, old_stage, stage)
 

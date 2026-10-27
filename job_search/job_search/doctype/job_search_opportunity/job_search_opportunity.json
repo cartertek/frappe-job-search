@@ -10,7 +10,6 @@
   "field_order": [
     "organization",
     "deal_owner",
-    "status",
     "js_job_title",
     "js_posting_url",
     "js_requisition_id",
@@ -68,12 +67,6 @@
       "fieldtype": "Link",
       "options": "User",
       "label": "Owner"
-    },
-    {
-      "fieldname": "status",
-      "fieldtype": "Data",
-      "label": "Status",
-      "read_only": 1
     },
     {
       "fieldname": "js_job_title",
@@ -183,7 +176,7 @@
     },
     {
       "fieldname": "js_stage",
-      "label": "Js Stage",
+      "label": "Status",
       "fieldtype": "Select",
       "options": "Discovered\nResearching\nQualified\nPreparing\nApplied\nScreening\nInterviewing\nOffer\nAccepted\nRejected\nWithdrawn\nClosed",
       "in_list_view": 1

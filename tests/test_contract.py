@@ -95,6 +95,17 @@ class SchemaTest(unittest.TestCase):
         self.assertEqual(labels, literal_eval(block))
         self.assertIn("clear_translation_cache()", setup)
 
+    def test_opportunity_has_single_unprefixed_status(self):
+        import json
+
+        data = json.loads((BASE / "job_search_opportunity" / "job_search_opportunity.json").read_text())
+        fields = {field["fieldname"]: field for field in data["fields"]}
+        self.assertNotIn("status", fields)
+        self.assertEqual("Status", fields["js_stage"]["label"])
+        workflow = (APP / "workflow.py").read_text()
+        self.assertNotIn("JS: ", workflow)
+        self.assertNotIn("doc.status =", workflow)
+
     def test_standalone_ui(self):
         hooks = (APP / "hooks.py").read_text()
         self.assertNotIn('required_apps = ["crm"]', hooks)
