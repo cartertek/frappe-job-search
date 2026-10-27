@@ -12,10 +12,29 @@
   min-width: 0;
   max-width: 100%;
 }
-.form-grid:has(.job-search-heuristic-content) .grid-row .template-row {
+/* Keep Frappe's selection/index controls in their own gutter. */
+.form-grid:has(.job-search-heuristic-content) .grid-body .data-row.row {
+  position: relative;
+}
+.form-grid:has(.job-search-heuristic-content) .grid-body .template-row-index {
+  position: absolute;
+  float: none;
+  left: 10px;
+  top: 10px;
+  margin: 0;
+  z-index: 1;
+}
+.form-grid:has(.job-search-heuristic-content) .grid-body .template-row {
   min-width: 0;
-  max-width: calc(100% - 30px);
+  width: calc(100% - 55px);
+  max-width: calc(100% - 55px);
+  margin-left: 55px;
   box-sizing: border-box;
+}
+/* The native grid produces an empty, no-document body row on refresh;
+   unlike the real child records, it has no data-name. */
+.form-grid:has(.job-search-heuristic-content) .grid-body .grid-row:not([data-name]) {
+  display: none;
 }
 .job-search-heuristic-content {
   min-width: 0;
