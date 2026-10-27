@@ -5,9 +5,10 @@ function show_heuristic_description(gridRow) {
   const column = gridRow.columns?.description;
   if (!column?.static_area) return;
   const html = gridRow.doc.description || '';
-  const safe = frappe.utils.sanitize_html ? frappe.utils.sanitize_html(html)
-    : frappe.utils.escape_html(html);
-  column.static_area.html(`<div class="job-search-heuristic-richtext">${safe}</div>`);
+  // HTML comes from Frappe's server-sanitized Text Editor field.
+  const safe = frappe.utils.sanitize_html ? frappe.utils.sanitize_html(html) : html;
+  column.static_area.removeClass('ellipsis')
+    .html(`<div class="job-search-heuristic-richtext">${safe}</div>`);
   $(gridRow.row).addClass('job-search-heuristic-row');
 }
 
