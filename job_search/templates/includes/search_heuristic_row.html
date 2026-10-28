@@ -5,59 +5,31 @@
 </div>
 {% } else { %}
 <style>
-/* Frappe's default data-row width is max-content for horizontally scrollable
-   column grids. Template rows need a constrained width to wrap rich text. */
-.form-grid:has(.job-search-heuristic-content) .grid-row .data-row.row {
-  width: 100%;
-  min-width: 0;
-  max-width: 100%;
-}
-/* Keep Frappe's selection/index controls in their own gutter. */
+/* Frappe renders both a heading row and a filter row for child grids. In
+   template mode Frappe renders the filter even when it is not needed. */
+.form-grid:has(.job-search-heuristic-content) .grid-heading-row > .grid-row + .grid-row {display:none;}
+.form-grid:has(.job-search-heuristic-content) .grid-heading-row.with-filter {height:32px;}
+/* Native template rows must use available width, not the ordinary grid's
+   max-content width intended for horizontally scrolling data columns. */
 .form-grid:has(.job-search-heuristic-content) .grid-body .data-row.row {
-  position: relative;
+  width:100%;min-width:0;max-width:100%;position:relative;
 }
 .form-grid:has(.job-search-heuristic-content) .grid-body .template-row-index {
-  position: absolute;
-  float: none;
-  left: 10px;
-  top: 10px;
-  margin: 0;
-  z-index: 1;
+  position:absolute;float:none;left:10px;top:12px;margin:0;
 }
 .form-grid:has(.job-search-heuristic-content) .grid-body .template-row {
-  min-width: 0;
-  width: calc(100% - 55px);
-  max-width: calc(100% - 55px);
-  margin-left: 55px;
-  box-sizing: border-box;
+  width:calc(100% - 72px);max-width:calc(100% - 72px);min-width:0;
+  margin-left:72px;box-sizing:border-box;
 }
-/* The native grid produces an empty, no-document body row on refresh;
-   unlike the real child records, it has no data-name. */
-.form-grid:has(.job-search-heuristic-content) .grid-body .grid-row:not([data-name]) {
-  display: none;
-}
-.job-search-heuristic-content {
-  min-width: 0;
-  max-width: 100%;
-  overflow-wrap: anywhere;
-  white-space: normal;
-}
-.job-search-heuristic-name {font-weight: 600; margin-bottom: 8px;}
+.job-search-heuristic-content {max-width:100%;min-width:0;overflow-wrap:anywhere;white-space:normal;}
+.job-search-heuristic-name {font-weight:600;margin-bottom:8px;}
 .job-search-heuristic-description.ql-editor.read-mode {
-  min-width: 0;
-  width: 100%;
-  max-width: 100%;
-  height: auto;
-  max-height: none;
-  overflow-wrap: anywhere;
-  overflow-x: visible;
-  white-space: normal;
-  padding: 0;
+  width:100%;max-width:100%;min-width:0;height:auto;max-height:none;
+  padding:0;overflow-wrap:anywhere;white-space:normal;
 }
 .job-search-heuristic-description.ql-editor.read-mode p,
 .job-search-heuristic-description.ql-editor.read-mode li {
-  white-space: normal;
-  overflow-wrap: anywhere;
+  white-space:normal;overflow-wrap:anywhere;
 }
 </style>
 <div style="font-weight:600;">{%= __("Research Heuristic") %}</div>
