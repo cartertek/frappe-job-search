@@ -15,3 +15,5 @@ Use **synthetic test data** and the signed-in accounts with their actual assigne
 11. **Related data:** Confirm linked postings, revisions, research, applications, interview records, tasks, comments and attachments are still accessible after migration.
 
 Browser-based UI checks are separate from schema and API tests. See [Job status workflow](workflows.md) for exact requirements and edge-case transitions.
+
+11. **Claim evidence:** Create two sourced claims for the same heuristic; ensure they are accepted. Verify a missing quote, missing source URL or missing required heuristic blocks Ready to Review, and a legacy value without evidence does not satisfy the gate. Check that historical assessment text is appended to Research Findings without replacing existing text during migration.

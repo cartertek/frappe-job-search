@@ -1,11 +1,12 @@
 {% if (doc) { %}
 <div class="job-value-record">
   <div class="job-value-name">{%= frappe.utils.escape_html(doc.heuristic_name || "") %}</div>
-  <div class="job-value-text">{%= frappe.utils.escape_html(doc.value || "") %}</div>
+  <div class="job-value-text">{%= frappe.utils.escape_html(doc.quote || "") %}</div>
+  <div class="job-value-source">{%= frappe.utils.escape_html(doc.source || "") %}</div>
   <div class="job-value-edit" title="{%= __("Edit") %}">
     <span class="btn btn-xs btn-default">{%= frappe.utils.icon("pencil", "xs") %}</span>
   </div>
 </div>
 {% } else { %}
-<div class="job-value-heading"><span>{%= __("Heuristic") %}</span><span>{%= __("Value") %}</span></div>
+<div class="job-value-heading"><span>{%= __("Heuristic") %}</span><span>{%= __("Exact Quote") %}</span><span>{%= __("Source") %}</span></div>
 {% } %}

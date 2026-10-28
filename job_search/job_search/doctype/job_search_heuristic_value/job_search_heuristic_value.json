@@ -8,36 +8,39 @@
   "field_order": [
     "heuristic_id",
     "heuristic_name",
-    "description",
-    "value"
+    "quote",
+    "source"
   ],
   "fields": [
     {
       "fieldname": "heuristic_id",
       "fieldtype": "Data",
-      "label": "Search Heuristic ID",
-      "hidden": 1,
-      "read_only": 1
+      "label": "Heuristic ID",
+      "hidden": 1
     },
     {
       "fieldname": "heuristic_name",
-      "fieldtype": "Data",
+      "fieldtype": "Select",
       "label": "Heuristic",
       "in_list_view": 1,
-      "read_only": 1
+      "reqd": 1
     },
     {
-      "fieldname": "description",
-      "fieldtype": "Text Editor",
-      "label": "Research Instructions",
-      "read_only": 1
-    },
-    {
-      "fieldname": "value",
+      "fieldname": "quote",
       "fieldtype": "Small Text",
-      "label": "Value",
+      "label": "Exact Quote",
       "in_list_view": 1,
-      "description": "Researcher-assessed heuristic value, with explanation or evidence as appropriate."
+      "reqd": 1,
+      "description": "Copy the exact text from the linked source, without paraphrasing or summarizing."
+    },
+    {
+      "fieldname": "source",
+      "fieldtype": "Data",
+      "label": "Source URL",
+      "in_list_view": 1,
+      "reqd": 1,
+      "options": "URL",
+      "description": "Link directly to a source containing the exact quote."
     }
   ],
   "permissions": [],

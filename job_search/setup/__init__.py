@@ -23,6 +23,7 @@ def after_migrate():
         )
     migrate_prefixed_fields()
     migrate_semantic_job_fields()
+    migrate_heuristic_claims()
     migrate_workflow_statuses()
     migrate_legacy_search_filters()
     migrate_heuristics_table()
@@ -143,6 +144,45 @@ def migrate_legacy_search_filters():
                 f"UPDATE `tabJob Search Search` SET `{old}` = NULL "
                 f"WHERE `{old}` IS NOT NULL AND `{old}` != ''"
             )
+
+
+def migrate_heuristic_claims():
+    """Move unsourced heuristic assessments to research notes, never invent claims.
+
+    Appends to existing research findings; migration runs once after schema sync.
+    The old child-table assessment values are cleared after successful transfer.
+    """
+    from html import escape
+
+    marker = "job_search:heuristic_claims_v1"
+    if frappe.db.get_default(marker):
+        return
+    table = "tabJob Search Heuristic Value"
+    if "value" not in frappe.db.get_table_columns("Job Search Heuristic Value"):
+        frappe.db.set_default(marker, "1")
+        return
+    rows = frappe.db.sql(
+        f"SELECT name, parent, heuristic_name, value FROM `{table}` "
+        "WHERE value IS NOT NULL AND TRIM(value) != '' ORDER BY parent, idx", as_dict=True
+    )
+    grouped = {}
+    for row in rows:
+        grouped.setdefault(row.parent, []).append(row)
+    for job_name, entries in grouped.items():
+        # Append using direct SQL: historical Jobs may not satisfy current save
+        # validation. No workflow transitions or modified-by impersonation.
+        existing = frappe.db.get_value("Job Search Opportunity", job_name, "research_findings") or ""
+        blocks = ["<h3>Previous heuristic research assessments (not sourced claims)</h3>"]
+        for row in entries:
+            blocks.append(f"<p><strong>{escape(row.heuristic_name or 'Heuristic')}</strong>: "
+                          f"{escape(row.value).replace(chr(10), '<br>')}</p>")
+        addition = "\n".join(blocks)
+        content = existing + ("\n" if existing else "") + addition
+        frappe.db.sql("UPDATE `tabJob Search Opportunity` SET research_findings=%s WHERE name=%s",
+                      (content, job_name))
+    # The old values are now research notes, not claims.
+    frappe.db.sql(f"UPDATE `{table}` SET value=NULL WHERE value IS NOT NULL")
+    frappe.db.set_default(marker, "1")
 
 
 def migrate_semantic_job_fields():

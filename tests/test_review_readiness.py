@@ -43,9 +43,9 @@ class ReviewReadiness(unittest.TestCase):
             seniority='Senior', posted_on='2026-10-01', compensation_min=130000,
             currency='USD', compensation_period='Year', active_job_search='SEARCH1',
             globally_rejected=0, research_heuristics=[
-                record(heuristic_id='builtin:job-title', heuristic_name='Job Title', value='The description matches the role'),
-                record(heuristic_id='H1', heuristic_name='Personal contact', value='Contacted recruiter'),
-                record(heuristic_id='H2', heuristic_name='Hiring evidence', value='Current job posting')])
+                record(heuristic_id='builtin:job-title', heuristic_name='Job Title', quote='Python Engineer', source='https://example.org/title'),
+                record(heuristic_id='H1', heuristic_name='Personal contact', quote='Contact recruiter', source='https://example.org/contact'),
+                record(heuristic_id='H2', heuristic_name='Hiring evidence', quote='We are hiring', source='https://example.org/job')])
         self.fake.get_doc = lambda *args: self.search
         perms = types.ModuleType('job_search.permissions')
         perms.require_doc = lambda *args: None
@@ -73,10 +73,10 @@ class ReviewReadiness(unittest.TestCase):
         self.job.job_title = 'Backend Platform Architect'
         self.assertEqual([], self.searches.match_failures(self.job, self.search))
         self.assertEqual([], self.errors())
-        self.job.research_heuristics[0].value = ' '
-        self.assertIn("Research heuristic 'Job Title' requires a value", self.errors())
+        self.job.research_heuristics[0].quote = ' '
+        self.assertIn("Research heuristic 'Job Title' requires at least one sourced claim", self.errors())
         self.job.research_heuristics.pop(0)
-        self.assertIn("Research heuristic 'Job Title' is missing", self.errors())
+        self.assertIn("Research heuristic 'Job Title' requires at least one sourced claim", self.errors())
         self.search.title_matches = ''
         self.assertEqual([], self.errors())
 
@@ -93,12 +93,13 @@ class ReviewReadiness(unittest.TestCase):
         self.assertIn('120000', minimum['description'])
         self.assertIn('company size, role, and market', minimum['description'])
         self.assertFalse(self.searches.match_failures(self.job, self.search))
-        self.assertIn("Research heuristic 'Minimum Compensation' is missing", self.errors())
+        self.assertIn("Research heuristic 'Minimum Compensation' requires at least one sourced claim", self.errors())
         self.job.research_heuristics.append(record(heuristic_id=COMPENSATION_HEURISTIC_ID,
-            heuristic_name='Minimum Compensation', value='Expected well above 120000'))
+            heuristic_name='Minimum Compensation', quote='We offer competitive salaries', source='https://example.org/pay'))
         self.assertEqual([], self.errors())
-        self.job.research_heuristics[-1].value = ' '
-        self.assertIn("Research heuristic 'Minimum Compensation' requires a value", self.errors())
+        self.job.research_heuristics[-1].quote = ' '
+        self.assertIn("Research heuristic 'Minimum Compensation' requires at least one sourced claim", self.errors())
+        self.job.research_heuristics[-1].quote = 'We offer competitive salaries'
         self.job.compensation_not_given = 0
         self.job.compensation_min = 135000
         self.job.currency = 'USD'
@@ -147,15 +148,19 @@ class ReviewReadiness(unittest.TestCase):
         self.assertEqual(8, len(errors))
         self.assertFalse(self.searches.matches(self.job, self.search))
 
-    def test_missing_blank_duplicate_and_stale_heuristic_values(self):
-        self.job.research_heuristics.pop()
-        self.assertIn("Research heuristic 'Hiring evidence' is missing", self.errors())
-        self.job.research_heuristics.append(record(heuristic_id='H2', heuristic_name='Hiring evidence', value='   '))
-        self.assertIn("Research heuristic 'Hiring evidence' requires a value", self.errors())
-        self.job.research_heuristics.append(record(heuristic_id='H2', heuristic_name='Hiring evidence', value='Evidence'))
-        self.assertIn('Duplicate research heuristic', ' '.join(self.errors()))
-        self.job.research_heuristics.append(record(heuristic_id='Other', heuristic_name='Old criterion', value='Old value'))
-        self.assertIn('Unexpected research heuristic', ' '.join(self.errors()))
+    def test_multiple_sourced_claims_per_heuristic(self):
+        self.job.research_heuristics.append(record(heuristic_id='H1', heuristic_name='Personal contact',
+            quote='Another verifiable sentence', source='https://example.org/additional'))
+        self.assertEqual([], self.errors())
+        self.job.research_heuristics[-1].source = ''
+        self.assertIn("Heuristic claim 'Personal contact' requires an exact quote and a valid source URL",self.errors())
+        self.job.research_heuristics[-1].source = 'https://example.org/additional'
+        self.job.research_heuristics[1].quote = ''
+        self.assertIn("Heuristic claim 'Personal contact' requires an exact quote and a valid source URL",self.errors())
+        self.assertNotIn("Research heuristic 'Personal contact' requires at least one sourced claim",self.errors())
+        self.job.research_heuristics.append(record(heuristic_id='Other',heuristic_name='Stale',
+            quote='Old',source='https://example.org/old'))
+        self.assertIn('Unexpected heuristic claim', ' '.join(self.errors()))
 
     def test_excluded_rejected_or_explicit_approval_required(self):
         self.job.globally_rejected = 1
@@ -170,7 +175,7 @@ class ReviewReadiness(unittest.TestCase):
         self.assertEqual([], self.errors())
 
     def test_transition_gate_cannot_be_skipped_by_exception_flag(self):
-        self.job.research_heuristics[1].value = '   '
+        self.job.research_heuristics[1].quote = '   '
         with self.assertRaisesRegex(ValueError, 'Personal contact'):
             self.workflow._validate_transition(self.job, 'Researching', 'Ready to Review')
         self.fake.flags.job_search_transition_context = record(
@@ -179,14 +184,14 @@ class ReviewReadiness(unittest.TestCase):
         self.workflow.require_decision = lambda *args: 'DECISION1'
         with self.assertRaisesRegex(ValueError, 'Personal contact'):
             self.workflow._validate_transition(self.job, 'Researching', 'Ready to Review')
-        self.job.research_heuristics[1].value = 'Contacted recruiter'
+        self.job.research_heuristics[1].quote = 'Contacted recruiter'
         self.assertIsNotNone(self.workflow._validate_transition(self.job, 'Researching', 'Ready to Review'))
 
     def test_heuristics_reordered_by_search_keep_stable_identity(self):
         self.search.heuristics.reverse()
         self.assertEqual([], self.errors())
         self.search.heuristics.append(record(name='H3', heuristic_name='Additional review'))
-        self.assertIn("Research heuristic 'Additional review' is missing", self.errors())
+        self.assertIn("Research heuristic 'Additional review' requires at least one sourced claim", self.errors())
 
 
 if __name__ == '__main__':

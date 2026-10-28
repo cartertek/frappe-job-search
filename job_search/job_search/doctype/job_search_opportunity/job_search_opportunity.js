@@ -1,74 +1,52 @@
-// Keep the job's assessment rows aligned to the search's stable child-row IDs.
-// Preserve answers while changing descriptions; never silently discard answers.
-async function sync_research_heuristics(frm, confirm_discard = false) {
-  const name = frm.doc.active_job_search;
-  if (!name) return;
-  const request = (frm._heuristic_sync_request || 0) + 1;
-  frm._heuristic_sync_request = request;
-  const search = await frappe.db.get_doc('Job Search Search', name);
-  if (frm.doc.active_job_search !== name || frm._heuristic_sync_request !== request) return;
-
-  const titles = (search.title_matches || '').split('\n').map(s => s.trim()).filter(Boolean);
+// Configure selectable heuristics without modifying saved claims on form load.
+async function sync_research_heuristics(frm) {
+  const search_name = frm.doc.active_job_search;
+  if (!search_name) return;
+  const serial = (frm._claims_request || 0) + 1;
+  frm._claims_request = serial;
+  const search = await frappe.db.get_doc('Job Search Search', search_name);
+  if (frm.doc.active_job_search !== search_name || frm._claims_request !== serial) return;
+  const titles = (search.title_matches || '').split('\n').map(x => x.trim()).filter(Boolean);
   const defined = [
-    ...(titles.length ? [{name: 'builtin:job-title', heuristic_name: 'Job Title',
-      description: 'The job title should be similar to one of the titles below and/or the job description should describe a role matching one of these titles. Assess the meaning of the role, not an exact text match.\n\nTitles:\n' + titles.map(t => '- ' + t).join('\n')}] : []),
+    ...(titles.length ? [{name:'builtin:job-title', heuristic_name:'Job Title',
+      description:'The title or job description should match one of: ' + titles.join(', ')}] : []),
     ...(search.heuristics || []),
   ];
   if (search.salary_min && search.allow_compensation_heuristic) {
-    const threshold = [search.salary_min, search.currency, search.compensation_period].filter(Boolean).join(' ');
-    defined.push({name: 'builtin:minimum-compensation', heuristic_name: 'Minimum Compensation',
-      description: 'Based on the company size, role, and market, assess whether this job is expected to offer compensation well above the specified minimum. Explain the supporting evidence and reasoning.\n\nMinimum compensation: ' + threshold});
+    defined.push({name:'builtin:minimum-compensation', heuristic_name:'Minimum Compensation',
+      description:'Expected well above minimum: ' + [search.salary_min,search.currency,search.compensation_period].filter(Boolean).join(' ')});
   }
-  const current = frm.doc.research_heuristics || [];
-  const expected_ids = new Set(defined.map(row => row.name));
-  const stale = current.filter(row => !expected_ids.has(row.heuristic_id));
-  const has_stale_answers = stale.some(row => (row.value || '').trim());
-  if (has_stale_answers) {
-    if (!confirm_discard) {
-      frm.dashboard.set_headline_alert(
-        __('This search has different research heuristics. Sync the table to replace outdated answers.'),
-        'orange'
-      );
-      return;
-    }
-    const agreed = await new Promise(resolve => frappe.confirm(
-      __('Changing this search will discard answers for heuristics that do not belong to it. Continue?'),
-      () => resolve(true), () => resolve(false)
-    ));
-    if (!agreed || frm.doc.active_job_search !== name) return;
+  frm._claim_definitions = defined;
+  const grid = frm.fields_dict.research_heuristics?.grid;
+  if (grid) {
+    grid.update_docfield_property('heuristic_name','options',['',...defined.map(row=>row.heuristic_name)].join('\n'));
+    frm.refresh_field('research_heuristics');
   }
-
-  const by_id = new Map(current.map(row => [row.heuristic_id, row]));
-  const unchanged = current.length === defined.length && defined.every((row, i) =>
-    current[i].heuristic_id === row.name && current[i].heuristic_name === row.heuristic_name &&
-    current[i].description === row.description
-  );
-  if (unchanged) return;
-
-  frm.clear_table('research_heuristics');
-  defined.forEach(heuristic => {
-    const row = frm.add_child('research_heuristics');
-    row.heuristic_id = heuristic.name;
-    row.heuristic_name = heuristic.heuristic_name;
-    row.description = heuristic.description;
-    row.value = by_id.get(heuristic.name)?.value || '';
-  });
-  frm.refresh_field('research_heuristics');
-  frm.dirty();
 }
 
+frappe.ui.form.on('Job Search Heuristic Value', {
+  heuristic_name(frm, cdt, cdn) {
+    const row = locals[cdt][cdn];
+    const definition = (frm._claim_definitions || []).find(x=>x.heuristic_name===row.heuristic_name);
+    if (definition) {
+      frappe.model.set_value(cdt,cdn,'heuristic_id',definition.name);
+    }
+  },
+});
+
 frappe.ui.form.on('Job Search Opportunity', {
-  active_job_search(frm) { sync_research_heuristics(frm, true); },
+  active_job_search(frm) { sync_research_heuristics(frm); },
   compensation_not_given(frm) {
     if (frm.doc.compensation_not_given) {
       ['compensation_min', 'compensation_max', 'currency', 'compensation_period'].forEach(
         field => frm.set_value(field, null));
     }
   },
+  onload(frm) { if (frm.doc.active_job_search) sync_research_heuristics(frm); },
   refresh(frm) {
     if (frm.doc.active_job_search) {
-      frm.add_custom_button(__('Sync Research Heuristics'), () =>
-        sync_research_heuristics(frm, true), __('More Actions'));
+      frm.add_custom_button(__('Load Heuristic Choices'), () =>
+        sync_research_heuristics(frm), __('More Actions'));
     }
     const status = frm.doc.status;
     const colors = {

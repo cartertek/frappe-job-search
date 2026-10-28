@@ -269,14 +269,14 @@
     {
       "fieldname": "research_heuristics_section",
       "fieldtype": "Section Break",
-      "label": "Research Heuristics"
+      "label": "Heuristic Claims"
     },
     {
       "fieldname": "research_heuristics",
       "fieldtype": "Table",
-      "label": "Research Heuristics",
+      "label": "Heuristic Claims",
       "options": "Job Search Heuristic Value",
-      "description": "Provide a value for every heuristic defined in the active job search before moving to Ready to Review."
+      "description": "Each claim must identify a heuristic, provide an exact verbatim quote and a source URL containing the quote. Multiple claims per heuristic are allowed."
     },
     {
       "fieldname": "research_notes_section",

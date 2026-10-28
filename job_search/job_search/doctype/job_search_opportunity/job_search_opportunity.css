@@ -88,7 +88,7 @@
 }
 .job-value-record, .job-value-heading {
   display: grid;
-  grid-template-columns: minmax(140px, 24%) minmax(0, 1fr);
+  grid-template-columns: minmax(110px, 22%) minmax(0, 1fr) minmax(150px, 26%);
   gap: 16px;
   min-width: 0;
   width: 100%;
@@ -138,3 +138,5 @@
 .job-value-text {padding-right:40px !important;}
 .job-value-edit {position:absolute;right:0;top:0;cursor:pointer;}
 .job-value-edit .btn {pointer-events:none;}
+
+.job-value-source { min-width: 0; overflow-wrap: anywhere; white-space: pre-wrap; }

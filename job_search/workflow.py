@@ -96,21 +96,27 @@ def _review_readiness_failures(deal):
     if search.require_heuristics and override != "Include":
         errors.append("Active job search requires an explicit Include override")
 
-    required = {row["name"]: row["heuristic_name"] for row in research_heuristics(search)
-                if row["name"] != COMPENSATION_HEURISTIC_ID or deal.compensation_not_given}
-    provided = {}
+    defined = {row["name"]: row["heuristic_name"] for row in research_heuristics(search)}
+    required = {identifier: name for identifier, name in defined.items()
+                if identifier != COMPENSATION_HEURISTIC_ID or deal.compensation_not_given}
+    valid_claims = {identifier: 0 for identifier in required}
     for row in deal.research_heuristics:
-        if row.heuristic_id in provided:
-            errors.append(f"Duplicate research heuristic: {row.heuristic_name or row.heuristic_id}")
-        provided[row.heuristic_id] = row
-        if row.heuristic_id not in required and not (row.heuristic_id == COMPENSATION_HEURISTIC_ID and not deal.compensation_not_given):
-            errors.append(f"Unexpected research heuristic: {row.heuristic_name or row.heuristic_id or '(unnamed)'}")
+        identifier = row.heuristic_id
+        if identifier not in defined:
+            errors.append(f"Unexpected heuristic claim: {row.heuristic_name or identifier or '(unnamed)'}")
+            continue
+        if row.heuristic_name != defined[identifier]:
+            errors.append(f"Heuristic claim name does not match configured heuristic: {row.heuristic_name}")
+            continue
+        quote = (getattr(row, 'quote', None) or '').strip()
+        source = (getattr(row, 'source', None) or '').strip()
+        if not quote or not source or not source.startswith(('https://', 'http://')):
+            errors.append(f"Heuristic claim '{defined[identifier]}' requires an exact quote and a valid source URL")
+        elif identifier in valid_claims:
+            valid_claims[identifier] += 1
     for identifier, name in required.items():
-        answer = provided.get(identifier)
-        if answer is None:
-            errors.append(f"Research heuristic '{name}' is missing")
-        elif not (answer.value or '').strip():
-            errors.append(f"Research heuristic '{name}' requires a value")
+        if valid_claims[identifier] < 1:
+            errors.append(f"Research heuristic '{name}' requires at least one sourced claim")
     return errors
 
 
