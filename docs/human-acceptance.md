@@ -17,3 +17,5 @@ Use **synthetic test data** and the signed-in accounts with their actual assigne
 Browser-based UI checks are separate from schema and API tests. See [Job status workflow](workflows.md) for exact requirements and edge-case transitions.
 
 11. **Claim evidence:** Create two sourced claims for the same heuristic; ensure they are accepted. Verify a missing quote, missing source URL or missing required heuristic blocks Ready to Review, and a legacy value without evidence does not satisfy the gate. Check that historical assessment text is appended to Research Findings without replacing existing text during migration.
+
+12. **Legacy assessment migration:** After upgrade, verify historical heuristic answers appear in Research Findings without replacing existing notes; no empty legacy child rows or legacy value/description columns remain. New claims contain only Heuristic, Exact Quote, and Source URL.
