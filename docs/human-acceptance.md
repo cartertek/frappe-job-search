@@ -1,24 +1,16 @@
-# Standalone Job Search human acceptance
+# Human acceptance tests: Job Search
 
-Open Frappe Desk (`/desk`) and the **Job Search** Workspace.
+Use **synthetic test data** and the signed-in accounts with their actual assigned roles. Open `/desk/job-search` and the Job, Search and Organization lists. Do not impersonate any user or create a human approval on their behalf.
 
-1. Open **Job Search Opportunity**. Confirm you can read job title, employer,
-   original posting, latest revision, agent's cited research and recommendation.
-2. Inspect **Job Search Employer**, **Job Search Task**, Posting, Research,
-   Application, Interview and Decision lists.
-3. When an agent creates a pending review, open the assigned Job Search
-   Opportunity. Click **Record Decision** and confirm a native modal appears,
-   offering only decisions appropriate to the pending request, plus a required
-   rationale.
-4. Submit **Decline** on synthetic test data. Verify the stage immediately
-   becomes Closed, review Completed, the linked Job Search Task Done, and the
-   immutable decision history records the signed-in human and rationale.
-5. Verify no permanent blank decision/rationale inputs remain visible on the form.
-6. Verify a user with **Job Search Operator** but not Approver cannot record a
-   human decision; verify the human reviewer can access the assigned record.
-7. Check task reminders, external application confirmations, interview notes,
-   and historical posting revisions. Approval is never external submission.
-8. After upgrading a prior CRM-backed site, check all historical opportunities,
-   employers, tasks, comments/assignments and research records retain their links.
+1. **One status:** Open a Job and verify it has one **Status** field using only Discovered, Researching, Ready to Review, Qualified, Applied, Interviewing, Accepted or Rejected; no `JS:` stage or removed legacy status.
+2. **Job form:** Verify Status / Overview and Metadata are side by side, followed by Job Search Fields, Job Details, Research Heuristics and collapsed Research Notes. The Active Job Search link and research-heuristic table are editable; the metadata fields retain their values.
+3. **Heuristic synchronization:** Select a Search with multiple named heuristics; check that each criterion appears with its description and an editable Value. Reorder search criteria; previously entered values must remain associated with the correct criterion. Changing searches must warn before discarding values for removed criteria.
+4. **Review-readiness errors:** From Researching, attempt **Ready to Review** with no Active Job Search, a disabled search, a mismatched title/location/type/arrangement/seniority/date/compensation filter, and a missing or empty heuristic Value. Verify the action stays blocked and reports specific failures. Test duplicate and stale heuristic rows; none may pass.
+5. **Review-readiness success:** Supply a matching active search, all required values, and any explicit Include required by that search; verify Researching → Ready to Review succeeds. A search Include that admits a filter-mismatched job to search results must **not** bypass this stage gate. Verify the API cannot bypass it either.
+6. **Human approval:** Confirm **Mark Qualified** requires a signed-in human approver's **Pursue** decision and rationale, cited research and a completed research procedure; simply populating heuristic values does not qualify a job. **Needs Research** returns it to Researching.
+7. **Later stages:** **Mark Applied** requires authorized confirmed application submission and materials; **Begin Interviewing** requires an interview record; **Accept Offer** requires offer details and an explicit human Accept Offer decision with rationale.
+8. **Rejection scopes:** Verify **Search Only** excludes only from the selected search, **Job Globally** flags and rejects the job, and **Entire Organization** rejects the organization without automatically changing every individual Job's status. Confirm the rationale and immutable decision/transition history are retained.
+9. **Permissions:** An operator without approver rights cannot perform human-only actions or issue a human decision. Verify the actual approver can use the allowed actions; no account impersonation.
+10. **Related data:** Confirm linked postings, revisions, research, applications, interview records, tasks, comments and attachments are still accessible after migration.
 
-Browser UX acceptance is separate from backend API and schema smoke tests.
+Browser-based UI checks are separate from schema and API tests. See [Job status workflow](workflows.md) for exact requirements and edge-case transitions.

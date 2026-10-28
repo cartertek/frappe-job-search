@@ -7,21 +7,21 @@ Each method is exposed as POST to /api/method/job_search.api.METHOD (or the Frap
 | register_opportunity | Register employer, Job Search Opportunity, and saved posting/discovery source; deduplicate exact URL or strict role match |
 | capture_posting | Record a full posting snapshot; unchanged content is idempotent, changed content produces a new immutable revision |
 | add_research | Add source-backed research and optionally create linked source records |
-| start_procedure | Start a specific active procedure version against a Deal or employer |
+| start_procedure | Start a specific active procedure version against a Job or employer |
 | complete_procedure_step | Complete one execution step and record findings |
 | complete_procedure | Complete after required steps and assessment |
-| authorize_decision | Human approver-only authorization: Pursue, Authorize Application, Accept Offer, Withdraw, Override |
-| transition_opportunity | Validated Job Search Opportunity stage change with optional prior decision and exception |
+| authorize_decision | Human approver-only authorization: Pursue, Authorize Application, Accept Offer, Withdraw, Override (only when appropriate; never auto-issue on the operator's behalf) |
+| transition_opportunity | Validated Job stage change; Ready to Review requires a matching active search and all heuristic values, Qualified requires human Pursue approval and cited completed research; later stages require corresponding authorizations and records |
 | record_application | Record a confirmed external submission, checking prior approval and materials |
 | record_interview | Record interview round, schedule and Frappe Contacts |
 | create_follow_up | Add linked Job Search Task |
-| get_work_queue | Query opportunities, incomplete executions, and active linked CRM tasks |
+| get_work_queue | Query opportunities, incomplete executions, and active linked Job Search tasks |
 | get_follow_up_queue | Group open Job Search Tasks as overdue, upcoming, later or unscheduled (optional horizon_days default 14; argument `horizon`) |
 | get_research_queue | Query opportunities with missing/unverified/stale research (optional `stale_after_days`, default 90) |
 | get_company_dossier | Employer, opportunities, postings, research and sources |
-| get_opportunity_context | Read the Deal/employer dossier and linked records |
+| get_opportunity_context | Read the Job/employer dossier and linked records |
 
-Frappe native REST resource endpoints remain appropriate for routine record CRUD. All operations should run under a dedicated, named operator user with Job Search Operator and CRM permissions, never as Administrator.
+Frappe native REST resource endpoints remain appropriate for routine record CRUD. All operations should run under a dedicated, named operator user with Job Search Operator permissions, never as Administrator.
 
 Example:
 
@@ -30,4 +30,4 @@ Example:
       -H "Content-Type: application/json" \
       -d '{"employer":"Example Ltd","title":"Software Engineer","source_url":"https://example.org/careers/42","description":"Full original posting text"}'
 
-Idempotency: re-registering an identical posting URL returns its opportunity; strict employer + requisition + title + location may reuse a Deal; weaker matches are flagged. Submitted application reference is unique within a Deal. If posting content changes at the same URL, the registration/capture API records a new snapshot linked to its predecessor. The old snapshot cannot be edited in-place. Reverting to an earlier description creates another observation in the history.
+Idempotency: re-registering an identical posting URL returns its opportunity; strict employer + requisition + title + location may reuse a Job; weaker matches are flagged. Submitted application reference is unique within a Job. If posting content changes at the same URL, the registration/capture API records a new snapshot linked to its predecessor. The old snapshot cannot be edited in-place. Reverting to an earlier description creates another observation in the history.

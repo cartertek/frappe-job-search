@@ -1,26 +1,43 @@
-# Job workflow
+# Job status workflow
 
-The Job has eight statuses: **Discovered → Researching → Ready to Review → Qualified → Applied → Interviewing → Accepted**, plus **Rejected**. It does not have Preparing, Screening, Offer, Withdrawn or Closed statuses.
+The Job has one user-facing **Status** field. The eight allowed values are **Discovered**, **Researching**, **Ready to Review**, **Qualified**, **Applied**, **Interviewing**, **Accepted**, and **Rejected**. There is no separate prefixed stage field. **Preparing**, **Screening**, **Offer**, **Withdrawn**, and **Closed** are legacy statuses, not current choices.
 
-| Current status | Human action | Result |
+The normal progression is **Discovered → Researching → Ready to Review → Qualified → Applied → Interviewing → Accepted**. **Rejected** is a terminal outcome; not every rejection scope changes Job status.
+
+## Transitions and requirements
+
+| From | Action / target | Requirements |
 |---|---|---|
-| Discovered | Agent begins research | Researching |
-| Researching | Ready to Review | Ready to Review, only after a selected active search matches and every research heuristic has a nonempty value |
-| Ready to Review | **Mark Qualified** (primary) | Qualified; requires research, completed procedure and a reasoned human approval |
-| Ready to Review | **Needs Research** | Researching |
-| Ready to Review | **Reject** | Scoped exclusion or global rejection; see below |
-| Qualified | **Mark Applied** (primary) | Applied, only after a confirmed, authorized application is recorded |
-| Applied | **Begin Interviewing** (primary) | Interviewing, requires an interview record |
-| Interviewing | **Accept Offer** (primary) | Accepted, requires offer details and a reasoned human approval |
+| Discovered | Agent transitions to Researching | Begin researching the specific opening; no human Pursue decision is required merely to research |
+| Researching | **Ready to Review** | Active Job Search and every review-readiness check below must pass |
+| Ready to Review | **Mark Qualified** → Qualified | Human **Pursue** decision with rationale; cited research and a completed `research-employer`, `research-opening`, or `qualify` procedure (unless a separately authorized workflow exception applies) |
+| Ready to Review | **Needs Research** → Researching | Return for additional work, not a qualification or approval |
+| Qualified | **Mark Applied** → Applied | Existing **Authorize Application** human decision; saved, confirmed application with submission date and identifiable resume, cover letter, or other materials |
+| Applied | **Begin Interviewing** → Interviewing | At least one recorded interview |
+| Interviewing | **Accept Offer** → Accepted | Offer details and an explicit human **Accept Offer** decision with rationale |
+| Discovered / Researching / Ready to Review / Qualified / Applied / Interviewing | **Reject** | Scope and reason required; effects depend on selected scope |
 
-Reject is also in **More Actions** on Discovered, Researching, Qualified, Applied and Interviewing. The rejection modal takes a rationale and scope: **this search** (explicit Exclude), **this job globally** (global rejection and Rejected status), or **this organization globally** (all its jobs excluded). Search-specific exclusion leaves the job's global workflow status unchanged; global organization rejection hides every job from the organization's searches. Global rejection overrides explicit search inclusion.
+The UI exposes **Mark Qualified** as the primary action in Ready to Review, **Needs Research** and **Reject** alongside it, then **Mark Applied**, **Begin Interviewing**, and **Accept Offer** as the respective primary actions. **Reject** is under **More Actions** outside Ready to Review. Human action buttons require the signed-in **Job Search Approver**; the operator API may transition stages only under the same server-side safeguards. Do not create or impersonate human decisions to advance a job.
 
-The agent APIs and form edits are subject to the same server-side transition validations. Historical transition records are retained. Existing old statuses migrate as follows: Preparing → Qualified, Screening → Applied, Offer → Interviewing, Withdrawn and Closed → Rejected. No history is discarded. Reopening a Rejected job to Researching still requires an approved exception.
+**Reject From** options in the modal are **Search Only**, **Job Globally**, and **Entire Organization**:
 
-## Ready to Review readiness gate
+- **Search Only** writes an explicit Exclude override on the selected search; the Job's status does not change.
+- **Job Globally** sets the job's rejection flag and transitions its status to **Rejected**, except an already Accepted job retains its status.
+- **Entire Organization** globally rejects the organization and hides its jobs from searches; the individual Job's status does not change.
 
-A Job's **Active Job Search** link in **Job Search Fields** names the search used to evaluate readiness. The **Research Heuristics** child table, immediately after Job Details, contains the corresponding heuristic names, descriptions and researcher-entered **Value** for each criterion. Selecting a search or using **More Actions → Sync Research Heuristics** fills the table from the search; values already attached to unchanged heuristic IDs are preserved, and dropping answers for removed criteria requires confirmation. Save the answers before review.
+The actual transition graph also permits **Accepted → Rejected** and **Rejected → Researching**; reopening a terminal job to Researching requires an authorized **Override** exception and a reason. Rejection rules and authorized exceptions are enforced server-side. Workflow history remains in immutable transition records. Prior schema migration maps **Preparing → Qualified**, **Screening → Applied**, **Offer → Interviewing**, and **Withdrawn / Closed → Rejected**; it does not discard historical records.
 
-Both **Ready to Review** on the form and `transition_opportunity(..., stage="Ready to Review")` enforce the gate in the server's Job validation hook. A ready job must name an **enabled** search; match **every deterministic filter** (including complete title, location, compensation and posting date); be neither globally rejected nor excluded by that search; have an explicit **Include** when the search requires heuristic approval; and have **one nonempty Value per current search heuristic**. Missing, duplicate or unrelated heuristic rows are reported. The rejection message lists *all* failing checks.
+## Ready to Review: active search and heuristic requirements
 
-An Include override may make a job appear in **search results** even when filters do not match, but **does not bypass the stricter Ready to Review gate**. An approved workflow exception does not bypass this gate either. Draft jobs remain editable while research is incomplete; no existing jobs are silently moved to another stage.
+A Job's **Active Job Search** in **Job Search Fields** chooses the search used for this gate. Directly after **Job Details**, the **Research Heuristics** child table shows one row per heuristic defined on that search, with the heuristic's name, instructions, and editable **Value**. The name and instructions come from the search; the researcher fills in Value. Selecting the search or using **More Actions → Sync Research Heuristics** synchronizes the rows. Values remain associated with their original heuristic IDs, even when rows are reordered; deleting answers for heuristics no longer present in the selected search requires confirmation. Save values before review.
+
+To transition **Researching → Ready to Review**, the server requires all of the following:
+
+1. **Active Job Search** is set and refers to an existing, enabled search.
+2. The Job satisfies **every deterministic search filter**: one complete configured job title (case-insensitive), complete location (case-insensitive), employment type, work arrangement, seniority, posted-on-or-after date, compensation period, and minimum compensation with required currency as applicable. An unconfigured filter imposes no condition. Missing dates and compensation do not satisfy configured minima.
+3. Neither the Job nor its employer is globally rejected, and the Job is not explicitly **Excluded** from the active search. If the search has **Require Explicit Heuristic Approval** enabled, it also needs an explicit **Include** override.
+4. There is **exactly one assessment row for every current search heuristic**, identified by its underlying row ID; each has a nonblank **Value**. Missing, blank, duplicate, and unrelated/stale heuristic entries block readiness.
+
+Errors enumerate individual failed requirements, rather than simply indicating that the search does not match. Both the form action and `job_search.api.transition_opportunity(..., stage="Ready to Review")` use the same Job validation hook. Even an approved workflow exception **does not bypass readiness checks**. A search's explicit Include override can admit a nonmatching job to the *search results*, but **does not bypass deterministic checks for Ready to Review**.
+
+Heuristic values are researcher assessments, not automatically verified findings. Recording a Value does not replace the separate **cited research**, **completed procedure**, or **human Pursue decision** required for Qualified. A researched but not-yet-approved opening remains **Researching** or **Ready to Review**, never automatically Qualified.
