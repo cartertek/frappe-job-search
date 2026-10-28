@@ -256,7 +256,10 @@ def get_opportunity_context(opportunity):
 
 @frappe.whitelist()
 def publish_human_review(opportunity, posting_digest=None, research_digest=None,
-                         recommendation=None, application_review=None, interview_brief=None):
+                         recommendation=None, application_review=None, interview_brief=None,
+                         job_description=None, research_findings=None,
+                         research_recommendation=None, application_materials_for_review=None,
+                         interview_preparation=None):
     """Agent writes the human-facing summary to the Job Search Opportunity Data tab.
 
     Only explicitly supported review fields are changed, never stage or approvals.
@@ -265,11 +268,11 @@ def publish_human_review(opportunity, posting_digest=None, research_digest=None,
     require_operator()
     deal = require_opportunity(opportunity, "write")
     updates = {
-        "posting_digest": posting_digest,
-        "research_digest": research_digest,
-        "agent_recommendation": recommendation,
-        "application_review": application_review,
-        "interview_brief": interview_brief,
+        "job_description": job_description if job_description is not None else posting_digest,
+        "research_findings": research_findings if research_findings is not None else research_digest,
+        "research_recommendation": research_recommendation if research_recommendation is not None else recommendation,
+        "application_materials_for_review": application_materials_for_review if application_materials_for_review is not None else application_review,
+        "interview_preparation": interview_preparation if interview_preparation is not None else interview_brief,
     }
     changed = []
     for name, value in updates.items():

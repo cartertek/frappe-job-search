@@ -32,3 +32,7 @@ Example:
       -d '{"employer":"Example Ltd","title":"Software Engineer","source_url":"https://example.org/careers/42","description":"Full original posting text"}'
 
 Idempotency: re-registering an identical posting URL returns its opportunity; strict employer + requisition + title + location may reuse a Job; weaker matches are flagged. Submitted application reference is unique within a Job. If posting content changes at the same URL, the registration/capture API records a new snapshot linked to its predecessor. The old snapshot cannot be edited in-place. Reverting to an earlier description creates another observation in the history.
+
+### Semantic Job fields and review API
+
+Use the native **Job Description** (`job_description`), **Research Findings & Sources** (`research_findings`), **Agent Recommendation** (`research_recommendation`), **Application Materials for Review** (`application_materials_for_review`), **Interview Preparation** (`interview_preparation`), and **Human Feedback / Instructions** (`human_feedback_and_instructions`) fields in Job records. The `publish_human_review` endpoint accepts the matching semantic argument names; its previous `posting_digest`, `research_digest`, `recommendation`, `application_review`, and `interview_brief` arguments remain accepted for backward compatibility. Do not use the old column names for new records or direct Frappe field writes.

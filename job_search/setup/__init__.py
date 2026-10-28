@@ -22,6 +22,7 @@ def after_migrate():
             ignore_permissions=True
         )
     migrate_prefixed_fields()
+    migrate_semantic_job_fields()
     migrate_workflow_statuses()
     migrate_legacy_search_filters()
     migrate_heuristics_table()
@@ -142,6 +143,33 @@ def migrate_legacy_search_filters():
                 f"UPDATE `tabJob Search Search` SET `{old}` = NULL "
                 f"WHERE `{old}` IS NOT NULL AND `{old}` != ''"
             )
+
+
+def migrate_semantic_job_fields():
+    """Copy old Job columns to semantic fields after DocType synchronization.
+
+    Old columns remain for rollback; the one-time marker prevents old data from
+    overwriting deliberately cleared values on later deployments.
+    """
+    marker = "job_search:semantic_job_fields_v1"
+    if frappe.db.get_default(marker):
+        return
+    mapping = {
+        "posting_digest": "job_description",
+        "research_digest": "research_findings",
+        "agent_recommendation": "research_recommendation",
+        "application_review": "application_materials_for_review",
+        "interview_brief": "interview_preparation",
+        "human_feedback": "human_feedback_and_instructions",
+    }
+    columns = set(frappe.db.get_table_columns("Job Search Opportunity"))
+    for old, new in mapping.items():
+        if {old, new}.issubset(columns):
+            frappe.db.sql(
+                f"UPDATE `tabJob Search Opportunity` SET `{new}` = `{old}` "
+                f"WHERE `{new}` IS NULL AND `{old}` IS NOT NULL"
+            )
+    frappe.db.set_default(marker, "1")
 
 
 def migrate_prefixed_fields():

@@ -1,1 +1,2 @@
 job_search.patches.v1_title_and_location_match
+job_search.patches.v2_semantic_job_fields

@@ -124,10 +124,10 @@ class SchemaTest(unittest.TestCase):
             "search_fields_section": {"active_job_search", "location", "employment_type", "work_arrangement",
                 "seniority", "compensation_not_given", "compensation_min", "compensation_max", "currency", "compensation_period",
                 "posted_on"},
-            "job_details_section": {"posting_digest"},
+            "job_details_section": {"job_description"},
             "research_heuristics_section": {"research_heuristics"},
-            "research_notes_section": {"research_digest", "agent_recommendation", "application_review",
-                "interview_brief", "human_feedback"},
+            "research_notes_section": {"research_findings", "research_recommendation", "application_materials_for_review",
+                "interview_preparation", "human_feedback_and_instructions"},
         }
         def slice_between(start, end):
             return fields[names.index(start) + 1 : names.index(end)]

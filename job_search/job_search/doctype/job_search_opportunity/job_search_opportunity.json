@@ -43,15 +43,15 @@
     "compensation_period",
     "posted_on",
     "job_details_section",
-    "posting_digest",
+    "job_description",
     "research_heuristics_section",
     "research_heuristics",
     "research_notes_section",
-    "research_digest",
-    "agent_recommendation",
-    "application_review",
-    "interview_brief",
-    "human_feedback"
+    "research_findings",
+    "research_recommendation",
+    "application_materials_for_review",
+    "interview_preparation",
+    "human_feedback_and_instructions"
   ],
   "fields": [
     {
@@ -262,8 +262,8 @@
       "label": "Job Details"
     },
     {
-      "fieldname": "posting_digest",
-      "label": "Job Description / Posting",
+      "fieldname": "job_description",
+      "label": "Job Description",
       "fieldtype": "Small Text"
     },
     {
@@ -285,27 +285,27 @@
       "collapsible": 1
     },
     {
-      "fieldname": "research_digest",
+      "fieldname": "research_findings",
       "label": "Research Findings & Sources",
       "fieldtype": "Text Editor"
     },
     {
-      "fieldname": "agent_recommendation",
+      "fieldname": "research_recommendation",
       "label": "Agent Recommendation",
       "fieldtype": "Text Editor"
     },
     {
-      "fieldname": "application_review",
+      "fieldname": "application_materials_for_review",
       "label": "Application Materials for Review",
       "fieldtype": "Text Editor"
     },
     {
-      "fieldname": "interview_brief",
+      "fieldname": "interview_preparation",
       "label": "Interview Preparation",
       "fieldtype": "Text Editor"
     },
     {
-      "fieldname": "human_feedback",
+      "fieldname": "human_feedback_and_instructions",
       "label": "Human Feedback / Instructions",
       "fieldtype": "Text Editor"
     }
