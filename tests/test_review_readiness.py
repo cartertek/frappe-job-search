@@ -43,6 +43,7 @@ class ReviewReadiness(unittest.TestCase):
             seniority='Senior', posted_on='2026-10-01', compensation_min=130000,
             currency='USD', compensation_period='Year', active_job_search='SEARCH1',
             globally_rejected=0, research_heuristics=[
+                record(heuristic_id='builtin:job-title', heuristic_name='Job Title', value='The description matches the role'),
                 record(heuristic_id='H1', heuristic_name='Personal contact', value='Contacted recruiter'),
                 record(heuristic_id='H2', heuristic_name='Hiring evidence', value='Current job posting')])
         self.fake.get_doc = lambda *args: self.search
@@ -61,6 +62,23 @@ class ReviewReadiness(unittest.TestCase):
     def test_valid_complete_search_and_heuristics_pass(self):
         self.assertEqual([], self.errors())
         self.assertEqual([], self.searches.match_failures(self.job, self.search))
+
+    def test_job_title_is_builtin_heuristic_not_exact_match(self):
+        from job_search.heuristics import research_heuristics
+        rows = research_heuristics(self.search)
+        self.assertEqual('builtin:job-title', rows[0]['name'])
+        self.assertEqual('Job Title', rows[0]['heuristic_name'])
+        self.assertIn('job description should describe a role matching', rows[0]['description'])
+        self.assertIn('- Python Engineer', rows[0]['description'])
+        self.job.job_title = 'Backend Platform Architect'
+        self.assertEqual([], self.searches.match_failures(self.job, self.search))
+        self.assertEqual([], self.errors())
+        self.job.research_heuristics[0].value = ' '
+        self.assertIn("Research heuristic 'Job Title' requires a value", self.errors())
+        self.job.research_heuristics.pop(0)
+        self.assertIn("Research heuristic 'Job Title' is missing", self.errors())
+        self.search.title_matches = ''
+        self.assertEqual([], self.errors())
 
     def test_missing_and_disabled_search_are_rejected(self):
         self.job.active_job_search = ''
@@ -82,12 +100,12 @@ class ReviewReadiness(unittest.TestCase):
         self.job.currency = 'EUR'
         self.job.compensation_period = 'Hour'
         errors = self.errors()
-        for key in ('Job Title', 'Location', 'Employment Type', 'Work Arrangement',
+        for key in ('Location', 'Employment Type', 'Work Arrangement',
                     'Seniority', 'Posted On', 'Minimum Compensation', 'Currency',
                     'Compensation Period'):
             with self.subTest(key=key):
                 self.assertIn(key, ' '.join(errors))
-        self.assertEqual(9, len(errors))
+        self.assertEqual(8, len(errors))
         self.assertFalse(self.searches.matches(self.job, self.search))
 
     def test_missing_blank_duplicate_and_stale_heuristic_values(self):
@@ -113,7 +131,7 @@ class ReviewReadiness(unittest.TestCase):
         self.assertEqual([], self.errors())
 
     def test_transition_gate_cannot_be_skipped_by_exception_flag(self):
-        self.job.research_heuristics[0].value = '   '
+        self.job.research_heuristics[1].value = '   '
         with self.assertRaisesRegex(ValueError, 'Personal contact'):
             self.workflow._validate_transition(self.job, 'Researching', 'Ready to Review')
         self.fake.flags.job_search_transition_context = record(
@@ -122,7 +140,7 @@ class ReviewReadiness(unittest.TestCase):
         self.workflow.require_decision = lambda *args: 'DECISION1'
         with self.assertRaisesRegex(ValueError, 'Personal contact'):
             self.workflow._validate_transition(self.job, 'Researching', 'Ready to Review')
-        self.job.research_heuristics[0].value = 'Contacted recruiter'
+        self.job.research_heuristics[1].value = 'Contacted recruiter'
         self.assertIsNotNone(self.workflow._validate_transition(self.job, 'Researching', 'Ready to Review'))
 
     def test_heuristics_reordered_by_search_keep_stable_identity(self):

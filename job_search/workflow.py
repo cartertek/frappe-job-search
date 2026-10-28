@@ -5,6 +5,7 @@ from html import escape
 from frappe.utils import now_datetime
 
 from job_search.searches import match_failures
+from job_search.heuristics import research_heuristics
 
 STAGES = (
     "Discovered", "Researching", "Ready to Review", "Qualified",
@@ -95,7 +96,7 @@ def _review_readiness_failures(deal):
     if search.require_heuristics and override != "Include":
         errors.append("Active job search requires an explicit Include override")
 
-    required = {row.name: row.heuristic_name for row in search.heuristics}
+    required = {row["name"]: row["heuristic_name"] for row in research_heuristics(search)}
     provided = {}
     for row in deal.research_heuristics:
         if row.heuristic_id in provided:

@@ -21,7 +21,12 @@ async function sync_research_heuristics(frm, confirm_discard = false) {
   const search = await frappe.db.get_doc('Job Search Search', name);
   if (frm.doc.active_job_search !== name || frm._heuristic_sync_request !== request) return;
 
-  const defined = search.heuristics || [];
+  const titles = (search.title_matches || '').split('\n').map(s => s.trim()).filter(Boolean);
+  const defined = [
+    ...(titles.length ? [{name: 'builtin:job-title', heuristic_name: 'Job Title',
+      description: 'The job title should be similar to one of the titles below and/or the job description should describe a role matching one of these titles. Assess the meaning of the role, not an exact text match.\n\nTitles:\n' + titles.map(t => '- ' + t).join('\n')}] : []),
+    ...(search.heuristics || []),
+  ];
   const current = frm.doc.research_heuristics || [];
   const expected_ids = new Set(defined.map(row => row.name));
   const stale = current.filter(row => !expected_ids.has(row.heuristic_id));

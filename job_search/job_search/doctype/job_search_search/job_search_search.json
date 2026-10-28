@@ -41,7 +41,7 @@
       "fieldname": "title_matches",
       "label": "Job Titles to Match",
       "fieldtype": "Small Text",
-      "description": "One complete job title per line. A job matches if its title equals any line (case-insensitive)."
+      "description": "One reference title per line. These form the built-in Job Title research heuristic; a similar title or matching job description can satisfy it. Not an exact-match filter."
     },
     {
       "fieldname": "location_match",
@@ -91,7 +91,7 @@
     },
     {
       "fieldname": "heuristics",
-      "label": "Research Heuristics",
+      "label": "Custom Research Heuristics",
       "fieldtype": "Table",
       "description": "Subjective research criteria. Each row has a name and a description; these instructions are evaluated by the researcher, not by deterministic filters.",
       "options": "Job Search Heuristic"

@@ -13,10 +13,6 @@ SEARCH = 'Job Search Search'
 def match_failures(job, search):
     """Explain each failed deterministic search criterion using the same rules as matches()."""
     failures = []
-    titles = [item.strip().casefold() for item in (search.title_matches or '').splitlines() if item.strip()]
-    if titles and (job.job_title or '').strip().casefold() not in titles:
-        failures.append(f"Job Title: {job.job_title or '(missing)'}; allowed: " +
-                        ', '.join(item.strip() for item in search.title_matches.splitlines() if item.strip()))
     if search.location_match and (job.location or '').strip().casefold() != search.location_match.strip().casefold():
         failures.append(f"Location: {job.location or '(missing)'}; required: {search.location_match}")
     for label, job_value, needed in (
