@@ -148,7 +148,7 @@ class SchemaTest(unittest.TestCase):
         self.assertIn('data-fieldname="metadata_column"', css)
         self.assertIn("grid-template-columns", css)
         setup = (APP / "setup/__init__.py").read_text()
-        self.assertIn('frappe.cache.delete_value("doctype_form_meta::Job Search Opportunity")', setup)
+        self.assertIn('frappe.client_cache.delete_value("doctype_form_meta::Job Search Opportunity")', setup)
 
     def test_opportunity_has_single_unprefixed_status(self):
         import json
