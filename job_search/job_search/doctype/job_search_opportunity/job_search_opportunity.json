@@ -30,6 +30,7 @@
     "interview_schedule",
     "globally_rejected",
     "search_fields_section",
+    "active_job_search",
     "job_title",
     "location",
     "employment_type",
@@ -43,6 +44,8 @@
     "posted_on",
     "job_details_section",
     "posting_digest",
+    "research_heuristics_section",
+    "research_heuristics",
     "research_notes_section",
     "research_digest",
     "agent_recommendation",
@@ -180,6 +183,13 @@
       "label": "Job Search Fields"
     },
     {
+      "fieldname": "active_job_search",
+      "fieldtype": "Link",
+      "options": "Job Search Search",
+      "label": "Active Job Search",
+      "description": "Search whose filters and research heuristics must be complete before Ready to Review."
+    },
+    {
       "fieldname": "job_title",
       "label": "Job Title",
       "fieldtype": "Data",
@@ -250,6 +260,18 @@
       "fieldname": "posting_digest",
       "label": "Job Description / Posting",
       "fieldtype": "Small Text"
+    },
+    {
+      "fieldname": "research_heuristics_section",
+      "fieldtype": "Section Break",
+      "label": "Research Heuristics"
+    },
+    {
+      "fieldname": "research_heuristics",
+      "fieldtype": "Table",
+      "label": "Research Heuristics",
+      "options": "Job Search Heuristic Value",
+      "description": "Provide a value for every heuristic defined in the active job search before moving to Ready to Review."
     },
     {
       "fieldname": "research_notes_section",

@@ -10,36 +10,37 @@ EMPLOYER = 'Job Search Employer'
 SEARCH = 'Job Search Search'
 
 
-def matches(job, search):
-    """Pure deterministic predicate; subjective heuristics are never executed."""
-    # One of the exact job titles is sufficient; location is one exact match.
+def match_failures(job, search):
+    """Explain each failed deterministic search criterion using the same rules as matches()."""
+    failures = []
     titles = [item.strip().casefold() for item in (search.title_matches or '').splitlines() if item.strip()]
     if titles and (job.job_title or '').strip().casefold() not in titles:
-        return False
-    if search.location_match and (
-        (job.location or '').strip().casefold() != search.location_match.strip().casefold()
-    ):
-        return False
-    for job_value, needed in (
-        (job.employment_type, search.employment_type),
-        (job.work_arrangement, search.work_arrangement),
-        (job.seniority, search.seniority),
+        failures.append(f"Job Title: {job.job_title or '(missing)'}; allowed: " +
+                        ', '.join(item.strip() for item in search.title_matches.splitlines() if item.strip()))
+    if search.location_match and (job.location or '').strip().casefold() != search.location_match.strip().casefold():
+        failures.append(f"Location: {job.location or '(missing)'}; required: {search.location_match}")
+    for label, job_value, needed in (
+        ('Employment Type', job.employment_type, search.employment_type),
+        ('Work Arrangement', job.work_arrangement, search.work_arrangement),
+        ('Seniority', job.seniority, search.seniority),
     ):
         if needed and (job_value or '').casefold() != needed.casefold():
-            return False
-    if search.posted_after and (
-        not job.posted_on or getdate(job.posted_on) < getdate(search.posted_after)
-    ):
-        return False
+            failures.append(f"{label}: {job_value or '(missing)'}; required: {needed}")
+    if search.posted_after and (not job.posted_on or getdate(job.posted_on) < getdate(search.posted_after)):
+        failures.append(f"Posted On: {job.posted_on or '(missing)'}; required on or after {search.posted_after}")
     if search.compensation_period and job.compensation_period != search.compensation_period:
-        return False
+        failures.append(f"Compensation Period: {job.compensation_period or '(missing)'}; required: {search.compensation_period}")
     if search.salary_min:
         if search.currency and job.currency != search.currency:
-            return False
-        # Unknown salary doesn't satisfy a minimum; don't silently assume it does.
+            failures.append(f"Currency: {job.currency or '(missing)'}; required: {search.currency}")
         if not job.compensation_min or float(job.compensation_min) < float(search.salary_min):
-            return False
-    return True
+            failures.append(f"Minimum Compensation: {job.compensation_min or '(missing)'}; required at least {search.salary_min}")
+    return failures
+
+
+def matches(job, search):
+    """Pure deterministic predicate; subjective heuristics are never executed."""
+    return not match_failures(job, search)
 
 
 def matching_jobs(search_name):

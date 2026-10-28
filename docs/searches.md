@@ -4,13 +4,13 @@
 
 ## Deterministic filters
 
-Each search may filter by job title text, location text, employment type, work arrangement, seniority, posting date, and minimum compensation (with currency/period for comparable values). Empty filters impose no condition. Job title and location use case-insensitive substring matching; enumerated fields use exact matching. A missing posted date or salary does not match a configured date or compensation minimum. A currency is considered only when a compensation minimum is set, avoiding Frappe's implicit default currency accidentally filtering the collection.
+Each search may filter by job title text, location text, employment type, work arrangement, seniority, posting date, and minimum compensation (with currency/period for comparable values). Empty filters impose no condition. Job title (any complete line of the configured title list) and location use case-insensitive full-field equality; enumerated fields use exact matching. A missing posted date or salary does not match a configured date or compensation minimum. A currency is considered only when a compensation minimum is set, avoiding Frappe's implicit default currency accidentally filtering the collection.
 
 By default, all non-rejected jobs matching these filters appear in the search. Changes to jobs or filters immediately affect results without a separate synchronization step.
 
 ## Subjective heuristics
 
-`Research Heuristics` is a child table on each search. Each row has a required **Name** and **Description**, recording an individual subjective criterion for the researching agent. The application does **not** pretend to evaluate those instructions deterministically. When `Require Explicit Heuristic Approval` is enabled, only jobs explicitly added via an **Include** override appear in the search. The agent must evaluate the instructions and explicitly include jobs using the API or the Overrides table.
+`Research Heuristics` is a child table on each search. Each row has a required **Name** and **Description**, recording an individual subjective criterion for the researching agent. The application does **not** pretend to evaluate those instructions deterministically. When `Require Explicit Heuristic Approval` is enabled, only jobs explicitly added via an **Include** override appear in the search. The agent must evaluate the instructions and explicitly include jobs using the API or the Overrides table. The Job form also has an **Active Job Search** link and its own **Research Heuristics** child table for recording a value per heuristic; these answers are required before advancing to **Ready to Review**. See [Job workflow](workflows.md) for the stricter transition checks.
 
 ## Override and rejection precedence
 

@@ -16,11 +16,11 @@ EXPECTED = {
     "Job Search Application", "Job Search Interview", "Job Search Interview Contact",
     "Job Search Decision", "Job Search Transition", "Job Search Opportunity",
     "Job Search Employer", "Job Search Task", "Job Search Search", "Job Search Membership",
-    "Job Search Heuristic",
+    "Job Search Heuristic", "Job Search Heuristic Value",
 }
 CHILD = {"Job Search Heuristic",
          "Job Search Research Source", "Job Search Procedure Step",
-         "Job Search Execution Step", "Job Search Interview Contact", "Job Search Membership"}
+         "Job Search Execution Step", "Job Search Interview Contact", "Job Search Membership", "Job Search Heuristic Value"}
 
 
 class SchemaTest(unittest.TestCase):
@@ -105,7 +105,7 @@ class SchemaTest(unittest.TestCase):
         self.assertEqual(names, [f["fieldname"] for f in fields])
         self.assertEqual(
             [f["fieldname"] for f in fields if f["fieldtype"] == "Section Break"],
-            ["overview_section", "search_fields_section", "job_details_section", "research_notes_section"],
+            ["overview_section", "search_fields_section", "job_details_section", "research_heuristics_section", "research_notes_section"],
         )
         self.assertEqual(
             [(f["fieldname"], f.get("label")) for f in fields if f["fieldtype"] == "Column Break"],
@@ -120,10 +120,11 @@ class SchemaTest(unittest.TestCase):
                 "applied_on", "next_action_on", "closure_reason", "offer_details", "latest_posting",
                 "last_decision", "last_decision_record", "latest_application", "interview_schedule",
                 "globally_rejected"},
-            "search_fields_section": {"job_title", "location", "employment_type", "work_arrangement",
+            "search_fields_section": {"active_job_search", "job_title", "location", "employment_type", "work_arrangement",
                 "seniority", "compensation_min", "compensation_max", "currency", "compensation_period",
                 "posted_on"},
             "job_details_section": {"posting_digest"},
+            "research_heuristics_section": {"research_heuristics"},
             "research_notes_section": {"research_digest", "agent_recommendation", "application_review",
                 "interview_brief", "human_feedback"},
         }
@@ -135,12 +136,14 @@ class SchemaTest(unittest.TestCase):
                          groups["metadata_column"])
         self.assertEqual({f["fieldname"] for f in slice_between("search_fields_section", "job_details_section")
                           if f["fieldtype"] != "Column Break"}, groups["search_fields_section"])
-        self.assertEqual({f["fieldname"] for f in slice_between("job_details_section", "research_notes_section")},
+        self.assertEqual({f["fieldname"] for f in slice_between("job_details_section", "research_heuristics_section")},
                          groups["job_details_section"])
+        self.assertEqual({f["fieldname"] for f in slice_between("research_heuristics_section", "research_notes_section")},
+                         groups["research_heuristics_section"])
         self.assertEqual({f["fieldname"] for f in fields[names.index("research_notes_section") + 1:]},
                          groups["research_notes_section"])
-        self.assertEqual(33, len([f for f in fields if f["fieldname"] in set().union(*groups.values())
-                                 and f["fieldname"] != "overview_job_title"]))
+        self.assertEqual(34, len([f for f in fields if f["fieldname"] in set().union(*groups.values())
+                                 and f["fieldname"] != "overview_job_title" and f["fieldname"] != "research_heuristics"]))
         js = (BASE / "job_search_opportunity/job_search_opportunity.js").read_text()
         css = (BASE / "job_search_opportunity/job_search_opportunity.css").read_text()
         self.assertIn("frappe.utils.escape_html(frm.doc.job_title)", js)
@@ -149,6 +152,30 @@ class SchemaTest(unittest.TestCase):
         self.assertIn("grid-template-columns", css)
         setup = (APP / "setup/__init__.py").read_text()
         self.assertIn('frappe.client_cache.delete_value("doctype_form_meta::Job Search Opportunity")', setup)
+
+    def test_review_heuristics_child_table_and_transition_contract(self):
+        data = json.loads((BASE / "job_search_opportunity" / "job_search_opportunity.json").read_text())
+        fields = {f["fieldname"]: f for f in data["fields"]}
+        self.assertEqual((fields["active_job_search"]["fieldtype"], fields["active_job_search"]["options"]),
+                         ("Link", "Job Search Search"))
+        self.assertEqual((fields["research_heuristics"]["fieldtype"], fields["research_heuristics"]["options"]),
+                         ("Table", "Job Search Heuristic Value"))
+        self.assertLess(data["field_order"].index("job_details_section"),
+                        data["field_order"].index("research_heuristics_section"))
+        self.assertLess(data["field_order"].index("research_heuristics_section"),
+                        data["field_order"].index("research_notes_section"))
+        child = json.loads((BASE / "job_search_heuristic_value/job_search_heuristic_value.json").read_text())
+        self.assertEqual(child["field_order"], ["heuristic_id", "heuristic_name", "description", "value"])
+        self.assertEqual({f["fieldname"] for f in child["fields"] if f.get("in_list_view")},
+                         {"heuristic_name", "value"})
+        js = (BASE / "job_search_opportunity/job_search_opportunity.js").read_text()
+        self.assertIn('active_job_search(frm)', js)
+        self.assertIn("frappe.db.get_doc('Job Search Search', name)", js)
+        self.assertIn("frm.add_child('research_heuristics')", js)
+        self.assertIn('Sync Research Heuristics', js)
+        workflow = (APP / "workflow.py").read_text()
+        self.assertIn('if next_stage == "Ready to Review":', workflow)
+        self.assertIn('_review_readiness_failures(deal)', workflow)
 
     def test_opportunity_has_single_unprefixed_status(self):
         import json

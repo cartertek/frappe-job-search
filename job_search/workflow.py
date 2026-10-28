@@ -1,7 +1,10 @@
 """Job Search Opportunity stage invariants, independent of UI and REST mutation entrypoint."""
 
 import frappe
+from html import escape
 from frappe.utils import now_datetime
+
+from job_search.searches import match_failures
 
 STAGES = (
     "Discovered", "Researching", "Ready to Review", "Qualified",
@@ -64,6 +67,51 @@ def _count(doctype, opportunity):
     return frappe.db.count(doctype, {"opportunity": opportunity})
 
 
+def _review_readiness_failures(deal):
+    """All unmet requirements for a job to move to Ready to Review.
+
+    The active search is a strict qualification gate. An explicit Include does not
+    excuse a deterministic mismatch at this stage; the UI search results can still
+    use overrides for discovery separately.
+    """
+    if not deal.active_job_search:
+        return ["Active Job Search is required"]
+    if not frappe.db.exists("Job Search Search", deal.active_job_search):
+        return [f"Active Job Search {deal.active_job_search} does not exist"]
+
+    search = frappe.get_doc("Job Search Search", deal.active_job_search)
+    errors = []
+    if not search.enabled:
+        errors.append(f"Active Job Search {search.name} is disabled")
+    errors.extend(match_failures(deal, search))
+
+    if deal.globally_rejected:
+        errors.append("Job is globally rejected")
+    if frappe.db.get_value("Job Search Employer", deal.organization, "globally_rejected"):
+        errors.append("Employer is globally rejected")
+    override = next((row.override for row in search.overrides if row.job == deal.name), None)
+    if override == "Exclude":
+        errors.append("Job is explicitly excluded from the active job search")
+    if search.require_heuristics and override != "Include":
+        errors.append("Active job search requires an explicit Include override")
+
+    required = {row.name: row.heuristic_name for row in search.heuristics}
+    provided = {}
+    for row in deal.research_heuristics:
+        if row.heuristic_id in provided:
+            errors.append(f"Duplicate research heuristic: {row.heuristic_name or row.heuristic_id}")
+        provided[row.heuristic_id] = row
+        if row.heuristic_id not in required:
+            errors.append(f"Unexpected research heuristic: {row.heuristic_name or row.heuristic_id or '(unnamed)'}")
+    for identifier, name in required.items():
+        answer = provided.get(identifier)
+        if answer is None:
+            errors.append(f"Research heuristic '{name}' is missing")
+        elif not (answer.value or '').strip():
+            errors.append(f"Research heuristic '{name}' requires a value")
+    return errors
+
+
 def _validate_transition(deal, previous, next_stage):
     if next_stage not in TRANSITIONS.get(previous, set()):
         frappe.throw(f"Unsupported Job Search transition: {previous} -> {next_stage}")
@@ -74,6 +122,13 @@ def _validate_transition(deal, previous, next_stage):
         override = require_decision(deal.name, "Override", ctx.get("override_decision"))
         if not (ctx.get("reason") or "").strip():
             frappe.throw("An override must include a reason")
+
+    if next_stage == "Ready to Review":
+        errors = _review_readiness_failures(deal)
+        if errors:
+            frappe.throw("Cannot move to Ready to Review:<ul>" + "".join(
+                f"<li>{escape(message)}</li>" for message in errors
+            ) + "</ul>")
 
     if next_stage == "Qualified":
         require_decision(deal.name, "Pursue", ctx.get("decision"))

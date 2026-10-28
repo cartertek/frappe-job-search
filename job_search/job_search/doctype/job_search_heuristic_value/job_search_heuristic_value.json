@@ -1,0 +1,50 @@
+{
+  "doctype": "DocType",
+  "name": "Job Search Heuristic Value",
+  "module": "Job Search",
+  "custom": 0,
+  "istable": 1,
+  "engine": "InnoDB",
+  "field_order": [
+    "heuristic_id",
+    "heuristic_name",
+    "description",
+    "value"
+  ],
+  "fields": [
+    {
+      "fieldname": "heuristic_id",
+      "fieldtype": "Data",
+      "label": "Search Heuristic ID",
+      "hidden": 1,
+      "read_only": 1
+    },
+    {
+      "fieldname": "heuristic_name",
+      "fieldtype": "Data",
+      "label": "Heuristic",
+      "in_list_view": 1,
+      "read_only": 1
+    },
+    {
+      "fieldname": "description",
+      "fieldtype": "Text Editor",
+      "label": "Research Instructions",
+      "read_only": 1
+    },
+    {
+      "fieldname": "value",
+      "fieldtype": "Small Text",
+      "label": "Value",
+      "in_list_view": 1,
+      "description": "Researcher-assessed heuristic value, with explanation or evidence as appropriate."
+    }
+  ],
+  "permissions": [],
+  "sort_field": "idx",
+  "sort_order": "ASC",
+  "actions": [],
+  "autoname": "hash",
+  "editable_grid": 0,
+  "track_changes": 0
+}

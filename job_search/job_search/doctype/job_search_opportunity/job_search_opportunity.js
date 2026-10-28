@@ -11,10 +11,65 @@ function render_overview_title(frm) {
   `);
 }
 
+// Keep the job's assessment rows aligned to the search's stable child-row IDs.
+// Preserve answers while changing descriptions; never silently discard answers.
+async function sync_research_heuristics(frm, confirm_discard = false) {
+  const name = frm.doc.active_job_search;
+  if (!name) return;
+  const request = (frm._heuristic_sync_request || 0) + 1;
+  frm._heuristic_sync_request = request;
+  const search = await frappe.db.get_doc('Job Search Search', name);
+  if (frm.doc.active_job_search !== name || frm._heuristic_sync_request !== request) return;
+
+  const defined = search.heuristics || [];
+  const current = frm.doc.research_heuristics || [];
+  const expected_ids = new Set(defined.map(row => row.name));
+  const stale = current.filter(row => !expected_ids.has(row.heuristic_id));
+  const has_stale_answers = stale.some(row => (row.value || '').trim());
+  if (has_stale_answers) {
+    if (!confirm_discard) {
+      frm.dashboard.set_headline_alert(
+        __('This search has different research heuristics. Sync the table to replace outdated answers.'),
+        'orange'
+      );
+      return;
+    }
+    const agreed = await new Promise(resolve => frappe.confirm(
+      __('Changing this search will discard answers for heuristics that do not belong to it. Continue?'),
+      () => resolve(true), () => resolve(false)
+    ));
+    if (!agreed || frm.doc.active_job_search !== name) return;
+  }
+
+  const by_id = new Map(current.map(row => [row.heuristic_id, row]));
+  const unchanged = current.length === defined.length && defined.every((row, i) =>
+    current[i].heuristic_id === row.name && current[i].heuristic_name === row.heuristic_name &&
+    current[i].description === row.description
+  );
+  if (unchanged) return;
+
+  frm.clear_table('research_heuristics');
+  defined.forEach(heuristic => {
+    const row = frm.add_child('research_heuristics');
+    row.heuristic_id = heuristic.name;
+    row.heuristic_name = heuristic.heuristic_name;
+    row.description = heuristic.description;
+    row.value = by_id.get(heuristic.name)?.value || '';
+  });
+  frm.refresh_field('research_heuristics');
+  frm.dirty();
+}
+
 frappe.ui.form.on('Job Search Opportunity', {
   job_title(frm) { render_overview_title(frm); },
+  active_job_search(frm) { sync_research_heuristics(frm, true); },
   refresh(frm) {
     render_overview_title(frm);
+    sync_research_heuristics(frm);
+    if (frm.doc.active_job_search) {
+      frm.add_custom_button(__('Sync Research Heuristics'), () =>
+        sync_research_heuristics(frm, true), __('More Actions'));
+    }
     const status = frm.doc.status;
     const colors = {
       Discovered: 'blue', Researching: 'orange', 'Ready to Review': 'orange',
@@ -28,6 +83,10 @@ frappe.ui.form.on('Job Search Opportunity', {
       const scopes = {'Search Only':'search','Job Globally':'job',
         'Entire Organization':'organization'};
       if (values.scope) values.scope = scopes[values.scope] || values.scope;
+      if (action === 'ready_to_review') {
+        await sync_research_heuristics(frm);
+        if (frm.is_dirty()) await frm.save();
+      }
       await frappe.call({
         method: 'job_search.api.perform_job_action',
         args: {opportunity: frm.doc.name, action, ...values},
