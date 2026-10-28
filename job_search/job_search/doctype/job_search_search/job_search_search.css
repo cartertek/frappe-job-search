@@ -37,7 +37,7 @@
 }
 .job-heuristic-record, .job-heuristic-heading {
   display: grid;
-  grid-template-columns: minmax(140px, 24%) minmax(0, 1fr) 40px;
+  grid-template-columns: minmax(140px, 24%) minmax(0, 1fr);
   gap: 16px;
   min-width: 0;
   width: 100%;
@@ -66,5 +66,7 @@
 .form-grid:has(.job-heuristic-record) .grid-heading-row .template-row {
   padding: 4px 16px;
 }
-.job-heuristic-edit {text-align:right;align-self:start;cursor:pointer;}
+.job-heuristic-record {position:relative;}
+.job-heuristic-description {padding-right:40px !important;}
+.job-heuristic-edit {position:absolute;right:0;top:0;cursor:pointer;}
 .job-heuristic-edit .btn {pointer-events:none;}
