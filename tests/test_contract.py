@@ -162,17 +162,18 @@ class SchemaTest(unittest.TestCase):
         self.assertIn("migrate_heuristics_table()", setup)
 
     def test_heuristic_template_supports_header_row(self):
-        template = (APP / "templates" / "includes" / "search_heuristic_row.html").read_text()
+        template = (APP / "templates/includes/search_heuristic_row.html").read_text()
+        css = (BASE / "job_search_search/job_search_search.css").read_text()
         self.assertIn("{% if (doc) { %}", template)
         self.assertIn("{% } else { %}", template)
         self.assertIn("doc.description", template)
-        self.assertIn('__("Name / Description")', template)
-        self.assertIn(".grid-body .data-row.row", template)
-        self.assertIn(".template-row-index", template)
-        self.assertIn(".grid-body .template-row", template)
-        self.assertNotIn("position:absolute", template)
-        self.assertNotIn(".grid-row:not([data-name])", template)
-        setup = (APP / "setup" / "__init__.py").read_text()
+        self.assertIn('__("Name")', template)
+        self.assertIn('__("Description")', template)
+        self.assertNotIn("<style>", template)
+        self.assertIn("grid-template-columns", css)
+        self.assertIn(".template-row-index", css)
+        self.assertIn(".template-row", css)
+        setup = (APP / "setup/__init__.py").read_text()
         self.assertIn('frappe.client_cache.delete_value("doctype_form_meta::Job Search Search")', setup)
 
     def test_standalone_ui(self):

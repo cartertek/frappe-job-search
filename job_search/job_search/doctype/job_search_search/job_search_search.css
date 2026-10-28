@@ -1,0 +1,62 @@
+/* The Search form's native Frappe child-grid template has two content columns.
+   This CSS is loaded through the DocType's supported __css metadata asset. */
+.form-grid:has(.job-heuristic-record) .grid-heading-row .grid-row:nth-child(2) {
+  display: none;
+}
+.form-grid:has(.job-heuristic-record) .grid-heading-row.with-filter {
+  height: 32px;
+}
+.form-grid:has(.job-heuristic-record) .data-row.row {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  display: flex;
+  align-items: flex-start;
+  flex-wrap: nowrap;
+}
+.form-grid:has(.job-heuristic-record) .template-row-index {
+  flex: 0 0 58px;
+  float: none;
+  margin: 0;
+  padding: 12px 8px;
+  display: flex;
+  gap: 6px;
+  align-items: flex-start;
+}
+.form-grid:has(.job-heuristic-record) .template-row-index span {
+  display: inline;
+  width: auto;
+  margin: 0;
+}
+.form-grid:has(.job-heuristic-record) .template-row {
+  flex: 1 1 0;
+  min-width: 0;
+  width: auto;
+  max-width: none;
+  padding: 12px 16px;
+}
+.job-heuristic-record, .job-heuristic-heading {
+  display: grid;
+  grid-template-columns: minmax(140px, 24%) minmax(0, 1fr);
+  gap: 16px;
+  min-width: 0;
+  width: 100%;
+  align-items: start;
+}
+.job-heuristic-heading { font-weight: 600; }
+.job-heuristic-name { font-weight: 600; overflow-wrap: anywhere; }
+.job-heuristic-description.ql-editor.read-mode {
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  max-height: none;
+  padding: 0;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+.job-heuristic-description.ql-editor.read-mode p,
+.job-heuristic-description.ql-editor.read-mode li {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
