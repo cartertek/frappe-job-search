@@ -1,6 +1,7 @@
 """Shared definitions for built-in and custom research heuristics."""
 
 JOB_TITLE_HEURISTIC_ID = 'builtin:job-title'
+COMPENSATION_HEURISTIC_ID = 'builtin:minimum-compensation'
 
 
 def research_heuristics(search):
@@ -16,6 +17,20 @@ def research_heuristics(search):
                 'job description should describe a role matching one of these titles. '
                 'Assess the meaning of the role, not an exact text match.\n\n'
                 'Titles:\n' + '\n'.join(f'- {title}' for title in titles)
+            ),
+        })
+    if search.salary_min and getattr(search, 'allow_compensation_heuristic', False):
+        minimum = str(search.salary_min)
+        currency = getattr(search, 'currency', None)
+        period = getattr(search, 'compensation_period', None)
+        threshold = ' '.join(str(x) for x in (minimum, currency, period) if x)
+        result.append({
+            'name': COMPENSATION_HEURISTIC_ID,
+            'heuristic_name': 'Minimum Compensation',
+            'description': (
+                'Based on the company size, role, and market, assess whether this job '
+                'is expected to offer compensation well above the specified minimum. '
+                'Explain the supporting evidence and reasoning.\n\nMinimum compensation: ' + threshold
             ),
         })
     result.extend({

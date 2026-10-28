@@ -80,6 +80,45 @@ class ReviewReadiness(unittest.TestCase):
         self.search.title_matches = ''
         self.assertEqual([], self.errors())
 
+    def test_conditional_compensation_heuristic(self):
+        from job_search.heuristics import research_heuristics, COMPENSATION_HEURISTIC_ID
+        self.search.allow_compensation_heuristic = 1
+        self.job.compensation_not_given = 1
+        self.job.compensation_min = None
+        self.job.currency = None
+        self.job.compensation_period = None
+        definitions = research_heuristics(self.search)
+        minimum = next(row for row in definitions if row['name'] == COMPENSATION_HEURISTIC_ID)
+        self.assertEqual(minimum['heuristic_name'], 'Minimum Compensation')
+        self.assertIn('120000', minimum['description'])
+        self.assertIn('company size, role, and market', minimum['description'])
+        self.assertFalse(self.searches.match_failures(self.job, self.search))
+        self.assertIn("Research heuristic 'Minimum Compensation' is missing", self.errors())
+        self.job.research_heuristics.append(record(heuristic_id=COMPENSATION_HEURISTIC_ID,
+            heuristic_name='Minimum Compensation', value='Expected well above 120000'))
+        self.assertEqual([], self.errors())
+        self.job.research_heuristics[-1].value = ' '
+        self.assertIn("Research heuristic 'Minimum Compensation' requires a value", self.errors())
+        self.job.compensation_not_given = 0
+        self.job.compensation_min = 135000
+        self.job.currency = 'USD'
+        self.job.compensation_period = 'Year'
+        self.assertEqual([], self.errors())  # optional answer is accepted
+        self.job.research_heuristics.pop()
+        self.assertEqual([], self.errors())
+
+    def test_compensation_not_given_skips_minimum_even_without_heuristic_option(self):
+        self.job.compensation_not_given = 1
+        self.job.compensation_min = None
+        self.job.currency = None
+        self.job.compensation_period = None
+        self.assertEqual([], self.searches.match_failures(self.job, self.search))
+        self.assertEqual([], self.errors())
+        self.job.compensation_not_given = 0
+        self.job.currency = "USD"
+        self.job.compensation_period = "Year"
+        self.assertEqual([], self.errors())
+
     def test_missing_and_disabled_search_are_rejected(self):
         self.job.active_job_search = ''
         self.assertIn('Active Job Search is required', self.errors())

@@ -122,7 +122,7 @@ class SchemaTest(unittest.TestCase):
                 "last_decision", "last_decision_record", "latest_application", "interview_schedule",
                 "globally_rejected"},
             "search_fields_section": {"active_job_search", "location", "employment_type", "work_arrangement",
-                "seniority", "compensation_min", "compensation_max", "currency", "compensation_period",
+                "seniority", "compensation_not_given", "compensation_min", "compensation_max", "currency", "compensation_period",
                 "posted_on"},
             "job_details_section": {"posting_digest"},
             "research_heuristics_section": {"research_heuristics"},
@@ -143,7 +143,7 @@ class SchemaTest(unittest.TestCase):
                          groups["research_heuristics_section"])
         self.assertEqual({f["fieldname"] for f in fields[names.index("research_notes_section") + 1:]},
                          groups["research_notes_section"])
-        self.assertEqual(34, len([f for f in fields if f["fieldname"] in set().union(*groups.values())
+        self.assertEqual(35, len([f for f in fields if f["fieldname"] in set().union(*groups.values())
                                  and f["fieldname"] != "research_heuristics"]))
         js = (BASE / "job_search_opportunity/job_search_opportunity.js").read_text()
         css = (BASE / "job_search_opportunity/job_search_opportunity.css").read_text()

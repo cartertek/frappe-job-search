@@ -24,13 +24,14 @@ def match_failures(job, search):
             failures.append(f"{label}: {job_value or '(missing)'}; required: {needed}")
     if search.posted_after and (not job.posted_on or getdate(job.posted_on) < getdate(search.posted_after)):
         failures.append(f"Posted On: {job.posted_on or '(missing)'}; required on or after {search.posted_after}")
-    if search.compensation_period and job.compensation_period != search.compensation_period:
-        failures.append(f"Compensation Period: {job.compensation_period or '(missing)'}; required: {search.compensation_period}")
-    if search.salary_min:
-        if search.currency and job.currency != search.currency:
-            failures.append(f"Currency: {job.currency or '(missing)'}; required: {search.currency}")
-        if not job.compensation_min or float(job.compensation_min) < float(search.salary_min):
-            failures.append(f"Minimum Compensation: {job.compensation_min or '(missing)'}; required at least {search.salary_min}")
+    if not getattr(job, 'compensation_not_given', False):
+        if search.compensation_period and job.compensation_period != search.compensation_period:
+            failures.append(f"Compensation Period: {job.compensation_period or '(missing)'}; required: {search.compensation_period}")
+        if search.salary_min:
+            if search.currency and job.currency != search.currency:
+                failures.append(f"Currency: {job.currency or '(missing)'}; required: {search.currency}")
+            if job.compensation_min is not None and float(job.compensation_min) < float(search.salary_min):
+                failures.append(f"Minimum Compensation: {job.compensation_min}; required at least {search.salary_min}")
     return failures
 
 
@@ -46,7 +47,7 @@ def matching_jobs(search_name):
     jobs = frappe.get_list(JOB, fields=[
         'name', 'organization', 'job_title', 'location', 'employment_type',
         'work_arrangement', 'seniority', 'posted_on', 'compensation_min',
-        'currency', 'compensation_period', 'globally_rejected', 'status',
+        'currency', 'compensation_period', 'compensation_not_given', 'globally_rejected', 'status',
     ], limit_page_length=100000)
     employers = {j.organization for j in jobs if j.organization}
     rejected = set()

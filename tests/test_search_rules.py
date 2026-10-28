@@ -52,7 +52,7 @@ class SearchRules(unittest.TestCase):
         for change in [dict(location='Austin'),
                        dict(employment_type='Contract'), dict(work_arrangement='Hybrid'),
                        dict(seniority='Junior'), dict(posted_on=None),
-                       dict(compensation_min=None), dict(compensation_min=115000),
+                       dict(compensation_min=115000),
                        dict(currency='EUR'), dict(compensation_period='Hour')]:
             with self.subTest(change=change):
                 self.assertFalse(self.module.matches(obj(**change), search()))

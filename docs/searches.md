@@ -4,7 +4,7 @@
 
 ## Deterministic filters
 
-Each search may filter deterministically by location text, employment type, work arrangement, seniority, posting date, and minimum compensation (with currency/period for comparable values). Empty filters impose no condition. Location uses case-insensitive full-field equality; enumerated fields use exact matching. A missing posted date or salary does not match a configured date or compensation minimum. A currency is considered only when a compensation minimum is set, avoiding Frappe's implicit default currency accidentally filtering the collection.
+Each search may filter deterministically by location text, employment type, work arrangement, seniority, posting date, and minimum compensation (with currency/period for comparable values). Empty filters impose no condition. Location uses case-insensitive full-field equality; enumerated fields use exact matching. A missing posted date does not match a configured date. When a job has stated compensation, its minimum is compared with the search minimum if present. Checking **Compensation Not Given** bypasses the numeric compensation filter; research heuristics may then assess expected pay. A currency is considered only when a compensation minimum is set, avoiding Frappe's implicit default currency accidentally filtering the collection.
 
 By default, all non-rejected jobs matching these filters appear in the search. Changes to jobs or filters immediately affect results without a separate synchronization step.
 
@@ -34,3 +34,7 @@ Agent endpoints in `job_search.api`:
 - `reject_organization(organization)` — globally rejects the employer and thus all its jobs.
 
 Current Job statuses are **Discovered, Researching, Ready to Review, Qualified, Applied, Interviewing, Accepted, Rejected**. Search membership is independent of these statuses: excluding a job from one search does not close or globally reject it. **Ready to Review**, however, requires a matching active search and completed heuristic values; an Include override cannot bypass its deterministic checks. See [Job status workflow](workflows.md).
+
+## Compensation without a published amount
+
+The Job form requires either **Compensation Min** or **Compensation Not Given**. Checking **Compensation Not Given** clears and disables Compensation Min, Compensation Max, Currency, and Compensation Period. A search may enable **Allow Heuristic** under **Minimum Compensation**. When enabled and a minimum is configured, a built-in **Minimum Compensation** research heuristic asks the researcher to determine, using the company size, role and market, whether expected compensation is well above the stated minimum. The instructions include that minimum. The heuristic is **required at Ready to Review only when Compensation Not Given is checked**; it is optional when actual compensation is supplied.

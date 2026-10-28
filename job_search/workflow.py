@@ -5,7 +5,7 @@ from html import escape
 from frappe.utils import now_datetime
 
 from job_search.searches import match_failures
-from job_search.heuristics import research_heuristics
+from job_search.heuristics import research_heuristics, COMPENSATION_HEURISTIC_ID
 
 STAGES = (
     "Discovered", "Researching", "Ready to Review", "Qualified",
@@ -96,13 +96,14 @@ def _review_readiness_failures(deal):
     if search.require_heuristics and override != "Include":
         errors.append("Active job search requires an explicit Include override")
 
-    required = {row["name"]: row["heuristic_name"] for row in research_heuristics(search)}
+    required = {row["name"]: row["heuristic_name"] for row in research_heuristics(search)
+                if row["name"] != COMPENSATION_HEURISTIC_ID or deal.compensation_not_given}
     provided = {}
     for row in deal.research_heuristics:
         if row.heuristic_id in provided:
             errors.append(f"Duplicate research heuristic: {row.heuristic_name or row.heuristic_id}")
         provided[row.heuristic_id] = row
-        if row.heuristic_id not in required:
+        if row.heuristic_id not in required and not (row.heuristic_id == COMPENSATION_HEURISTIC_ID and not deal.compensation_not_given):
             errors.append(f"Unexpected research heuristic: {row.heuristic_name or row.heuristic_id or '(unnamed)'}")
     for identifier, name in required.items():
         answer = provided.get(identifier)
@@ -159,6 +160,11 @@ def _validate_transition(deal, previous, next_stage):
 
 
 def validate_deal(doc, method=None):
+    if doc.get("compensation_not_given"):
+        for field in ("compensation_min", "compensation_max", "currency", "compensation_period"):
+            doc.set(field, None)
+    elif doc.get("compensation_min") is None:
+        frappe.throw("Minimum Compensation is required unless Compensation Not Given is checked")
     old = doc.get_doc_before_save() if not doc.is_new() else None
     if not doc.organization or not (doc.get("job_title") or "").strip():
         frappe.throw("A Job Search opportunity requires an employer and job title")

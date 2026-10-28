@@ -16,6 +16,7 @@
     "work_arrangement",
     "seniority",
     "salary_min",
+    "allow_compensation_heuristic",
     "currency",
     "compensation_period",
     "posted_after",
@@ -71,6 +72,12 @@
       "fieldname": "salary_min",
       "label": "Minimum Compensation",
       "fieldtype": "Currency"
+    },
+    {
+      "fieldname": "allow_compensation_heuristic",
+      "label": "Allow Heuristic",
+      "fieldtype": "Check",
+      "description": "When compensation is not given, require a researcher assessment that expected pay is well above the search minimum."
     },
     {
       "fieldname": "currency",

@@ -14,6 +14,11 @@ async function sync_research_heuristics(frm, confirm_discard = false) {
       description: 'The job title should be similar to one of the titles below and/or the job description should describe a role matching one of these titles. Assess the meaning of the role, not an exact text match.\n\nTitles:\n' + titles.map(t => '- ' + t).join('\n')}] : []),
     ...(search.heuristics || []),
   ];
+  if (search.salary_min && search.allow_compensation_heuristic) {
+    const threshold = [search.salary_min, search.currency, search.compensation_period].filter(Boolean).join(' ');
+    defined.push({name: 'builtin:minimum-compensation', heuristic_name: 'Minimum Compensation',
+      description: 'Based on the company size, role, and market, assess whether this job is expected to offer compensation well above the specified minimum. Explain the supporting evidence and reasoning.\n\nMinimum compensation: ' + threshold});
+  }
   const current = frm.doc.research_heuristics || [];
   const expected_ids = new Set(defined.map(row => row.name));
   const stale = current.filter(row => !expected_ids.has(row.heuristic_id));
@@ -54,6 +59,12 @@ async function sync_research_heuristics(frm, confirm_discard = false) {
 
 frappe.ui.form.on('Job Search Opportunity', {
   active_job_search(frm) { sync_research_heuristics(frm, true); },
+  compensation_not_given(frm) {
+    if (frm.doc.compensation_not_given) {
+      ['compensation_min', 'compensation_max', 'currency', 'compensation_period'].forEach(
+        field => frm.set_value(field, null));
+    }
+  },
   refresh(frm) {
     if (frm.doc.active_job_search) {
       frm.add_custom_button(__('Sync Research Heuristics'), () =>

@@ -36,6 +36,7 @@
     "work_arrangement",
     "seniority",
     "search_compensation_column",
+    "compensation_not_given",
     "compensation_min",
     "compensation_max",
     "currency",
@@ -217,28 +218,38 @@
       "fieldtype": "Column Break"
     },
     {
+      "fieldname": "compensation_not_given",
+      "label": "Compensation Not Given",
+      "fieldtype": "Check",
+      "description": "Check when the posting does not state compensation. Compensation fields are cleared."
+    },
+    {
       "fieldname": "compensation_min",
       "label": "Compensation Min",
       "fieldtype": "Currency",
-      "options": "currency"
+      "options": "currency",
+      "read_only_depends_on": "eval:doc.compensation_not_given"
     },
     {
       "fieldname": "compensation_max",
       "label": "Compensation Max",
       "fieldtype": "Currency",
-      "options": "currency"
+      "options": "currency",
+      "read_only_depends_on": "eval:doc.compensation_not_given"
     },
     {
       "fieldname": "currency",
       "label": "Currency",
       "fieldtype": "Link",
-      "options": "Currency"
+      "options": "Currency",
+      "read_only_depends_on": "eval:doc.compensation_not_given"
     },
     {
       "fieldname": "compensation_period",
       "label": "Compensation Period",
       "fieldtype": "Select",
-      "options": "\nYear\nMonth\nHour\nProject"
+      "options": "\nYear\nMonth\nHour\nProject",
+      "read_only_depends_on": "eval:doc.compensation_not_given"
     },
     {
       "fieldname": "posted_on",
