@@ -2,7 +2,7 @@
 
 The Job has one user-facing **Status** field. The eight allowed values are **Discovered**, **Researching**, **Ready to Review**, **Qualified**, **Applied**, **Interviewing**, **Accepted**, and **Rejected**. There is no separate prefixed stage field. **Preparing**, **Screening**, **Offer**, **Withdrawn**, and **Closed** are legacy statuses, not current choices.
 
-The normal progression is **Discovered → Researching → Ready to Review → Qualified → Applied → Interviewing → Accepted**. **Rejected** is a terminal outcome; not every rejection scope changes Job status.
+The normal progression is **Discovered → Researching → Ready to Review → Qualified → Applied → Interviewing → Accepted**. **Agents must resolve every in-progress research opportunity by either rejecting it or completing its research and moving it to Ready to Review.** Do not leave investigated, unsuitable opportunities indefinitely in Researching or send unsuitable opportunities for human review. **Rejected** is a terminal outcome; not every rejection scope changes Job status.
 
 ## Transitions and requirements
 
@@ -17,13 +17,15 @@ The normal progression is **Discovered → Researching → Ready to Review → Q
 | Interviewing | **Accept Offer** → Accepted | Offer details and an explicit human **Accept Offer** decision with rationale |
 | Discovered / Researching / Ready to Review / Qualified / Applied / Interviewing | **Reject** | Scope and reason required; effects depend on selected scope |
 
-The UI exposes **Mark Qualified** as the primary action in Ready to Review, **Needs Research** and **Reject** alongside it, then **Mark Applied**, **Begin Interviewing**, and **Accept Offer** as the respective primary actions. **Reject** is under **More Actions** outside Ready to Review. Human action buttons require the signed-in **Job Search Approver**; the operator API may transition stages only under the same server-side safeguards. Do not create or impersonate human decisions to advance a job.
+The UI exposes **Mark Qualified** as the primary action in Ready to Review, **Needs Research** and **Reject** alongside it, then **Mark Applied**, **Begin Interviewing**, and **Accept Offer** as the respective primary actions. **Reject** is under **More Actions** outside Ready to Review. Agents with **Job Search Operator** permission may **Reject** opportunities during research, with a recorded rationale. Human approval is required for **Mark Qualified** and **Accept Offer**; agents must not create or impersonate human decisions.
 
 **Reject From** options in the modal are **Search Only**, **Job Globally**, and **Entire Organization**:
 
 - **Search Only** writes an explicit Exclude override on the selected search; the Job's status does not change.
 - **Job Globally** sets the job's rejection flag and transitions its status to **Rejected**, except an already Accepted job retains its status.
 - **Entire Organization** globally rejects the organization and hides its jobs from searches; the individual Job's status does not change.
+
+Agent rejections preserve the signed-in agent’s rationale in the Job timeline; they do **not** create human approval decisions.
 
 The actual transition graph also permits **Accepted → Rejected** and **Rejected → Researching**; reopening a terminal job to Researching requires an authorized **Override** exception and a reason. Rejection rules and authorized exceptions are enforced server-side. Workflow history remains in immutable transition records. Prior schema migration maps **Preparing → Qualified**, **Screening → Applied**, **Offer → Interviewing**, and **Withdrawn / Closed → Rejected**; it does not discard historical records.
 

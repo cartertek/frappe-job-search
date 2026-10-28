@@ -2,7 +2,7 @@
 
 import frappe
 
-from job_search.permissions import require_approver, require_doc, require_opportunity
+from job_search.permissions import require_approver, require_operator, require_doc, require_opportunity
 from job_search.workflow import _has_completed_research_procedure, _has_research
 
 
@@ -17,7 +17,10 @@ def _decision(job, action, rationale):
 
 
 def perform_action(opportunity, action, rationale=None, scope=None, search=None, offer_details=None):
-    require_approver()
+    if action in ("reject", "ready_to_review", "needs_research"):
+        require_operator()
+    else:
+        require_approver()
     job = require_opportunity(opportunity, "write")
     rationale = (rationale or "").strip()
     allowed = {
@@ -50,8 +53,11 @@ def perform_action(opportunity, action, rationale=None, scope=None, search=None,
             employer = require_doc("Job Search Employer", job.organization, "write")
             employer.globally_rejected = 1
             employer.save()
-        decision = _decision(job, "Decline", f"Scope: {scope}; {rationale}")
-        return {"status": job.status, "decision": decision.name, "scope": scope}
+        # Research rejection is an operator action, not a human authorization.
+        # Record its rationale under the actual signed-in actor, without creating
+        # a Job Search Decision (which requires an approver).
+        job.add_comment("Comment", f"Research rejection ({scope}): {rationale}")
+        return {"status": job.status, "scope": scope}
     if action not in allowed.get(job.status, set()):
         frappe.throw("Action is not available from this status")
     if action in ("qualify", "accept_offer") and not rationale:
