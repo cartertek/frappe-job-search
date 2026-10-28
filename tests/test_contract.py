@@ -163,6 +163,20 @@ class SchemaTest(unittest.TestCase):
         setup = (APP / "setup/__init__.py").read_text()
         self.assertIn('frappe.client_cache.delete_value("doctype_form_meta::Job Search Opportunity")', setup)
 
+    def test_job_status_colors_match_form_and_list(self):
+        form = (BASE / "job_search_opportunity/job_search_opportunity.js").read_text()
+        listing = (BASE / "job_search_opportunity/job_search_opportunity_list.js").read_text()
+        colors = {
+            "Discovered": "gray", "Researching": "yellow", "Ready to Review": "blue",
+            "Qualified": "green", "Applied": "gray", "Interviewing": "green",
+            "Accepted": "gray", "Rejected": "red",
+        }
+        for status, color in colors.items():
+            entry = f"'{status}': '{color}'" if ' ' in status else f"{status}: '{color}'"
+            with self.subTest(status=status):
+                self.assertIn(entry, form)
+                self.assertIn(entry, listing)
+
     def test_review_heuristics_child_table_and_transition_contract(self):
         data = json.loads((BASE / "job_search_opportunity" / "job_search_opportunity.json").read_text())
         fields = {f["fieldname"]: f for f in data["fields"]}

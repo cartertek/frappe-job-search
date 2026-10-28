@@ -61,9 +61,9 @@ frappe.ui.form.on('Job Search Opportunity', {
     }
     const status = frm.doc.status;
     const colors = {
-      Discovered: 'blue', Researching: 'orange', 'Ready to Review': 'orange',
-      Qualified: 'green', Applied: 'blue', Interviewing: 'orange',
-      Accepted: 'green', Rejected: 'red',
+      Discovered: 'gray', Researching: 'yellow', 'Ready to Review': 'blue',
+      Qualified: 'green', Applied: 'gray', Interviewing: 'green',
+      Accepted: 'gray', Rejected: 'red',
     };
     if (status) frm.page.set_indicator(__(status), colors[status] || 'blue');
     if (frm.is_new()) return;
