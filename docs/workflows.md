@@ -21,7 +21,7 @@ The UI exposes **Mark Qualified** as the primary action in Ready to Review, **Ne
 
 **Reject From** options in the modal are **Search Only**, **Job Globally**, and **Entire Organization**:
 
-- **Search Only** writes an explicit Exclude override on the selected search; the Job's status does not change.
+- **Search Only** writes an explicit Exclude override on the selected search; sets the Job status to **Rejected** (unless already Accepted), without setting its global rejection flag.
 - **Job Globally** sets the job's rejection flag and transitions its status to **Rejected**, except an already Accepted job retains its status.
 - **Entire Organization** globally rejects the organization and hides its jobs from searches; the individual Job's status does not change.
 

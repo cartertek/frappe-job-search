@@ -44,6 +44,9 @@ def perform_action(opportunity, action, rationale=None, scope=None, search=None,
                     query.remove(row)
             query.append("overrides", {"job": job.name, "override": "Exclude"})
             query.save()
+            if job.status not in ("Rejected", "Accepted"):
+                job.status = "Rejected"
+                job.save()
         elif scope == "job":
             job.globally_rejected = 1
             if job.status not in ("Rejected", "Accepted"):

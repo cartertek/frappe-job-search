@@ -41,6 +41,23 @@ class AgentRejection(unittest.TestCase):
         self.assertTrue(any(c[0]=='comment' and 'Fails remote requirement' in c[2]
                             for c in self.calls if isinstance(c, tuple)))
 
+    def test_search_only_rejects_status_without_global_rejection(self):
+        result = self.module.perform_action('job1', 'reject', rationale='Outside scope',
+                                            scope='search', search='search1')
+        self.assertEqual('Rejected', result['status'])
+        self.assertEqual(0, self.job.globally_rejected)
+        self.assertIn('save', self.calls)
+        self.assertTrue(any(c[0] == 'comment' and 'Outside scope' in c[2]
+                            for c in self.calls if isinstance(c, tuple)))
+        self.assertNotIn('approver', self.calls)
+
+    def test_search_only_keeps_accepted_status(self):
+        self.job.status = 'Accepted'
+        result = self.module.perform_action('job1', 'reject', rationale='Exclude from this search',
+                                            scope='search', search='search1')
+        self.assertEqual('Accepted', result['status'])
+        self.assertEqual(0, self.job.globally_rejected)
+
     def test_research_handoff_uses_operator(self):
         self.module.perform_action('job1', 'ready_to_review')
         self.assertIn('operator', self.calls)

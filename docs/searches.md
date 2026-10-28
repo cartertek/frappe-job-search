@@ -33,7 +33,7 @@ Agent endpoints in `job_search.api`:
 - `reject_job(job)` — permanently sets the global rejection flag (it can be reversed by a properly authorized human editing the record).
 - `reject_organization(organization)` — globally rejects the employer and thus all its jobs.
 
-Current Job statuses are **Discovered, Researching, Ready to Review, Qualified, Applied, Interviewing, Accepted, Rejected**. Search membership is independent of these statuses: excluding a job from one search does not close or globally reject it. **Ready to Review**, however, requires a matching active search and completed heuristic values; an Include override cannot bypass its deterministic checks. See [Job status workflow](workflows.md).
+Current Job statuses are **Discovered, Researching, Ready to Review, Qualified, Applied, Interviewing, Accepted, Rejected**. Search membership is independent of these statuses: using **Reject → Search Only** marks the Job **Rejected** and excludes it from the selected search, without setting the global rejection flag. **Ready to Review**, however, requires a matching active search and completed heuristic values; an Include override cannot bypass its deterministic checks. See [Job status workflow](workflows.md).
 
 ## Compensation without a published amount
 
