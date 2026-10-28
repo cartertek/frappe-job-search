@@ -61,15 +61,19 @@
   overflow-wrap: anywhere;
 }
 
-/* Header content shares the same column grid but Frappe applies its own
-   fixed-height heading row padding. Match the record column start exactly. */
+/* The heading is a Frappe template row without doc; its normal row index
+   occupies the same 58px gutter as a data row. Keep the identical two-column
+   grid and padding, with no independent offset or flex override. */
 .form-grid:has(.job-heuristic-record) .grid-heading-row .template-row {
-  padding: 4px 16px;
-  margin-left: 0;
-  flex: 1 1 0;
-  min-width: 0;
-  width: auto;
-  max-width: none;
+  padding: 8px 16px;
+}
+.form-grid:has(.job-heuristic-record) .grid-heading-row .template-row-index {
+  flex: 0 0 58px;
+  float: none;
+  margin: 0;
+  padding: 8px;
+  display: flex;
+  align-items: center;
 }
 .job-heuristic-record {position:relative;}
 .job-heuristic-description {padding-right:40px !important;}
