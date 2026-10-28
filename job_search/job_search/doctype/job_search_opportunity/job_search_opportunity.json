@@ -8,41 +8,58 @@
   "autoname": "hash",
   "track_changes": 1,
   "field_order": [
+    "overview_section",
+    "overview_column",
     "status",
     "organization",
-    "job_title",
+    "overview_job_title",
+    "metadata_column",
     "posting_url",
     "requisition_id",
-    "employment_type",
-    "work_arrangement",
-    "location",
-    "compensation_min",
-    "compensation_max",
-    "currency",
-    "compensation_period",
-    "seniority",
+    "priority",
     "discovered_on",
-    "posted_on",
     "deadline",
     "applied_on",
     "next_action_on",
-    "priority",
     "closure_reason",
     "offer_details",
-    "posting_digest",
-    "research_digest",
-    "agent_recommendation",
-    "application_review",
-    "interview_brief",
-    "human_feedback",
     "latest_posting",
     "last_decision",
     "last_decision_record",
     "latest_application",
     "interview_schedule",
-    "globally_rejected"
+    "globally_rejected",
+    "search_fields_section",
+    "job_title",
+    "location",
+    "employment_type",
+    "work_arrangement",
+    "seniority",
+    "search_compensation_column",
+    "compensation_min",
+    "compensation_max",
+    "currency",
+    "compensation_period",
+    "posted_on",
+    "job_details_section",
+    "posting_digest",
+    "research_notes_section",
+    "research_digest",
+    "agent_recommendation",
+    "application_review",
+    "interview_brief",
+    "human_feedback"
   ],
   "fields": [
+    {
+      "fieldname": "overview_section",
+      "fieldtype": "Section Break"
+    },
+    {
+      "fieldname": "overview_column",
+      "fieldtype": "Column Break",
+      "label": "Status / Overview"
+    },
     {
       "fieldname": "status",
       "label": "Status",
@@ -61,10 +78,14 @@
       "in_list_view": 1
     },
     {
-      "fieldname": "job_title",
-      "label": "Job Title",
-      "fieldtype": "Data",
-      "reqd": 0
+      "fieldname": "overview_job_title",
+      "fieldtype": "HTML",
+      "label": "Job Title"
+    },
+    {
+      "fieldname": "metadata_column",
+      "fieldtype": "Column Break",
+      "label": "Metadata"
     },
     {
       "fieldname": "posting_url",
@@ -78,60 +99,14 @@
       "fieldtype": "Data"
     },
     {
-      "fieldname": "employment_type",
-      "label": "Employment Type",
+      "fieldname": "priority",
+      "label": "Priority",
       "fieldtype": "Select",
-      "options": "\nFull Time\nPart Time\nContract\nTemporary\nInternship"
-    },
-    {
-      "fieldname": "work_arrangement",
-      "label": "Work Arrangement",
-      "fieldtype": "Select",
-      "options": "\nRemote\nHybrid\nOn Site"
-    },
-    {
-      "fieldname": "location",
-      "label": "Location",
-      "fieldtype": "Data"
-    },
-    {
-      "fieldname": "compensation_min",
-      "label": "Compensation Min",
-      "fieldtype": "Currency",
-      "options": "currency"
-    },
-    {
-      "fieldname": "compensation_max",
-      "label": "Compensation Max",
-      "fieldtype": "Currency",
-      "options": "currency"
-    },
-    {
-      "fieldname": "currency",
-      "label": "Currency",
-      "fieldtype": "Link",
-      "options": "Currency"
-    },
-    {
-      "fieldname": "compensation_period",
-      "label": "Compensation Period",
-      "fieldtype": "Select",
-      "options": "\nYear\nMonth\nHour\nProject"
-    },
-    {
-      "fieldname": "seniority",
-      "label": "Seniority",
-      "fieldtype": "Select",
-      "options": "\nJunior\nMid\nSenior\nStaff\nPrincipal\nLead\nManager\nDirector\nExecutive"
+      "options": "\nLow\nMedium\nHigh\nCritical"
     },
     {
       "fieldname": "discovered_on",
       "label": "Discovered On",
-      "fieldtype": "Date"
-    },
-    {
-      "fieldname": "posted_on",
-      "label": "Posted On",
       "fieldtype": "Date"
     },
     {
@@ -150,12 +125,6 @@
       "fieldtype": "Date"
     },
     {
-      "fieldname": "priority",
-      "label": "Priority",
-      "fieldtype": "Select",
-      "options": "\nLow\nMedium\nHigh\nCritical"
-    },
-    {
       "fieldname": "closure_reason",
       "label": "Closure Reason",
       "fieldtype": "Small Text"
@@ -164,36 +133,6 @@
       "fieldname": "offer_details",
       "label": "Offer Details",
       "fieldtype": "Small Text"
-    },
-    {
-      "fieldname": "posting_digest",
-      "label": "Job Description / Posting",
-      "fieldtype": "Small Text"
-    },
-    {
-      "fieldname": "research_digest",
-      "label": "Research Findings & Sources",
-      "fieldtype": "Text Editor"
-    },
-    {
-      "fieldname": "agent_recommendation",
-      "label": "Agent Recommendation",
-      "fieldtype": "Text Editor"
-    },
-    {
-      "fieldname": "application_review",
-      "label": "Application Materials for Review",
-      "fieldtype": "Text Editor"
-    },
-    {
-      "fieldname": "interview_brief",
-      "label": "Interview Preparation",
-      "fieldtype": "Text Editor"
-    },
-    {
-      "fieldname": "human_feedback",
-      "label": "Human Feedback / Instructions",
-      "fieldtype": "Text Editor"
     },
     {
       "fieldname": "latest_posting",
@@ -234,6 +173,114 @@
       "fieldtype": "Check",
       "default": "0",
       "in_list_view": 1
+    },
+    {
+      "fieldname": "search_fields_section",
+      "fieldtype": "Section Break",
+      "label": "Job Search Fields"
+    },
+    {
+      "fieldname": "job_title",
+      "label": "Job Title",
+      "fieldtype": "Data",
+      "reqd": 0
+    },
+    {
+      "fieldname": "location",
+      "label": "Location",
+      "fieldtype": "Data"
+    },
+    {
+      "fieldname": "employment_type",
+      "label": "Employment Type",
+      "fieldtype": "Select",
+      "options": "\nFull Time\nPart Time\nContract\nTemporary\nInternship"
+    },
+    {
+      "fieldname": "work_arrangement",
+      "label": "Work Arrangement",
+      "fieldtype": "Select",
+      "options": "\nRemote\nHybrid\nOn Site"
+    },
+    {
+      "fieldname": "seniority",
+      "label": "Seniority",
+      "fieldtype": "Select",
+      "options": "\nJunior\nMid\nSenior\nStaff\nPrincipal\nLead\nManager\nDirector\nExecutive"
+    },
+    {
+      "fieldname": "search_compensation_column",
+      "fieldtype": "Column Break"
+    },
+    {
+      "fieldname": "compensation_min",
+      "label": "Compensation Min",
+      "fieldtype": "Currency",
+      "options": "currency"
+    },
+    {
+      "fieldname": "compensation_max",
+      "label": "Compensation Max",
+      "fieldtype": "Currency",
+      "options": "currency"
+    },
+    {
+      "fieldname": "currency",
+      "label": "Currency",
+      "fieldtype": "Link",
+      "options": "Currency"
+    },
+    {
+      "fieldname": "compensation_period",
+      "label": "Compensation Period",
+      "fieldtype": "Select",
+      "options": "\nYear\nMonth\nHour\nProject"
+    },
+    {
+      "fieldname": "posted_on",
+      "label": "Posted On",
+      "fieldtype": "Date"
+    },
+    {
+      "fieldname": "job_details_section",
+      "fieldtype": "Section Break",
+      "label": "Job Details"
+    },
+    {
+      "fieldname": "posting_digest",
+      "label": "Job Description / Posting",
+      "fieldtype": "Small Text"
+    },
+    {
+      "fieldname": "research_notes_section",
+      "fieldtype": "Section Break",
+      "label": "Research Notes",
+      "collapsible": 1
+    },
+    {
+      "fieldname": "research_digest",
+      "label": "Research Findings & Sources",
+      "fieldtype": "Text Editor"
+    },
+    {
+      "fieldname": "agent_recommendation",
+      "label": "Agent Recommendation",
+      "fieldtype": "Text Editor"
+    },
+    {
+      "fieldname": "application_review",
+      "label": "Application Materials for Review",
+      "fieldtype": "Text Editor"
+    },
+    {
+      "fieldname": "interview_brief",
+      "label": "Interview Preparation",
+      "fieldtype": "Text Editor"
+    },
+    {
+      "fieldname": "human_feedback",
+      "label": "Human Feedback / Instructions",
+      "fieldtype": "Text Editor"
     }
   ],
   "permissions": [

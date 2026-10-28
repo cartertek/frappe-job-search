@@ -97,6 +97,59 @@ class SchemaTest(unittest.TestCase):
         self.assertEqual(labels, literal_eval(block))
         self.assertIn("clear_translation_cache()", setup)
 
+    def test_job_form_uses_five_part_layout_without_losing_data_fields(self):
+        data = json.loads((BASE / "job_search_opportunity" / "job_search_opportunity.json").read_text())
+        fields = data["fields"]
+        by_name = {field["fieldname"]: field for field in fields}
+        names = data["field_order"]
+        self.assertEqual(names, [f["fieldname"] for f in fields])
+        self.assertEqual(
+            [f["fieldname"] for f in fields if f["fieldtype"] == "Section Break"],
+            ["overview_section", "search_fields_section", "job_details_section", "research_notes_section"],
+        )
+        self.assertEqual(
+            [(f["fieldname"], f.get("label")) for f in fields if f["fieldtype"] == "Column Break"],
+            [("overview_column", "Status / Overview"), ("metadata_column", "Metadata"),
+             ("search_compensation_column", None)],
+        )
+        self.assertEqual(by_name["overview_job_title"]["fieldtype"], "HTML")
+        self.assertTrue(by_name["research_notes_section"]["collapsible"])
+        groups = {
+            "overview_column": {"status", "organization", "overview_job_title"},
+            "metadata_column": {"posting_url", "requisition_id", "priority", "discovered_on", "deadline",
+                "applied_on", "next_action_on", "closure_reason", "offer_details", "latest_posting",
+                "last_decision", "last_decision_record", "latest_application", "interview_schedule",
+                "globally_rejected"},
+            "search_fields_section": {"job_title", "location", "employment_type", "work_arrangement",
+                "seniority", "compensation_min", "compensation_max", "currency", "compensation_period",
+                "posted_on"},
+            "job_details_section": {"posting_digest"},
+            "research_notes_section": {"research_digest", "agent_recommendation", "application_review",
+                "interview_brief", "human_feedback"},
+        }
+        def slice_between(start, end):
+            return fields[names.index(start) + 1 : names.index(end)]
+        self.assertEqual({f["fieldname"] for f in slice_between("overview_column", "metadata_column")},
+                         groups["overview_column"])
+        self.assertEqual({f["fieldname"] for f in slice_between("metadata_column", "search_fields_section")},
+                         groups["metadata_column"])
+        self.assertEqual({f["fieldname"] for f in slice_between("search_fields_section", "job_details_section")
+                          if f["fieldtype"] != "Column Break"}, groups["search_fields_section"])
+        self.assertEqual({f["fieldname"] for f in slice_between("job_details_section", "research_notes_section")},
+                         groups["job_details_section"])
+        self.assertEqual({f["fieldname"] for f in fields[names.index("research_notes_section") + 1:]},
+                         groups["research_notes_section"])
+        self.assertEqual(33, len([f for f in fields if f["fieldname"] in set().union(*groups.values())
+                                 and f["fieldname"] != "overview_job_title"]))
+        js = (BASE / "job_search_opportunity/job_search_opportunity.js").read_text()
+        css = (BASE / "job_search_opportunity/job_search_opportunity.css").read_text()
+        self.assertIn("frappe.utils.escape_html(frm.doc.job_title)", js)
+        self.assertIn("job_title(frm)", js)
+        self.assertIn('data-fieldname="metadata_column"', css)
+        self.assertIn("grid-template-columns", css)
+        setup = (APP / "setup/__init__.py").read_text()
+        self.assertIn('frappe.cache.delete_value("doctype_form_meta::Job Search Opportunity")', setup)
+
     def test_opportunity_has_single_unprefixed_status(self):
         import json
 

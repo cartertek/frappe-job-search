@@ -1,0 +1,59 @@
+/* Five-part Job form: side-by-side overview and dense, editable metadata. */
+.form-section[data-fieldname="overview_section"] .column-label {
+  display: block;
+  font-weight: 600;
+  font-size: var(--text-lg);
+  margin: 0 0 12px;
+}
+
+.form-section[data-fieldname="overview_section"] .form-column[data-fieldname="metadata_column"] .frappe-control {
+  max-width: none;
+  padding: 4px 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.form-section[data-fieldname="overview_section"] .form-column[data-fieldname="metadata_column"] .form-group.horizontal {
+  display: grid;
+  grid-template-columns: minmax(105px, 38%) minmax(0, 1fr);
+  gap: 8px;
+  align-items: center;
+  margin: 0;
+}
+
+.form-section[data-fieldname="overview_section"] .form-column[data-fieldname="metadata_column"] .form-group.horizontal > .clearfix {
+  min-width: 0;
+}
+
+.form-section[data-fieldname="overview_section"] .form-column[data-fieldname="metadata_column"] .form-group.horizontal .control-input-wrapper {
+  min-width: 0;
+}
+
+.form-section[data-fieldname="overview_section"] .form-column[data-fieldname="metadata_column"] .form-group.horizontal .control-label {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  padding-right: 0 !important;
+}
+
+.form-section[data-fieldname="overview_section"] .form-column[data-fieldname="metadata_column"] .form-control {
+  max-width: 100%;
+}
+
+.form-section[data-fieldname="overview_section"] .form-column[data-fieldname="metadata_column"] .checkbox {
+  margin: 0;
+}
+
+.job-search-overview-title {
+  margin-top: 10px;
+}
+
+.job-search-overview-title-value {
+  padding: 6px 0;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 767px) {
+  .form-section[data-fieldname="overview_section"] .form-column[data-fieldname="metadata_column"] .form-group.horizontal {
+    grid-template-columns: minmax(100px, 40%) minmax(0, 1fr);
+  }
+}
