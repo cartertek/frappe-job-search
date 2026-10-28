@@ -165,7 +165,7 @@ def cleanup_legacy_heuristic_claim_rows():
                       "AND (source IS NULL OR TRIM(source) = '')")
     for legacy in ("value", "description"):
         if legacy in columns:
-            frappe.db.sql(f"ALTER TABLE `{table}` DROP COLUMN `{legacy}`")
+            frappe.db.sql_ddl(f"ALTER TABLE `{table}` DROP COLUMN `{legacy}`")
     frappe.db.set_default(marker, "1")
 
 
