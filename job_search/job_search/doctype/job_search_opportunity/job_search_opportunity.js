@@ -1,16 +1,3 @@
-// Job Title is editable under Job Search Fields, but is also summarized in Overview.
-// Escape user-entered content before displaying it in an HTML field.
-function render_overview_title(frm) {
-  const title = frm.doc.job_title ? frappe.utils.escape_html(frm.doc.job_title) :
-    `<span class="text-muted">${__('Not set')}</span>`;
-  frm.fields_dict.overview_job_title?.html(`
-    <div class="job-search-overview-title">
-      <div class="control-label">${__('Job Title')}</div>
-      <div class="job-search-overview-title-value">${title}</div>
-    </div>
-  `);
-}
-
 // Keep the job's assessment rows aligned to the search's stable child-row IDs.
 // Preserve answers while changing descriptions; never silently discard answers.
 async function sync_research_heuristics(frm, confirm_discard = false) {
@@ -66,10 +53,8 @@ async function sync_research_heuristics(frm, confirm_discard = false) {
 }
 
 frappe.ui.form.on('Job Search Opportunity', {
-  job_title(frm) { render_overview_title(frm); },
   active_job_search(frm) { sync_research_heuristics(frm, true); },
   refresh(frm) {
-    render_overview_title(frm);
     sync_research_heuristics(frm);
     if (frm.doc.active_job_search) {
       frm.add_custom_button(__('Sync Research Heuristics'), () =>

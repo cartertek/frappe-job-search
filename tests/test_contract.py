@@ -109,18 +109,19 @@ class SchemaTest(unittest.TestCase):
         )
         self.assertEqual(
             [(f["fieldname"], f.get("label")) for f in fields if f["fieldtype"] == "Column Break"],
-            [("overview_column", "Status / Overview"), ("metadata_column", "Metadata"),
+            [("overview_column", "Overview"), ("metadata_column", "Metadata"),
              ("search_compensation_column", None)],
         )
-        self.assertEqual(by_name["overview_job_title"]["fieldtype"], "HTML")
+        self.assertNotIn("overview_job_title", by_name)
+        self.assertEqual(by_name["job_title"]["fieldtype"], "Data")
         self.assertTrue(by_name["research_notes_section"]["collapsible"])
         groups = {
-            "overview_column": {"status", "organization", "overview_job_title"},
+            "overview_column": {"status", "organization", "job_title"},
             "metadata_column": {"posting_url", "requisition_id", "priority", "discovered_on", "deadline",
                 "applied_on", "next_action_on", "closure_reason", "offer_details", "latest_posting",
                 "last_decision", "last_decision_record", "latest_application", "interview_schedule",
                 "globally_rejected"},
-            "search_fields_section": {"active_job_search", "job_title", "location", "employment_type", "work_arrangement",
+            "search_fields_section": {"active_job_search", "location", "employment_type", "work_arrangement",
                 "seniority", "compensation_min", "compensation_max", "currency", "compensation_period",
                 "posted_on"},
             "job_details_section": {"posting_digest"},
@@ -143,11 +144,10 @@ class SchemaTest(unittest.TestCase):
         self.assertEqual({f["fieldname"] for f in fields[names.index("research_notes_section") + 1:]},
                          groups["research_notes_section"])
         self.assertEqual(34, len([f for f in fields if f["fieldname"] in set().union(*groups.values())
-                                 and f["fieldname"] != "overview_job_title" and f["fieldname"] != "research_heuristics"]))
+                                 and f["fieldname"] != "research_heuristics"]))
         js = (BASE / "job_search_opportunity/job_search_opportunity.js").read_text()
         css = (BASE / "job_search_opportunity/job_search_opportunity.css").read_text()
-        self.assertIn("frappe.utils.escape_html(frm.doc.job_title)", js)
-        self.assertIn("job_title(frm)", js)
+        self.assertNotIn("render_overview_title", js)
         self.assertIn('data-fieldname="metadata_column"', css)
         self.assertIn("grid-template-columns", css)
         setup = (APP / "setup/__init__.py").read_text()

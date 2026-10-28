@@ -12,7 +12,7 @@
     "overview_column",
     "status",
     "organization",
-    "overview_job_title",
+    "job_title",
     "metadata_column",
     "posting_url",
     "requisition_id",
@@ -31,7 +31,6 @@
     "globally_rejected",
     "search_fields_section",
     "active_job_search",
-    "job_title",
     "location",
     "employment_type",
     "work_arrangement",
@@ -61,7 +60,7 @@
     {
       "fieldname": "overview_column",
       "fieldtype": "Column Break",
-      "label": "Status / Overview"
+      "label": "Overview"
     },
     {
       "fieldname": "status",
@@ -81,9 +80,10 @@
       "in_list_view": 1
     },
     {
-      "fieldname": "overview_job_title",
-      "fieldtype": "HTML",
-      "label": "Job Title"
+      "fieldname": "job_title",
+      "label": "Job Title",
+      "fieldtype": "Data",
+      "reqd": 0
     },
     {
       "fieldname": "metadata_column",
@@ -188,12 +188,6 @@
       "options": "Job Search Search",
       "label": "Active Job Search",
       "description": "Search whose filters and research heuristics must be complete before Ready to Review."
-    },
-    {
-      "fieldname": "job_title",
-      "label": "Job Title",
-      "fieldtype": "Data",
-      "reqd": 0
     },
     {
       "fieldname": "location",

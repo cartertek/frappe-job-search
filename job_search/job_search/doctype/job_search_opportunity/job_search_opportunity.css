@@ -42,16 +42,6 @@
   margin: 0;
 }
 
-.job-search-overview-title {
-  margin-top: 10px;
-}
-
-.job-search-overview-title-value {
-  padding: 6px 0;
-  font-weight: 500;
-  overflow-wrap: anywhere;
-}
-
 @media (max-width: 767px) {
   .form-section[data-fieldname="overview_section"] .form-column[data-fieldname="metadata_column"] .form-group.horizontal {
     grid-template-columns: minmax(100px, 40%) minmax(0, 1fr);
