@@ -48,23 +48,93 @@
   }
 }
 
-/* Show complete researcher assessments in the Job's non-editable child grid.
-   Frappe adds .ellipsis to static cells even for Small Text values. */
-.form-section[data-fieldname="research_heuristics_section"]
-  .frappe-control[data-fieldname="research_heuristics"]
-  .grid-static-col .static-area {
-  white-space: pre-wrap !important;
-  overflow-wrap: anywhere;
-  word-break: break-word;
-  overflow: visible;
-  text-overflow: clip;
+/* Job form native child-grid template: consistent Heuristic and Value columns. */
+/* The Search form's native Frappe child-grid template has two content columns.
+   This CSS is loaded through the DocType's supported __css metadata asset. */
+.form-grid:has(.job-value-record) .grid-heading-row .grid-row:nth-child(2) {
+  display: none;
+}
+.form-grid:has(.job-value-record) .grid-heading-row.with-filter {
+  height: 32px;
+}
+.form-grid:has(.job-value-record) .data-row.row {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  display: flex;
+  align-items: flex-start;
+  flex-wrap: nowrap;
+}
+.form-grid:has(.job-value-record) .template-row-index {
+  flex: 0 0 58px;
+  float: none;
+  margin: 0;
+  padding: 12px 8px;
+  display: flex;
+  gap: 6px;
+  align-items: flex-start;
+}
+.form-grid:has(.job-value-record) .template-row-index span {
+  display: inline;
+  width: auto;
+  margin: 0;
+}
+.form-grid:has(.job-value-record) .template-row {
+  flex: 1 1 0;
+  min-width: 0;
+  width: auto;
+  max-width: none;
+  padding: 8px 16px;
+}
+.job-value-record, .job-value-heading {
+  display: grid;
+  grid-template-columns: minmax(140px, 24%) minmax(0, 1fr);
+  gap: 16px;
+  min-width: 0;
+  width: 100%;
+  align-items: start;
+}
+.job-value-heading { font-weight: 600; }
+.job-value-name { font-weight: 600; overflow-wrap: anywhere; }
+.job-value-text {
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
   height: auto;
   max-height: none;
+  padding: 0;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
 }
 
-.form-section[data-fieldname="research_heuristics_section"]
-  .frappe-control[data-fieldname="research_heuristics"]
-  .grid-static-col {
-  height: auto;
+/* The heading is a Frappe template row without doc; its normal row index
+   occupies the same 58px gutter as a data row. Keep the identical two-column
+   grid and padding, with no independent offset or flex override. */
+.form-grid:has(.job-value-record) .grid-heading-row .data-row.row {
+  display: flex;
+  width: 100%;
   min-width: 0;
+  max-width: 100%;
+  align-items: flex-start;
 }
+.form-grid:has(.job-value-record) .grid-heading-row .template-row {
+  /* Override Frappe grid.scss's header-only margin-left: 8px. */
+  margin-left: 0;
+  flex: 1 1 0;
+  min-width: 0;
+  width: auto;
+  max-width: none;
+  padding: 8px 16px;
+}
+.form-grid:has(.job-value-record) .grid-heading-row .template-row-index {
+  flex: 0 0 58px;
+  float: none;
+  margin: 0;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+}
+.job-value-record {position:relative;}
+.job-value-text {padding-right:40px !important;}
+.job-value-edit {position:absolute;right:0;top:0;cursor:pointer;}
+.job-value-edit .btn {pointer-events:none;}

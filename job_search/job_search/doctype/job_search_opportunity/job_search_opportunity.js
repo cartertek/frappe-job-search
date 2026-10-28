@@ -55,7 +55,6 @@ async function sync_research_heuristics(frm, confirm_discard = false) {
 frappe.ui.form.on('Job Search Opportunity', {
   active_job_search(frm) { sync_research_heuristics(frm, true); },
   refresh(frm) {
-    sync_research_heuristics(frm);
     if (frm.doc.active_job_search) {
       frm.add_custom_button(__('Sync Research Heuristics'), () =>
         sync_research_heuristics(frm, true), __('More Actions'));
