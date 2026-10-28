@@ -65,6 +65,11 @@
    fixed-height heading row padding. Match the record column start exactly. */
 .form-grid:has(.job-heuristic-record) .grid-heading-row .template-row {
   padding: 4px 16px;
+  margin-left: 0;
+  flex: 1 1 0;
+  min-width: 0;
+  width: auto;
+  max-width: none;
 }
 .job-heuristic-record {position:relative;}
 .job-heuristic-description {padding-right:40px !important;}
