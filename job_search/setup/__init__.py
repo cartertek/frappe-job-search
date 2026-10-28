@@ -24,6 +24,7 @@ def after_migrate():
     migrate_prefixed_fields()
     migrate_semantic_job_fields()
     migrate_heuristic_claims()
+    cleanup_legacy_heuristic_claim_rows()
     migrate_workflow_statuses()
     migrate_legacy_search_filters()
     migrate_heuristics_table()
@@ -144,6 +145,28 @@ def migrate_legacy_search_filters():
                 f"UPDATE `tabJob Search Search` SET `{old}` = NULL "
                 f"WHERE `{old}` IS NOT NULL AND `{old}` != ''"
             )
+
+
+def cleanup_legacy_heuristic_claim_rows():
+    """Remove old empty assessment rows and obsolete SQL fields after transfer.
+
+    Keep any new structured claims intact; old values have already been appended
+    to Research Findings by migrate_heuristic_claims() in the same migration.
+    """
+    marker = "job_search:heuristic_claims_cleanup_v1"
+    if frappe.db.get_default(marker):
+        return
+    if not frappe.db.get_default("job_search:heuristic_claims_v1"):
+        frappe.throw("Cannot clean up heuristic values before migrating the assessments")
+    table = "tabJob Search Heuristic Value"
+    columns = set(frappe.db.get_table_columns("Job Search Heuristic Value"))
+    if {"quote", "source"}.issubset(columns):
+        frappe.db.sql(f"DELETE FROM `{table}` WHERE (quote IS NULL OR TRIM(quote) = '') "
+                      "AND (source IS NULL OR TRIM(source) = '')")
+    for legacy in ("value", "description"):
+        if legacy in columns:
+            frappe.db.sql(f"ALTER TABLE `{table}` DROP COLUMN `{legacy}`")
+    frappe.db.set_default(marker, "1")
 
 
 def migrate_heuristic_claims():
