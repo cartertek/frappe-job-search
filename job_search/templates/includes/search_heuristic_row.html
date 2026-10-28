@@ -1,36 +1,35 @@
 {% if (doc) { %}
-<div class="job-search-heuristic-content">
-  <div class="job-search-heuristic-name">{%= frappe.utils.escape_html(doc.heuristic_name || "") %}</div>
-  <div class="ql-editor read-mode job-search-heuristic-description">{%= doc.description || "" %}</div>
+<div class="job-heuristic-record">
+  <div class="job-heuristic-name">{%= frappe.utils.escape_html(doc.heuristic_name || "") %}</div>
+  <div class="ql-editor read-mode job-heuristic-description">{%= doc.description || "" %}</div>
 </div>
 {% } else { %}
 <style>
-/* Frappe renders both a heading row and a filter row for child grids. In
-   template mode Frappe renders the filter even when it is not needed. */
-.form-grid:has(.job-search-heuristic-content) .grid-heading-row > .grid-row + .grid-row {display:none;}
-.form-grid:has(.job-search-heuristic-content) .grid-heading-row.with-filter {height:32px;}
-/* Native template rows must use available width, not the ordinary grid's
-   max-content width intended for horizontally scrolling data columns. */
-.form-grid:has(.job-search-heuristic-content) .grid-body .data-row.row {
-  width:100%;min-width:0;max-width:100%;position:relative;
+/* Make the native Frappe template a two-column table: built-in row selection
+   and index on the left, the record contents filling the right column. */
+.form-grid:has(.job-heuristic-record) .grid-body .data-row.row {
+  width:100%;min-width:0;max-width:100%;display:flex;align-items:flex-start;
 }
-.form-grid:has(.job-search-heuristic-content) .grid-body .template-row-index {
-  position:absolute;float:none;left:10px;top:12px;margin:0;
+.form-grid:has(.job-heuristic-record) .grid-body .template-row-index {
+  flex:0 0 58px;float:none;margin:0;padding:12px 8px;
+  display:flex;align-items:center;gap:6px;
 }
-.form-grid:has(.job-search-heuristic-content) .grid-body .template-row {
-  width:calc(100% - 72px);max-width:calc(100% - 72px);min-width:0;
-  margin-left:72px;box-sizing:border-box;
+.form-grid:has(.job-heuristic-record) .grid-body .template-row-index span {
+  display:inline;width:auto;margin:0;
 }
-.job-search-heuristic-content {max-width:100%;min-width:0;overflow-wrap:anywhere;white-space:normal;}
-.job-search-heuristic-name {font-weight:600;margin-bottom:8px;}
-.job-search-heuristic-description.ql-editor.read-mode {
-  width:100%;max-width:100%;min-width:0;height:auto;max-height:none;
-  padding:0;overflow-wrap:anywhere;white-space:normal;
+.form-grid:has(.job-heuristic-record) .grid-body .template-row {
+  flex:1 1 0;min-width:0;width:auto;max-width:none;padding:12px 16px;
 }
-.job-search-heuristic-description.ql-editor.read-mode p,
-.job-search-heuristic-description.ql-editor.read-mode li {
-  white-space:normal;overflow-wrap:anywhere;
+.form-grid:has(.job-heuristic-record) .grid-heading-row > .grid-row:nth-child(2) {
+  display:none;
+}
+.form-grid:has(.job-heuristic-record) .grid-heading-row.with-filter {height:32px;}
+.job-heuristic-record {min-width:0;width:100%;overflow-wrap:anywhere;white-space:normal;}
+.job-heuristic-name {font-weight:600;margin-bottom:8px;}
+.job-heuristic-description.ql-editor.read-mode {
+  width:100%;min-width:0;max-width:100%;height:auto;max-height:none;
+  padding:0;white-space:normal;overflow-wrap:anywhere;
 }
 </style>
-<div style="font-weight:600;">{%= __("Research Heuristic") %}</div>
+<div style="font-weight:600;">{%= __("Name / Description") %}</div>
 {% } %}
