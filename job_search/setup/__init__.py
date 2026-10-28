@@ -31,7 +31,7 @@ def after_migrate():
     # Frappe 16 caches Desk FormMeta separately in frappe.client_cache. A normal
     # site cache clear does not invalidate that cached bundle, so a newly added
     # native child-grid template can remain absent from browser metadata.
-    frappe.client_cache.delete_value("doctype_form_meta::Job Search Search")
+    frappe.cache.delete_value("doctype_form_meta::Job Search Search")
     # Frappe's merged language dictionary has its own cache, independent of
     # the Desk/doctype caches. Refresh it when app translations change.
     from frappe.translate import clear_cache as clear_translation_cache

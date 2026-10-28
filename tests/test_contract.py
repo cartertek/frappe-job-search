@@ -177,7 +177,7 @@ class SchemaTest(unittest.TestCase):
         self.assertIn(".template-row-index", css)
         self.assertIn(".template-row", css)
         setup = (APP / "setup/__init__.py").read_text()
-        self.assertIn('frappe.client_cache.delete_value("doctype_form_meta::Job Search Search")', setup)
+        self.assertIn('frappe.cache.delete_value("doctype_form_meta::Job Search Search")', setup)
 
     def test_standalone_ui(self):
         hooks = (APP / "hooks.py").read_text()
