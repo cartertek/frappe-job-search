@@ -33,11 +33,11 @@
   min-width: 0;
   width: auto;
   max-width: none;
-  padding: 12px 16px;
+  padding: 8px 16px;
 }
 .job-heuristic-record, .job-heuristic-heading {
   display: grid;
-  grid-template-columns: minmax(140px, 24%) minmax(0, 1fr);
+  grid-template-columns: minmax(140px, 24%) minmax(0, 1fr) 40px;
   gap: 16px;
   min-width: 0;
   width: 100%;
@@ -60,3 +60,11 @@
   white-space: normal;
   overflow-wrap: anywhere;
 }
+
+/* Header content shares the same column grid but Frappe applies its own
+   fixed-height heading row padding. Match the record column start exactly. */
+.form-grid:has(.job-heuristic-record) .grid-heading-row .template-row {
+  padding: 4px 16px;
+}
+.job-heuristic-edit {text-align:right;align-self:start;cursor:pointer;}
+.job-heuristic-edit .btn {pointer-events:none;}

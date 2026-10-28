@@ -2,7 +2,10 @@
 <div class="job-heuristic-record">
   <div class="job-heuristic-name">{%= frappe.utils.escape_html(doc.heuristic_name || "") %}</div>
   <div class="ql-editor read-mode job-heuristic-description">{%= doc.description || "" %}</div>
+  <div class="job-heuristic-edit" title="{%= __("Edit") %}">
+    <span class="btn btn-xs btn-default">{%= frappe.utils.icon("pencil", "xs") %}</span>
+  </div>
 </div>
 {% } else { %}
-<div class="job-heuristic-heading"><span>{%= __("Name") %}</span><span>{%= __("Description") %}</span></div>
+<div class="job-heuristic-heading"><span>{%= __("Name") %}</span><span>{%= __("Description") %}</span><span></span></div>
 {% } %}
