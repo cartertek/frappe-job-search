@@ -150,6 +150,9 @@ class SchemaTest(unittest.TestCase):
         self.assertNotIn("render_overview_title", js)
         self.assertIn('data-fieldname="metadata_column"', css)
         self.assertIn("grid-template-columns", css)
+        self.assertIn('data-fieldname="research_heuristics_section"', css)
+        self.assertIn("white-space: pre-wrap !important", css)
+        self.assertIn("text-overflow: clip", css)
         setup = (APP / "setup/__init__.py").read_text()
         self.assertIn('frappe.client_cache.delete_value("doctype_form_meta::Job Search Opportunity")', setup)
 

@@ -47,3 +47,24 @@
     grid-template-columns: minmax(100px, 40%) minmax(0, 1fr);
   }
 }
+
+/* Show complete researcher assessments in the Job's non-editable child grid.
+   Frappe adds .ellipsis to static cells even for Small Text values. */
+.form-section[data-fieldname="research_heuristics_section"]
+  .frappe-control[data-fieldname="research_heuristics"]
+  .grid-static-col .static-area {
+  white-space: pre-wrap !important;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  overflow: visible;
+  text-overflow: clip;
+  height: auto;
+  max-height: none;
+}
+
+.form-section[data-fieldname="research_heuristics_section"]
+  .frappe-control[data-fieldname="research_heuristics"]
+  .grid-static-col {
+  height: auto;
+  min-width: 0;
+}
