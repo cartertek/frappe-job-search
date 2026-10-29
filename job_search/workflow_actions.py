@@ -57,6 +57,10 @@ def perform_action(opportunity, action, rationale=None, scope=None, search=None,
             employer = require_doc("Job Search Employer", job.organization, "write")
             employer.globally_rejected = 1
             employer.save()
+            # The initiating Job must also visibly reflect its rejection.
+            if job.status not in ("Rejected", "Accepted"):
+                job.status = "Rejected"
+                job.save()
         # Research rejection is an operator action, not a human authorization.
         # Record its rationale under the actual signed-in actor, without creating
         # a Job Search Decision (which requires an approver).

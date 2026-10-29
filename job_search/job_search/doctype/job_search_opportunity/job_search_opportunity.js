@@ -79,6 +79,11 @@ frappe.ui.form.on('Job Search Opportunity', {
           try {
             await execute(action, values);
             modal.hide();
+          } catch (error) {
+            frappe.msgprint({title: __('Reject action failed'),
+              message: __('The Job was not rejected. Review the error and try again.'),
+              indicator: 'red'});
+            throw error;
           } finally { modal.get_primary_btn().prop('disabled', false); }
         },
       });

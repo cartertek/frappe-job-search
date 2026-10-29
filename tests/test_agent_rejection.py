@@ -71,6 +71,20 @@ class AgentRejection(unittest.TestCase):
         self.assertEqual('Accepted', result['status'])
         self.assertEqual(0, self.job.globally_rejected)
 
+    def test_organization_rejection_updates_initiating_job_status(self):
+        result = self.module.perform_action('job1', 'reject',
+            rationale='Organization not suitable', scope='organization')
+        self.assertEqual('Rejected', result['status'])
+        self.assertEqual(0, self.job.globally_rejected)
+        self.assertIn('save', self.calls)
+        self.assertNotIn('approver', self.calls)
+
+    def test_organization_rejection_preserves_accepted_status(self):
+        self.job.status = 'Accepted'
+        result = self.module.perform_action('job1', 'reject',
+            rationale='No longer relevant', scope='organization')
+        self.assertEqual('Accepted', result['status'])
+
     def test_research_handoff_uses_operator(self):
         self.module.perform_action('job1', 'ready_to_review')
         self.assertIn('operator', self.calls)
