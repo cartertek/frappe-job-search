@@ -10,17 +10,36 @@ APP = ROOT / "job_search"
 MODULE = APP / "job_search"
 BASE = MODULE / "doctype"
 EXPECTED = {
-    "Job Search Posting", "Job Search Research", "Job Search Source",
-    "Job Search Research Source", "Job Search Procedure", "Job Search Procedure Step",
-    "Job Search Procedure Execution", "Job Search Execution Step",
-    "Job Search Application", "Job Search Interview", "Job Search Interview Contact",
-    "Job Search Decision", "Job Search Transition", "Job Search Opportunity",
-    "Job Search Employer", "Job Search Task", "Job Search Search", "Job Search Membership",
-    "Job Search Heuristic", "Job Search Heuristic Value",
+    "Job Search Posting",
+    "Job Search Research",
+    "Job Search Source",
+    "Job Search Research Source",
+    "Job Search Procedure",
+    "Job Search Procedure Step",
+    "Job Search Procedure Execution",
+    "Job Search Execution Step",
+    "Job Search Application",
+    "Job Search Interview",
+    "Job Search Interview Contact",
+    "Job Search Decision",
+    "Job Search Transition",
+    "Job Search Opportunity",
+    "Job Search Employer",
+    "Job Search Task",
+    "Job Search Search",
+    "Job Search Membership",
+    "Job Search Heuristic",
+    "Job Search Heuristic Value",
 }
-CHILD = {"Job Search Heuristic",
-         "Job Search Research Source", "Job Search Procedure Step",
-         "Job Search Execution Step", "Job Search Interview Contact", "Job Search Membership", "Job Search Heuristic Value"}
+CHILD = {
+    "Job Search Heuristic",
+    "Job Search Research Source",
+    "Job Search Procedure Step",
+    "Job Search Execution Step",
+    "Job Search Interview Contact",
+    "Job Search Membership",
+    "Job Search Heuristic Value",
+}
 
 
 class SchemaTest(unittest.TestCase):
@@ -105,44 +124,106 @@ class SchemaTest(unittest.TestCase):
         self.assertEqual(names, [f["fieldname"] for f in fields])
         self.assertEqual(
             [f["fieldname"] for f in fields if f["fieldtype"] == "Section Break"],
-            ["overview_section", "search_fields_section", "job_details_section", "research_heuristics_section", "research_notes_section"],
+            [
+                "overview_section",
+                "search_fields_section",
+                "job_details_section",
+                "research_heuristics_section",
+                "research_notes_section",
+            ],
         )
         self.assertEqual(
             [(f["fieldname"], f.get("label")) for f in fields if f["fieldtype"] == "Column Break"],
-            [("overview_column", "Overview"), ("metadata_column", "Metadata"),
-             ("search_compensation_column", None)],
+            [
+                ("overview_column", "Overview"),
+                ("metadata_column", "Metadata"),
+                ("search_compensation_column", None),
+            ],
         )
         self.assertNotIn("overview_job_title", by_name)
         self.assertEqual(by_name["job_title"]["fieldtype"], "Data")
         self.assertTrue(by_name["research_notes_section"]["collapsible"])
         groups = {
-            "overview_column": {"status", "organization", "job_title", "rejection_scope", "rejection_search", "rejection_reason"},
-            "metadata_column": {"posting_url", "requisition_id", "priority", "discovered_on", "deadline",
-                "applied_on", "next_action_on", "closure_reason", "offer_details", "latest_posting",
-                "last_decision", "last_decision_record", "latest_application", "interview_schedule",
-                "globally_rejected"},
-            "search_fields_section": {"active_job_search", "location", "employment_type", "work_arrangement",
-                "seniority", "compensation_not_given", "compensation_min", "compensation_max", "currency", "compensation_period",
-                "posted_on"},
+            "overview_column": {
+                "status",
+                "organization",
+                "job_title",
+                "rejection_scope",
+                "rejection_search",
+                "rejection_reason",
+            },
+            "metadata_column": {
+                "posting_url",
+                "requisition_id",
+                "priority",
+                "discovered_on",
+                "deadline",
+                "applied_on",
+                "next_action_on",
+                "closure_reason",
+                "offer_details",
+                "latest_posting",
+                "last_decision",
+                "last_decision_record",
+                "latest_application",
+                "interview_schedule",
+                "globally_rejected",
+            },
+            "search_fields_section": {
+                "active_job_search",
+                "location",
+                "employment_type",
+                "work_arrangement",
+                "seniority",
+                "compensation_not_given",
+                "compensation_min",
+                "compensation_max",
+                "currency",
+                "compensation_period",
+                "posted_on",
+            },
             "job_details_section": {"job_description"},
             "research_heuristics_section": {"research_heuristics"},
-            "research_notes_section": {"research_findings", "research_recommendation", "application_materials_for_review",
-                "interview_preparation", "human_feedback_and_instructions"},
+            "research_notes_section": {
+                "research_findings",
+                "research_recommendation",
+                "application_materials_for_review",
+                "interview_preparation",
+                "human_feedback_and_instructions",
+            },
         }
+
         def slice_between(start, end):
             return fields[names.index(start) + 1 : names.index(end)]
-        self.assertEqual({f["fieldname"] for f in slice_between("overview_column", "metadata_column")},
-                         groups["overview_column"])
-        self.assertEqual({f["fieldname"] for f in slice_between("metadata_column", "search_fields_section")},
-                         groups["metadata_column"])
-        self.assertEqual({f["fieldname"] for f in slice_between("search_fields_section", "job_details_section")
-                          if f["fieldtype"] != "Column Break"}, groups["search_fields_section"])
-        self.assertEqual({f["fieldname"] for f in slice_between("job_details_section", "research_heuristics_section")},
-                         groups["job_details_section"])
-        self.assertEqual({f["fieldname"] for f in slice_between("research_heuristics_section", "research_notes_section")},
-                         groups["research_heuristics_section"])
-        self.assertEqual({f["fieldname"] for f in fields[names.index("research_notes_section") + 1:]},
-                         groups["research_notes_section"])
+
+        self.assertEqual(
+            {f["fieldname"] for f in slice_between("overview_column", "metadata_column")},
+            groups["overview_column"],
+        )
+        self.assertEqual(
+            {f["fieldname"] for f in slice_between("metadata_column", "search_fields_section")},
+            groups["metadata_column"],
+        )
+        self.assertEqual(
+            {
+                f["fieldname"]
+                for f in slice_between("search_fields_section", "job_details_section")
+                if f["fieldtype"] != "Column Break"
+            },
+            groups["search_fields_section"],
+        )
+        self.assertEqual(
+            {f["fieldname"] for f in slice_between("job_details_section", "research_heuristics_section")},
+            groups["job_details_section"],
+        )
+        self.assertEqual(
+            {f["fieldname"] for f in slice_between("research_heuristics_section", "research_notes_section")},
+            groups["research_heuristics_section"],
+        )
+        self.assertEqual(
+            {f["fieldname"] for f in fields[names.index("research_notes_section") + 1 :]},
+            groups["research_notes_section"],
+        )
         self.assertEqual(38, len([f for f in fields if f["fieldname"] in set().union(*groups.values())
                                  and f["fieldname"] != "research_heuristics"]))
         js = (BASE / "job_search_opportunity/job_search_opportunity.js").read_text()
@@ -184,28 +265,48 @@ class SchemaTest(unittest.TestCase):
     def test_review_heuristics_child_table_and_transition_contract(self):
         data = json.loads((BASE / "job_search_opportunity" / "job_search_opportunity.json").read_text())
         fields = {f["fieldname"]: f for f in data["fields"]}
-        self.assertEqual((fields["active_job_search"]["fieldtype"], fields["active_job_search"]["options"]),
-                         ("Link", "Job Search Search"))
-        self.assertEqual((fields["research_heuristics"]["fieldtype"], fields["research_heuristics"]["options"]),
-                         ("Table", "Job Search Heuristic Value"))
-        self.assertLess(data["field_order"].index("job_details_section"),
-                        data["field_order"].index("research_heuristics_section"))
-        self.assertLess(data["field_order"].index("research_heuristics_section"),
-                        data["field_order"].index("research_notes_section"))
+        self.assertEqual(
+            (fields["active_job_search"]["fieldtype"], fields["active_job_search"]["options"]),
+            ("Link", "Job Search Search"),
+        )
+        self.assertEqual(
+            (fields["research_heuristics"]["fieldtype"], fields["research_heuristics"]["options"]),
+            ("Table", "Job Search Heuristic Value"),
+        )
+        self.assertLess(
+            data["field_order"].index("job_details_section"),
+            data["field_order"].index("research_heuristics_section"),
+        )
+        self.assertLess(
+            data["field_order"].index("research_heuristics_section"),
+            data["field_order"].index("research_notes_section"),
+        )
         child = json.loads((BASE / "job_search_heuristic_value/job_search_heuristic_value.json").read_text())
-        self.assertEqual(child["field_order"], [
-            "heuristic_id", "heuristic_name", "quote", "reasoning", "source", "source_date",
-        ])
-        self.assertEqual({f["fieldname"] for f in child["fields"] if f.get("in_list_view")},
-                         {"heuristic_name", "quote", "reasoning", "source", "source_date"})
+        self.assertEqual(
+            child["field_order"],
+            [
+                "heuristic_id",
+                "heuristic_name",
+                "quote",
+                "reasoning",
+                "source",
+                "source_date",
+            ],
+        )
+        self.assertEqual(
+            {f["fieldname"] for f in child["fields"] if f.get("in_list_view")},
+            {"heuristic_name", "quote", "reasoning", "source", "source_date"},
+        )
         claim_fields = {f["fieldname"]: f for f in child["fields"]}
         for field in ("reasoning", "source_date"):
             self.assertEqual(1, claim_fields[field]["reqd"])
-            self.assertEqual("Data" if field == "source_date" else "Small Text", claim_fields[field]["fieldtype"])
+            self.assertEqual(
+                "Data" if field == "source_date" else "Small Text", claim_fields[field]["fieldtype"]
+            )
         self.assertIn("YYYY-MM-DD", claim_fields["source_date"]["description"])
         self.assertIn("literal None", claim_fields["source_date"]["description"])
         js = (BASE / "job_search_opportunity/job_search_opportunity.js").read_text()
-        self.assertIn('active_job_search(frm)', js)
+        self.assertIn("active_job_search(frm)", js)
         self.assertIn("frappe.db.get_doc('Job Search Search', search_name)", js)
         self.assertIn("frappe.model.set_value(cdt,cdn,'heuristic_id',definition.name)", js)
         self.assertIn('Load Heuristic Choices', js)

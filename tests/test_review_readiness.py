@@ -84,7 +84,7 @@ class ReviewReadiness(unittest.TestCase):
         self.assertEqual([], self.errors())
 
     def test_conditional_compensation_heuristic(self):
-        from job_search.heuristics import research_heuristics, COMPENSATION_HEURISTIC_ID
+        from job_search.heuristics import COMPENSATION_HEURISTIC_ID, research_heuristics
         self.search.allow_compensation_heuristic = 1
         self.job.compensation_not_given = 1
         self.job.compensation_min = None
@@ -92,17 +92,27 @@ class ReviewReadiness(unittest.TestCase):
         self.job.compensation_period = None
         definitions = research_heuristics(self.search)
         minimum = next(row for row in definitions if row['name'] == COMPENSATION_HEURISTIC_ID)
-        self.assertEqual(minimum['heuristic_name'], 'Minimum Compensation')
-        self.assertIn('120000', minimum['description'])
-        self.assertIn('company size, role, and market', minimum['description'])
+        self.assertEqual(minimum["heuristic_name"], "Minimum Compensation")
+        self.assertIn("120000", minimum["description"])
+        self.assertIn("company size, role, and market", minimum["description"])
         self.assertFalse(self.searches.match_failures(self.job, self.search))
-        self.assertIn("Research heuristic 'Minimum Compensation' requires at least one sourced claim", self.errors())
-        self.job.research_heuristics.append(record(heuristic_id=COMPENSATION_HEURISTIC_ID,
-            heuristic_name='Minimum Compensation', quote='We offer competitive salaries', source='https://example.org/pay'))
+        self.assertIn(
+            "Research heuristic 'Minimum Compensation' requires at least one sourced claim", self.errors()
+        )
+        self.job.research_heuristics.append(
+            record(
+                heuristic_id=COMPENSATION_HEURISTIC_ID,
+                heuristic_name="Minimum Compensation",
+                quote="We offer competitive salaries",
+                source="https://example.org/pay",
+            )
+        )
         self.assertEqual([], self.errors())
-        self.job.research_heuristics[-1].quote = ' '
-        self.assertIn("Research heuristic 'Minimum Compensation' requires at least one sourced claim", self.errors())
-        self.job.research_heuristics[-1].quote = 'We offer competitive salaries'
+        self.job.research_heuristics[-1].quote = " "
+        self.assertIn(
+            "Research heuristic 'Minimum Compensation' requires at least one sourced claim", self.errors()
+        )
+        self.job.research_heuristics[-1].quote = "We offer competitive salaries"
         self.job.compensation_not_given = 0
         self.job.compensation_min = 135000
         self.job.currency = 'USD'
@@ -152,17 +162,32 @@ class ReviewReadiness(unittest.TestCase):
         self.assertFalse(self.searches.matches(self.job, self.search))
 
     def test_multiple_sourced_claims_per_heuristic(self):
-        self.job.research_heuristics.append(record(heuristic_id='H1', heuristic_name='Personal contact',
-            quote='Another verifiable sentence', source='https://example.org/additional'))
+        self.job.research_heuristics.append(
+            record(
+                heuristic_id="H1",
+                heuristic_name="Personal contact",
+                quote="Another verifiable sentence",
+                source="https://example.org/additional",
+            )
+        )
         self.assertEqual([], self.errors())
-        self.job.research_heuristics[-1].source = ''
-        self.assertIn("Heuristic claim 'Personal contact' requires an exact quote and a valid source URL",self.errors())
-        self.job.research_heuristics[-1].source = 'https://example.org/additional'
-        self.job.research_heuristics[1].quote = ''
-        self.assertIn("Heuristic claim 'Personal contact' requires an exact quote and a valid source URL",self.errors())
-        self.assertNotIn("Research heuristic 'Personal contact' requires at least one sourced claim",self.errors())
-        self.job.research_heuristics.append(record(heuristic_id='Other',heuristic_name='Stale',
-            quote='Old',source='https://example.org/old'))
+        self.job.research_heuristics[-1].source = ""
+        self.assertIn(
+            "Heuristic claim 'Personal contact' requires an exact quote and a valid source URL", self.errors()
+        )
+        self.job.research_heuristics[-1].source = "https://example.org/additional"
+        self.job.research_heuristics[1].quote = ""
+        self.assertIn(
+            "Heuristic claim 'Personal contact' requires an exact quote and a valid source URL", self.errors()
+        )
+        self.assertNotIn(
+            "Research heuristic 'Personal contact' requires at least one sourced claim", self.errors()
+        )
+        self.job.research_heuristics.append(
+            record(
+                heuristic_id="Other", heuristic_name="Stale", quote="Old", source="https://example.org/old"
+            )
+        )
         self.assertIn('Unexpected heuristic claim', ' '.join(self.errors()))
 
     def test_source_date_must_meet_active_search_cutoff(self):
@@ -245,8 +270,10 @@ class ReviewReadiness(unittest.TestCase):
     def test_heuristics_reordered_by_search_keep_stable_identity(self):
         self.search.heuristics.reverse()
         self.assertEqual([], self.errors())
-        self.search.heuristics.append(record(name='H3', heuristic_name='Additional review'))
-        self.assertIn("Research heuristic 'Additional review' requires at least one sourced claim", self.errors())
+        self.search.heuristics.append(record(name="H3", heuristic_name="Additional review"))
+        self.assertIn(
+            "Research heuristic 'Additional review' requires at least one sourced claim", self.errors()
+        )
 
 
 if __name__ == '__main__':

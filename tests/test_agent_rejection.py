@@ -10,10 +10,16 @@ from unittest.mock import patch
 class AgentRejection(unittest.TestCase):
     def setUp(self):
         self.calls = []
-        self.job = types.SimpleNamespace(name='job1', status='Researching', organization='org1', active_job_search='search1',
-            globally_rejected=0, save=lambda: self.calls.append('save'),
-            add_comment=lambda kind, text: self.calls.append(('comment', kind, text)))
-        frappe = types.ModuleType('frappe')
+        self.job = types.SimpleNamespace(
+            name="job1",
+            status="Researching",
+            organization="org1",
+            active_job_search="search1",
+            globally_rejected=0,
+            save=lambda: self.calls.append("save"),
+            add_comment=lambda kind, text: self.calls.append(("comment", kind, text)),
+        )
+        frappe = types.ModuleType("frappe")
         frappe.flags = types.SimpleNamespace(job_search_transition_context=None)
         frappe.db = types.SimpleNamespace(get_value=lambda *args: False)
         frappe.throw = lambda msg: (_ for _ in ()).throw(ValueError(msg))
@@ -92,11 +98,13 @@ class AgentRejection(unittest.TestCase):
         self.job.rejection_scope = 'Job Globally'
         self.job.rejection_search = None
         self.job.globally_rejected = 1
-        result = self.module.perform_action('job1', 'reopen', rationale='New evidence')
-        self.assertEqual(result['status'], 'Researching')
+        result = self.module.perform_action("job1", "reopen", rationale="New evidence")
+        self.assertEqual(result["status"], "Researching")
         self.assertEqual(self.job.globally_rejected, 0)
-        self.assertIn('save', self.calls)
-        self.assertTrue(any(c[0] == 'comment' and 'New evidence' in c[2] for c in self.calls if isinstance(c, tuple)))
+        self.assertIn("save", self.calls)
+        self.assertTrue(
+            any(c[0] == "comment" and "New evidence" in c[2] for c in self.calls if isinstance(c, tuple))
+        )
 
     def test_reopen_rejected_organization_requires_org_resolution(self):
         self.job.status = 'Rejected'

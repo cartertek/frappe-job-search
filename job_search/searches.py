@@ -13,25 +13,35 @@ SEARCH = 'Job Search Search'
 def match_failures(job, search):
     """Explain each failed deterministic search criterion using the same rules as matches()."""
     failures = []
-    if search.location_match and (job.location or '').strip().casefold() != search.location_match.strip().casefold():
+    if (
+        search.location_match
+        and (job.location or "").strip().casefold() != search.location_match.strip().casefold()
+    ):
         failures.append(f"Location: {job.location or '(missing)'}; required: {search.location_match}")
     for label, job_value, needed in (
-        ('Employment Type', job.employment_type, search.employment_type),
-        ('Work Arrangement', job.work_arrangement, search.work_arrangement),
-        ('Seniority', job.seniority, search.seniority),
+        ("Employment Type", job.employment_type, search.employment_type),
+        ("Work Arrangement", job.work_arrangement, search.work_arrangement),
+        ("Seniority", job.seniority, search.seniority),
     ):
-        if needed and (job_value or '').casefold() != needed.casefold():
+        if needed and (job_value or "").casefold() != needed.casefold():
             failures.append(f"{label}: {job_value or '(missing)'}; required: {needed}")
     if search.posted_after and (not job.posted_on or getdate(job.posted_on) < getdate(search.posted_after)):
-        failures.append(f"Posted On: {job.posted_on or '(missing)'}; required on or after {search.posted_after}")
-    if not getattr(job, 'compensation_not_given', False):
+        failures.append(
+            f"Posted On: {job.posted_on or '(missing)'}; required on or after {search.posted_after}"
+        )
+    if not getattr(job, "compensation_not_given", False):
         if search.compensation_period and job.compensation_period != search.compensation_period:
-            failures.append(f"Compensation Period: {job.compensation_period or '(missing)'}; required: {search.compensation_period}")
+            failures.append(
+                f"Compensation Period: {job.compensation_period or '(missing)'};"
+                f" required: {search.compensation_period}"
+            )
         if search.salary_min:
             if search.currency and job.currency != search.currency:
                 failures.append(f"Currency: {job.currency or '(missing)'}; required: {search.currency}")
             if job.compensation_min is not None and float(job.compensation_min) < float(search.salary_min):
-                failures.append(f"Minimum Compensation: {job.compensation_min}; required at least {search.salary_min}")
+                failures.append(
+                    f"Minimum Compensation: {job.compensation_min}; required at least {search.salary_min}"
+                )
     return failures
 
 

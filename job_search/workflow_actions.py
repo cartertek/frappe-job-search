@@ -2,7 +2,7 @@
 
 import frappe
 
-from job_search.permissions import require_approver, require_operator, require_doc, require_opportunity
+from job_search.permissions import require_approver, require_doc, require_operator, require_opportunity
 from job_search.workflow import _has_completed_research_procedure, _has_research
 
 
@@ -36,7 +36,9 @@ def perform_action(opportunity, action, rationale=None, scope=None, search=None,
         if not rationale:
             frappe.throw("Reopening reason is required")
         if frappe.db.get_value("Job Search Employer", job.organization, "globally_rejected"):
-            frappe.throw("The organization is globally rejected; resolve that rejection before reopening this Job")
+            frappe.throw(
+                "The organization is globally rejected; resolve that rejection before reopening this Job"
+            )
         # Undo only this Job's rejection. Other search exclusions remain intact.
         if job.rejection_scope == "Search Only" and job.rejection_search:
             query = require_doc("Job Search Search", job.rejection_search, "write")
@@ -47,7 +49,11 @@ def perform_action(opportunity, action, rationale=None, scope=None, search=None,
         job.globally_rejected = 0
         job.status = "Researching"
         previous_context = getattr(frappe.flags, "job_search_transition_context", None)
-        frappe.flags.job_search_transition_context = {"deal": job.name, "action": "reopen", "reason": rationale}
+        frappe.flags.job_search_transition_context = {
+            "deal": job.name,
+            "action": "reopen",
+            "reason": rationale,
+        }
         try:
             job.save()
         finally:

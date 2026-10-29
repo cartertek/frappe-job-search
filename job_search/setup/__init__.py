@@ -222,15 +222,23 @@ def backfill_rejection_details():
                               fields=["name", "rejection_scope", "rejection_reason"]):
         if row.rejection_scope and row.rejection_reason:
             continue
-        comments = frappe.get_all("Comment", filters={
-            "reference_doctype": doctype,
-            "reference_name": row.name,
-            "content": ["like", "Research rejection (%"],
-        }, fields=["content"], order_by="creation desc", limit_page_length=1)
+        comments = frappe.get_all(
+            "Comment",
+            filters={
+                "reference_doctype": doctype,
+                "reference_name": row.name,
+                "content": ["like", "Research rejection (%"],
+            },
+            fields=["content"],
+            order_by="creation desc",
+            limit_page_length=1,
+        )
         if not comments:
             continue
         content = comments[0].content or ""
-        matched = __import__("re").fullmatch(r"Research rejection \((search|job|organization)\): (.*)",content,flags=__import__("re").DOTALL)
+        matched = __import__("re").fullmatch(
+            r"Research rejection \((search|job|organization)\): (.*)", content, flags=__import__("re").DOTALL
+        )
         if not matched:
             continue
         scope, reason = matched.groups()

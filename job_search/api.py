@@ -270,9 +270,15 @@ def publish_human_review(opportunity, posting_digest=None, research_digest=None,
     updates = {
         "job_description": job_description if job_description is not None else posting_digest,
         "research_findings": research_findings if research_findings is not None else research_digest,
-        "research_recommendation": research_recommendation if research_recommendation is not None else recommendation,
-        "application_materials_for_review": application_materials_for_review if application_materials_for_review is not None else application_review,
-        "interview_preparation": interview_preparation if interview_preparation is not None else interview_brief,
+        "research_recommendation": research_recommendation
+        if research_recommendation is not None
+        else recommendation,
+        "application_materials_for_review": application_materials_for_review
+        if application_materials_for_review is not None
+        else application_review,
+        "interview_preparation": interview_preparation
+        if interview_preparation is not None
+        else interview_brief,
     }
     changed = []
     for name, value in updates.items():
