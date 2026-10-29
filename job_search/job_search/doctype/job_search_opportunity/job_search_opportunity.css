@@ -48,7 +48,7 @@
   }
 }
 
-/* Job form native child-grid template: Heuristic, Quote, and Source columns. */
+/* Job form native child-grid template: Heuristic, Quote, Reasoning, Source, Date. */
 .form-grid:has(.job-value-record) .grid-heading-row .grid-row:nth-child(2) {
   display: none;
 }
@@ -86,7 +86,7 @@
 }
 .job-value-record, .job-value-heading {
   display: grid;
-  grid-template-columns: minmax(110px, 22%) minmax(0, 1fr) minmax(150px, 26%);
+  grid-template-columns: minmax(100px, 15%) minmax(160px, 24%) minmax(160px, 25%) minmax(130px, 1fr) minmax(90px, 110px);
   gap: 16px;
   min-width: 0;
   width: 100%;
@@ -155,3 +155,6 @@
   color: var(--link-color, var(--primary));
   text-decoration: underline;
 }
+
+.job-value-reasoning { min-width: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.job-value-date { min-width: 0; overflow-wrap: anywhere; }

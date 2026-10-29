@@ -9,7 +9,9 @@
     "heuristic_id",
     "heuristic_name",
     "quote",
-    "source"
+    "reasoning",
+    "source",
+    "source_date"
   ],
   "fields": [
     {
@@ -34,6 +36,14 @@
       "description": "Copy the exact text from the linked source, without paraphrasing or summarizing."
     },
     {
+      "fieldname": "reasoning",
+      "fieldtype": "Small Text",
+      "label": "Reasoning",
+      "reqd": 1,
+      "in_list_view": 1,
+      "description": "Explain how this exact quote supports the selected heuristic, including any important limitations."
+    },
+    {
       "fieldname": "source",
       "fieldtype": "Data",
       "label": "Source URL",
@@ -41,6 +51,14 @@
       "reqd": 1,
       "options": "URL",
       "description": "Link directly to a source containing the exact quote."
+    },
+    {
+      "fieldname": "source_date",
+      "fieldtype": "Data",
+      "label": "Source Date",
+      "reqd": 1,
+      "in_list_view": 1,
+      "description": "Publication date in YYYY-MM-DD format, or the literal None when the source has no publication date. Undated claims cannot meet a search's Posted On Or After cutoff."
     }
   ],
   "permissions": [],

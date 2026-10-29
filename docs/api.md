@@ -12,7 +12,7 @@ Each method is exposed as POST to /api/method/job_search.api.METHOD (or the Frap
 | complete_procedure | Complete after required steps and assessment |
 | authorize_decision | Human approver-only authorization: Pursue, Authorize Application, Accept Offer, Withdraw, Override (only when appropriate; never auto-issue on the operator's behalf) |
 | perform_job_action | Agents with Job Search Operator permission may reject opportunities with a rationale and scope, or move researched opportunities to Ready to Review. Reject does not issue a human Decision record. Pursue and Accept Offer still require a signed-in approver |
-| transition_opportunity | Validated Job stage change; Ready to Review requires a matching active search and all heuristic values, Qualified requires human Pursue approval and cited completed research; later stages require corresponding authorizations and records |
+| transition_opportunity | Validated Job stage change; Ready to Review requires a matching active search and complete heuristic claims (exact quote, reasoning, source URL, and valid publication date meeting search cutoff), Qualified requires human Pursue approval and cited completed research; later stages require corresponding authorizations and records |
 | record_application | Record a confirmed external submission, checking prior approval and materials |
 | record_interview | Record interview round, schedule and Frappe Contacts |
 | create_follow_up | Add linked Job Search Task |

@@ -159,6 +159,10 @@ class SchemaTest(unittest.TestCase):
         self.assertIn("frappe.utils.escape_html(doc.quote", template)
         self.assertIn('__("Heuristic")', template)
         self.assertIn('__("Exact Quote")', template)
+        self.assertIn('__("Reasoning")', template)
+        self.assertIn('__("Source Date")', template)
+        self.assertIn("frappe.utils.escape_html(doc.reasoning", template)
+        self.assertIn("frappe.utils.escape_html(doc.source_date", template)
         self.assertNotIn("sync_research_heuristics(frm);\n    if", js)
         setup = (APP / "setup/__init__.py").read_text()
         self.assertIn('frappe.client_cache.delete_value("doctype_form_meta::Job Search Opportunity")', setup)
@@ -189,9 +193,17 @@ class SchemaTest(unittest.TestCase):
         self.assertLess(data["field_order"].index("research_heuristics_section"),
                         data["field_order"].index("research_notes_section"))
         child = json.loads((BASE / "job_search_heuristic_value/job_search_heuristic_value.json").read_text())
-        self.assertEqual(child["field_order"], ["heuristic_id", "heuristic_name", "quote", "source"])
+        self.assertEqual(child["field_order"], [
+            "heuristic_id", "heuristic_name", "quote", "reasoning", "source", "source_date",
+        ])
         self.assertEqual({f["fieldname"] for f in child["fields"] if f.get("in_list_view")},
-                         {"heuristic_name", "quote", "source"})
+                         {"heuristic_name", "quote", "reasoning", "source", "source_date"})
+        claim_fields = {f["fieldname"]: f for f in child["fields"]}
+        for field in ("reasoning", "source_date"):
+            self.assertEqual(1, claim_fields[field]["reqd"])
+            self.assertEqual("Data" if field == "source_date" else "Small Text", claim_fields[field]["fieldtype"])
+        self.assertIn("YYYY-MM-DD", claim_fields["source_date"]["description"])
+        self.assertIn("literal None", claim_fields["source_date"]["description"])
         js = (BASE / "job_search_opportunity/job_search_opportunity.js").read_text()
         self.assertIn('active_job_search(frm)', js)
         self.assertIn("frappe.db.get_doc('Job Search Search', search_name)", js)

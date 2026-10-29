@@ -12,6 +12,9 @@ APP = Path(__file__).resolve().parents[1] / 'job_search'
 
 
 def record(**fields):
+    if 'heuristic_id' in fields:
+        fields.setdefault('reasoning', 'The cited wording supports the selected heuristic.')
+        fields.setdefault('source_date', '2026-10-01')
     return types.SimpleNamespace(**fields)
 
 
@@ -161,6 +164,58 @@ class ReviewReadiness(unittest.TestCase):
         self.job.research_heuristics.append(record(heuristic_id='Other',heuristic_name='Stale',
             quote='Old',source='https://example.org/old'))
         self.assertIn('Unexpected heuristic claim', ' '.join(self.errors()))
+
+    def test_source_date_must_meet_active_search_cutoff(self):
+        row = self.job.research_heuristics[1]
+        row.source_date = '2026-08-31'
+        errors = self.errors()
+        self.assertIn('Source Date must be on or after 2026-09-01', ' '.join(errors))
+        self.assertIn("Research heuristic 'Personal contact' requires at least one sourced claim", errors)
+        row.source_date = '2026-09-01'
+        self.assertEqual([], self.errors())  # inclusive boundary
+        row.source_date = '2026-10-31'
+        self.assertEqual([], self.errors())
+
+    def test_undated_source_only_counts_when_search_has_no_cutoff(self):
+        row = self.job.research_heuristics[1]
+        row.source_date = 'None'
+        self.assertIn('None cannot meet a configured date cutoff', ' '.join(self.errors()))
+        self.search.posted_after = None
+        self.assertEqual([], self.errors())
+
+    def test_source_dates_and_reasoning_are_required(self):
+        row = self.job.research_heuristics[1]
+        row.reasoning = '   '
+        self.assertIn('Reasoning is required', ' '.join(self.errors()))
+        row.reasoning = 'Supports direct recruiter accessibility.'
+        for bad in ('', None, 'none', '2026-2-01', '2026-02-30', 'yesterday', '2026-03-01T08:00:00'):
+            with self.subTest(value=bad):
+                row.source_date = bad
+                self.assertIn('Source Date', ' '.join(self.errors()))
+        row.source_date = '2026-09-01'
+        self.assertEqual([], self.errors())
+
+    def test_save_rejects_blank_reasoning_and_invalid_date(self):
+        item = record(heuristic_id='H1', heuristic_name='Personal contact',
+                      quote='Text', source='https://example.org/contact',
+                      reasoning=' ', source_date='2026-09-01')
+        doc = record(research_heuristics=[item])
+        doc.get = lambda name, default=None: getattr(doc, name, default)
+        with self.assertRaisesRegex(ValueError, 'Reasoning is required'):
+            self.workflow.validate_deal(doc)
+        item.reasoning = 'Shows the person welcomes direct conversation.'
+        item.source_date = '2026-02-30'
+        with self.assertRaisesRegex(ValueError, 'Source Date must be a real calendar date'):
+            self.workflow.validate_deal(doc)
+
+    def test_all_claims_need_valid_dates_not_only_one_per_heuristic(self):
+        self.job.research_heuristics.append(record(
+            heuristic_id='H1', heuristic_name='Personal contact',
+            quote='An older invitation', reasoning='Historical signal',
+            source='https://example.org/older', source_date='2026-08-15'))
+        errors = self.errors()
+        self.assertIn('Source Date must be on or after 2026-09-01', ' '.join(errors))
+        self.assertNotIn("Research heuristic 'Personal contact' requires at least one sourced claim", errors)
 
     def test_excluded_rejected_or_explicit_approval_required(self):
         self.job.globally_rejected = 1

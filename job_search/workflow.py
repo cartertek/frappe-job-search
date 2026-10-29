@@ -1,11 +1,13 @@
 """Job Search Opportunity stage invariants, independent of UI and REST mutation entrypoint."""
 
-import frappe
 from html import escape
+
+import frappe
 from frappe.utils import now_datetime
 
+from job_search.claim_validation import claim_field_errors, source_date_matches_search
+from job_search.heuristics import COMPENSATION_HEURISTIC_ID, research_heuristics
 from job_search.searches import match_failures
-from job_search.heuristics import research_heuristics, COMPENSATION_HEURISTIC_ID
 
 STAGES = (
     "Discovered", "Researching", "Ready to Review", "Qualified",
@@ -110,9 +112,19 @@ def _review_readiness_failures(deal):
             continue
         quote = (getattr(row, 'quote', None) or '').strip()
         source = (getattr(row, 'source', None) or '').strip()
+        label = defined[identifier]
         if not quote or not source or not source.startswith(('https://', 'http://')):
-            errors.append(f"Heuristic claim '{defined[identifier]}' requires an exact quote and a valid source URL")
-        elif identifier in valid_claims:
+            errors.append(f"Heuristic claim '{label}' requires an exact quote and a valid source URL")
+        field_errors = claim_field_errors(row)
+        errors.extend(f"Heuristic claim '{label}': {message}" for message in field_errors)
+        if field_errors:
+            continue
+        if not source_date_matches_search(row.source_date, search.posted_after):
+            errors.append(
+                f"Heuristic claim '{label}' Source Date must be on or after "
+                f"{search.posted_after}; None cannot meet a configured date cutoff"
+            )
+        elif quote and source and source.startswith(('https://', 'http://')) and identifier in valid_claims:
             valid_claims[identifier] += 1
     for identifier, name in required.items():
         if valid_claims[identifier] < 1:
@@ -168,6 +180,11 @@ def _validate_transition(deal, previous, next_stage):
 
 
 def validate_deal(doc, method=None):
+    # Frappe's 'reqd' property does not prevent whitespace-only Data / Small Text.
+    # Validate both fields on every save, not only during Ready to Review.
+    for row in doc.get("research_heuristics") or []:
+        for message in claim_field_errors(row):
+            frappe.throw(f"Heuristic claim '{row.heuristic_name or '(unnamed)'}': {message}")
     if doc.get("compensation_not_given"):
         for field in ("compensation_min", "compensation_max", "currency", "compensation_period"):
             doc.set(field, None)
