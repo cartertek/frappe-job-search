@@ -2,7 +2,7 @@
 <div class="job-value-record">
   <div class="job-value-name">{%= frappe.utils.escape_html(doc.heuristic_name || "") %}</div>
   <div class="job-value-text">{%= frappe.utils.escape_html(doc.quote || "") %}</div>
-  <div class="job-value-source">{%= frappe.utils.escape_html(doc.source || "") %}</div>
+  <div class="job-value-source"><a href="{%= frappe.utils.escape_html(doc.source || "") %}" target="_blank" rel="noopener noreferrer" class="job-value-source-link">{%= frappe.utils.escape_html(doc.source || "") %}</a></div>
   <div class="job-value-edit" title="{%= __("Edit") %}">
     <span class="btn btn-xs btn-default">{%= frappe.utils.icon("pencil", "xs") %}</span>
   </div>

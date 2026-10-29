@@ -48,9 +48,7 @@
   }
 }
 
-/* Job form native child-grid template: consistent Heuristic and Value columns. */
-/* The Search form's native Frappe child-grid template has two content columns.
-   This CSS is loaded through the DocType's supported __css metadata asset. */
+/* Job form native child-grid template: Heuristic, Quote, and Source columns. */
 .form-grid:has(.job-value-record) .grid-heading-row .grid-row:nth-child(2) {
   display: none;
 }
@@ -107,9 +105,7 @@
   white-space: pre-wrap;
 }
 
-/* The heading is a Frappe template row without doc; its normal row index
-   occupies the same 58px gutter as a data row. Keep the identical two-column
-   grid and padding, with no independent offset or flex override. */
+/* Keep heading columns aligned with data rows after the 58px row-index gutter. */
 .form-grid:has(.job-value-record) .grid-heading-row .data-row.row {
   display: flex;
   width: 100%;
@@ -140,3 +136,22 @@
 .job-value-edit .btn {pointer-events:none;}
 
 .job-value-source { min-width: 0; overflow-wrap: anywhere; white-space: pre-wrap; }
+
+/* Frappe positions the header independently: give its cells the same
+   top/bottom padding as data rows and prevent Quote from touching the edge. */
+.form-grid:has(.job-value-record) .grid-heading-row .template-row {
+  padding: 12px 16px;
+}
+.form-grid:has(.job-value-record) .grid-heading-row .template-row-index {
+  padding: 12px 8px;
+}
+.form-grid:has(.job-value-record) .grid-heading-row.with-filter {
+  height: auto;
+}
+.job-value-source-link {
+  display: inline;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  color: var(--link-color, var(--primary));
+  text-decoration: underline;
+}
