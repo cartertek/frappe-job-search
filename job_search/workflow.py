@@ -160,6 +160,8 @@ def _validate_transition(deal, previous, next_stage):
         frappe.throw("Offer details are required")
     if next_stage in DECISIONS and next_stage not in ("Qualified", "Applied"):
         require_decision(deal.name, DECISIONS[next_stage], ctx.get("decision"))
+    if previous == "Rejected" and next_stage == "Researching" and ctx.get("action") == "reopen":
+        return ctx, override
     if previous in TERMINAL and next_stage == "Researching" and not override:
         frappe.throw("Reopening a terminal opportunity requires an approved exception")
     return ctx, override
@@ -169,7 +171,8 @@ def validate_deal(doc, method=None):
     if doc.get("compensation_not_given"):
         for field in ("compensation_min", "compensation_max", "currency", "compensation_period"):
             doc.set(field, None)
-    elif doc.get("compensation_min") is None and doc.get("status") != "Rejected":
+    elif (doc.get("compensation_min") is None and doc.get("status") != "Rejected"
+          and (getattr(frappe.flags, "job_search_transition_context", None) or {}).get("action") != "reopen"):
         frappe.throw("Minimum Compensation is required unless Compensation Not Given is checked")
     old = doc.get_doc_before_save() if not doc.is_new() else None
     if not doc.organization or not (doc.get("job_title") or "").strip():

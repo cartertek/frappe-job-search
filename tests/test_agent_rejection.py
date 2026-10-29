@@ -14,6 +14,8 @@ class AgentRejection(unittest.TestCase):
             globally_rejected=0, save=lambda: self.calls.append('save'),
             add_comment=lambda kind, text: self.calls.append(('comment', kind, text)))
         frappe = types.ModuleType('frappe')
+        frappe.flags = types.SimpleNamespace(job_search_transition_context=None)
+        frappe.db = types.SimpleNamespace(get_value=lambda *args: False)
         frappe.throw = lambda msg: (_ for _ in ()).throw(ValueError(msg))
         frappe.get_doc = lambda x: (_ for _ in ()).throw(AssertionError('Human decision must not be created'))
         perms = types.ModuleType('job_search.permissions')
@@ -84,6 +86,23 @@ class AgentRejection(unittest.TestCase):
         result = self.module.perform_action('job1', 'reject',
             rationale='No longer relevant', scope='organization')
         self.assertEqual('Accepted', result['status'])
+
+    def test_reopen_rejected_job_restores_research_and_audits(self):
+        self.job.status = 'Rejected'
+        self.job.rejection_scope = 'Job Globally'
+        self.job.rejection_search = None
+        self.job.globally_rejected = 1
+        result = self.module.perform_action('job1', 'reopen', rationale='New evidence')
+        self.assertEqual(result['status'], 'Researching')
+        self.assertEqual(self.job.globally_rejected, 0)
+        self.assertIn('save', self.calls)
+        self.assertTrue(any(c[0] == 'comment' and 'New evidence' in c[2] for c in self.calls if isinstance(c, tuple)))
+
+    def test_reopen_rejected_organization_requires_org_resolution(self):
+        self.job.status = 'Rejected'
+        self.module.frappe.db.get_value = lambda *args: True
+        with self.assertRaisesRegex(ValueError, 'organization is globally rejected'):
+            self.module.perform_action('job1', 'reopen', rationale='New research')
 
     def test_research_handoff_uses_operator(self):
         self.module.perform_action('job1', 'ready_to_review')

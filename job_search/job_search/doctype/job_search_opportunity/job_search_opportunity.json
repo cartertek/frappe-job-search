@@ -13,6 +13,9 @@
     "status",
     "organization",
     "job_title",
+    "rejection_scope",
+    "rejection_search",
+    "rejection_reason",
     "metadata_column",
     "posting_url",
     "requisition_id",
@@ -87,6 +90,29 @@
       "reqd": 0
     },
     {
+      "fieldname": "rejection_scope",
+      "fieldtype": "Select",
+      "label": "Rejection Scope",
+      "options": "\nSearch Only\nJob Globally\nEntire Organization",
+      "read_only": 1,
+      "depends_on": "eval:doc.status==\"Rejected\""
+    },
+    {
+      "fieldname": "rejection_search",
+      "fieldtype": "Link",
+      "options": "Job Search Search",
+      "label": "Rejected From Search",
+      "read_only": 1,
+      "depends_on": "eval:doc.status==\"Rejected\" && doc.rejection_scope==\"Search Only\""
+    },
+    {
+      "fieldname": "rejection_reason",
+      "fieldtype": "Small Text",
+      "label": "Rejection Reason",
+      "read_only": 1,
+      "depends_on": "eval:doc.status==\"Rejected\""
+    },
+    {
       "fieldname": "metadata_column",
       "fieldtype": "Column Break",
       "label": "Metadata"
@@ -131,7 +157,8 @@
     {
       "fieldname": "closure_reason",
       "label": "Closure Reason",
-      "fieldtype": "Small Text"
+      "fieldtype": "Small Text",
+      "depends_on": "eval:doc.status!=\"Rejected\""
     },
     {
       "fieldname": "offer_details",

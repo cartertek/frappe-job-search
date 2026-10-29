@@ -17,7 +17,7 @@ def _decision(job, action, rationale):
 
 
 def perform_action(opportunity, action, rationale=None, scope=None, search=None, offer_details=None):
-    if action in ("reject", "ready_to_review", "needs_research"):
+    if action in ("reject", "reopen", "ready_to_review", "needs_research"):
         require_operator()
     else:
         require_approver()
@@ -30,6 +30,30 @@ def perform_action(opportunity, action, rationale=None, scope=None, search=None,
         "Applied": {"begin_interviewing"},
         "Interviewing": {"accept_offer"},
     }
+    if action == "reopen":
+        if job.status != "Rejected":
+            frappe.throw("Only Rejected jobs can be reopened")
+        if not rationale:
+            frappe.throw("Reopening reason is required")
+        if frappe.db.get_value("Job Search Employer", job.organization, "globally_rejected"):
+            frappe.throw("The organization is globally rejected; resolve that rejection before reopening this Job")
+        # Undo only this Job's rejection. Other search exclusions remain intact.
+        if job.rejection_scope == "Search Only" and job.rejection_search:
+            query = require_doc("Job Search Search", job.rejection_search, "write")
+            for row in list(query.overrides):
+                if row.job == job.name and row.override == "Exclude":
+                    query.remove(row)
+            query.save()
+        job.globally_rejected = 0
+        job.status = "Researching"
+        previous_context = getattr(frappe.flags, "job_search_transition_context", None)
+        frappe.flags.job_search_transition_context = {"deal": job.name, "action": "reopen", "reason": rationale}
+        try:
+            job.save()
+        finally:
+            frappe.flags.job_search_transition_context = previous_context
+        job.add_comment("Comment", f"Reopened for research: {rationale}")
+        return {"status": job.status, "opportunity": job.name}
     if action == "reject":
         if scope not in ("search", "job", "organization"):
             frappe.throw("Choose a rejection scope")
@@ -45,22 +69,31 @@ def perform_action(opportunity, action, rationale=None, scope=None, search=None,
                     query.remove(row)
             query.append("overrides", {"job": job.name, "override": "Exclude"})
             query.save()
+            job.rejection_scope = "Search Only"
+            job.rejection_search = search
+            job.rejection_reason = rationale
             if job.status not in ("Rejected", "Accepted"):
                 job.status = "Rejected"
-                job.save()
+            job.save()
         elif scope == "job":
+            job.rejection_scope = "Job Globally"
+            job.rejection_search = None
+            job.rejection_reason = rationale
             job.globally_rejected = 1
             if job.status not in ("Rejected", "Accepted"):
                 job.status = "Rejected"
-                job.save()
+            job.save()
         else:
             employer = require_doc("Job Search Employer", job.organization, "write")
             employer.globally_rejected = 1
             employer.save()
+            job.rejection_scope = "Entire Organization"
+            job.rejection_search = None
+            job.rejection_reason = rationale
             # The initiating Job must also visibly reflect its rejection.
             if job.status not in ("Rejected", "Accepted"):
                 job.status = "Rejected"
-                job.save()
+            job.save()
         # Research rejection is an operator action, not a human authorization.
         # Record its rationale under the actual signed-in actor, without creating
         # a Job Search Decision (which requires an approver).

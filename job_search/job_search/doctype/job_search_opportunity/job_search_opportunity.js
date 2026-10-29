@@ -107,6 +107,7 @@ frappe.ui.form.on('Job Search Opportunity', {
         ...rationale,
       ], 'reject');
     };
+    if (status === 'Rejected') primary('Reopen', 'reopen', rationale);
     if (status === 'Researching') primary('Ready to Review', 'ready_to_review');
     if (status === 'Ready to Review') {
       primary('Mark Qualified', 'qualify', rationale);

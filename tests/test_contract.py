@@ -116,7 +116,7 @@ class SchemaTest(unittest.TestCase):
         self.assertEqual(by_name["job_title"]["fieldtype"], "Data")
         self.assertTrue(by_name["research_notes_section"]["collapsible"])
         groups = {
-            "overview_column": {"status", "organization", "job_title"},
+            "overview_column": {"status", "organization", "job_title", "rejection_scope", "rejection_search", "rejection_reason"},
             "metadata_column": {"posting_url", "requisition_id", "priority", "discovered_on", "deadline",
                 "applied_on", "next_action_on", "closure_reason", "offer_details", "latest_posting",
                 "last_decision", "last_decision_record", "latest_application", "interview_schedule",
@@ -143,7 +143,7 @@ class SchemaTest(unittest.TestCase):
                          groups["research_heuristics_section"])
         self.assertEqual({f["fieldname"] for f in fields[names.index("research_notes_section") + 1:]},
                          groups["research_notes_section"])
-        self.assertEqual(35, len([f for f in fields if f["fieldname"] in set().union(*groups.values())
+        self.assertEqual(38, len([f for f in fields if f["fieldname"] in set().union(*groups.values())
                                  and f["fieldname"] != "research_heuristics"]))
         js = (BASE / "job_search_opportunity/job_search_opportunity.js").read_text()
         css = (BASE / "job_search_opportunity/job_search_opportunity.css").read_text()
