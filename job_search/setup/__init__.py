@@ -28,6 +28,7 @@ def after_migrate():
     migrate_workflow_statuses()
     migrate_legacy_search_filters()
     migrate_heuristics_table()
+    backfill_rejection_details()
     ensure_workspace()
     ensure_app_logo()
     frappe.clear_cache()
@@ -205,6 +206,42 @@ def migrate_heuristic_claims():
                       (content, job_name))
     # The old values are now research notes, not claims.
     frappe.db.sql(f"UPDATE `{table}` SET value=NULL WHERE value IS NOT NULL")
+    frappe.db.set_default(marker, "1")
+
+
+def backfill_rejection_details():
+    """Recover rejection details for existing Jobs from actual audit comments.
+
+    Runs once; updates only empty fields and never changes status or decisions.
+    """
+    marker = "job_search:rejection_details_backfill_v1"
+    if frappe.db.get_default(marker):
+        return
+    doctype = "Job Search Opportunity"
+    for row in frappe.get_all(doctype, filters={"status": "Rejected"},
+                              fields=["name", "rejection_scope", "rejection_reason"]):
+        if row.rejection_scope and row.rejection_reason:
+            continue
+        comments = frappe.get_all("Comment", filters={
+            "reference_doctype": doctype,
+            "reference_name": row.name,
+            "content": ["like", "Research rejection (%"],
+        }, fields=["content"], order_by="creation desc", limit_page_length=1)
+        if not comments:
+            continue
+        content = comments[0].content or ""
+        matched = __import__("re").fullmatch(r"Research rejection \((search|job|organization)\): (.*)",content,flags=__import__("re").DOTALL)
+        if not matched:
+            continue
+        scope, reason = matched.groups()
+        label = {"search": "Search Only", "job": "Job Globally", "organization": "Entire Organization"}[scope]
+        updates = {}
+        if not row.rejection_scope:
+            updates["rejection_scope"] = label
+        if not row.rejection_reason:
+            updates["rejection_reason"] = reason
+        if updates:
+            frappe.db.set_value(doctype, row.name, updates, update_modified=False)
     frappe.db.set_default(marker, "1")
 
 
