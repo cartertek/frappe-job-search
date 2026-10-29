@@ -169,7 +169,7 @@ def validate_deal(doc, method=None):
     if doc.get("compensation_not_given"):
         for field in ("compensation_min", "compensation_max", "currency", "compensation_period"):
             doc.set(field, None)
-    elif doc.get("compensation_min") is None:
+    elif doc.get("compensation_min") is None and doc.get("status") != "Rejected":
         frappe.throw("Minimum Compensation is required unless Compensation Not Given is checked")
     old = doc.get_doc_before_save() if not doc.is_new() else None
     if not doc.organization or not (doc.get("job_title") or "").strip():

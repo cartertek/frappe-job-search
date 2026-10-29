@@ -10,7 +10,7 @@ from unittest.mock import patch
 class AgentRejection(unittest.TestCase):
     def setUp(self):
         self.calls = []
-        self.job = types.SimpleNamespace(name='job1', status='Researching', organization='org1',
+        self.job = types.SimpleNamespace(name='job1', status='Researching', organization='org1', active_job_search='search1',
             globally_rejected=0, save=lambda: self.calls.append('save'),
             add_comment=lambda kind, text: self.calls.append(('comment', kind, text)))
         frappe = types.ModuleType('frappe')
@@ -50,6 +50,19 @@ class AgentRejection(unittest.TestCase):
         self.assertTrue(any(c[0] == 'comment' and 'Outside scope' in c[2]
                             for c in self.calls if isinstance(c, tuple)))
         self.assertNotIn('approver', self.calls)
+
+    def test_search_only_defaults_to_active_job_search(self):
+        result = self.module.perform_action('job1', 'reject',
+            rationale='Does not match criteria', scope='search')
+        self.assertEqual('Rejected', result['status'])
+        self.assertNotIn('approver', self.calls)
+
+    def test_search_only_without_search_raises_clear_error(self):
+        self.job.active_job_search = None
+        with self.assertRaisesRegex(ValueError, 'Select a search'):
+            self.module.perform_action('job1', 'reject',
+                rationale='Not a match', scope='search')
+        self.assertEqual('Researching', self.job.status)
 
     def test_search_only_keeps_accepted_status(self):
         self.job.status = 'Accepted'

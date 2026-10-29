@@ -36,8 +36,9 @@ def perform_action(opportunity, action, rationale=None, scope=None, search=None,
         if not rationale:
             frappe.throw("Rejection rationale is required")
         if scope == "search":
+            search = search or job.active_job_search
             if not search:
-                frappe.throw("Select the search to exclude this job from")
+                frappe.throw("Select a search or set the Job's Active Job Search before rejecting")
             query = require_doc("Job Search Search", search, "write")
             for row in list(query.overrides):
                 if row.job == job.name:

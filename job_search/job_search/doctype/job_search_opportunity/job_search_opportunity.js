@@ -97,6 +97,7 @@ frappe.ui.form.on('Job Search Opportunity', {
           options:'Search Only\nJob Globally\nEntire Organization', default:'Search Only',
           description:__('Search only, all searches for this job, or all jobs at the organization')},
         {fieldname:'search',label:__('Search'),fieldtype:'Link',options:'Job Search Search',
+          default:frm.doc.active_job_search || '',
           depends_on:'eval:doc.scope=="Search Only"',mandatory_depends_on:'eval:doc.scope=="Search Only"'},
         ...rationale,
       ], 'reject');
