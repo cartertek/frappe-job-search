@@ -1,0 +1,74 @@
+{
+  "doctype": "DocType",
+  "name": "Job Search Research Strategy",
+  "module": "Job Search",
+  "custom": 0,
+  "istable": 0,
+  "engine": "InnoDB",
+  "autoname": "hash",
+  "track_changes": 1,
+  "field_order": [
+    "strategy_name",
+    "description",
+    "default_priority"
+  ],
+  "fields": [
+    {
+      "fieldname": "strategy_name",
+      "label": "Strategy Name",
+      "fieldtype": "Data",
+      "reqd": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "description",
+      "label": "Research Instructions",
+      "fieldtype": "Text Editor",
+      "reqd": 1,
+      "description": "Documentation for agents describing how to perform this research strategy."
+    },
+    {
+      "fieldname": "default_priority",
+      "label": "Default Priority",
+      "fieldtype": "Int",
+      "reqd": 1,
+      "default": "100",
+      "in_list_view": 1,
+      "description": "Lower numbers run first (1 is highest priority)."
+    }
+  ],
+  "permissions": [
+    {
+      "role": "Job Search Operator",
+      "read": 1,
+      "write": 1,
+      "create": 1,
+      "delete": 1,
+      "report": 1,
+      "export": 1
+    },
+    {
+      "role": "Job Search Approver",
+      "read": 1,
+      "write": 1,
+      "create": 1,
+      "delete": 1,
+      "report": 1,
+      "export": 1
+    },
+    {
+      "role": "System Manager",
+      "read": 1,
+      "write": 1,
+      "create": 1,
+      "delete": 1,
+      "report": 1,
+      "export": 1
+    }
+  ],
+  "sort_field": "default_priority",
+  "sort_order": "ASC",
+  "actions": [],
+  "title_field": "strategy_name",
+  "show_title_field_in_link": 1
+}

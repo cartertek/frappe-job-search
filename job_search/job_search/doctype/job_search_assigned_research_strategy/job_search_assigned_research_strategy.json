@@ -1,0 +1,36 @@
+{
+  "doctype": "DocType",
+  "name": "Job Search Assigned Research Strategy",
+  "module": "Job Search",
+  "custom": 0,
+  "istable": 1,
+  "engine": "InnoDB",
+  "autoname": "hash",
+  "track_changes": 0,
+  "editable_grid": 1,
+  "field_order": [
+    "research_strategy",
+    "priority_override"
+  ],
+  "fields": [
+    {
+      "fieldname": "research_strategy",
+      "label": "Research Strategy",
+      "fieldtype": "Link",
+      "options": "Job Search Research Strategy",
+      "reqd": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "priority_override",
+      "label": "Priority Override",
+      "fieldtype": "Int",
+      "in_list_view": 1,
+      "description": "Optional. Leave blank or use 0 to inherit the strategy default; lower numbers run first."
+    }
+  ],
+  "permissions": [],
+  "sort_field": "idx",
+  "sort_order": "ASC",
+  "actions": []
+}

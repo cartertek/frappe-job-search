@@ -30,6 +30,8 @@ EXPECTED = {
     "Job Search Membership",
     "Job Search Heuristic",
     "Job Search Heuristic Value",
+    "Job Search Research Strategy",
+    "Job Search Assigned Research Strategy",
 }
 CHILD = {
     "Job Search Heuristic",
@@ -39,6 +41,7 @@ CHILD = {
     "Job Search Interview Contact",
     "Job Search Membership",
     "Job Search Heuristic Value",
+    "Job Search Assigned Research Strategy",
 }
 
 
@@ -101,6 +104,7 @@ class SchemaTest(unittest.TestCase):
             "get_opportunity_context", "publish_human_review", "get_human_action_queue",
             "get_company_dossier", "authorize_decision", "get_search_results",
             "set_search_membership", "reject_job", "reject_organization",
+            "get_search_research_strategies",
         })
 
     def test_global_display_names_are_consistent(self):

@@ -22,6 +22,7 @@
     "posted_after",
     "heuristics",
     "require_heuristics",
+    "research_strategies",
     "overrides"
   ],
   "fields": [
@@ -108,6 +109,13 @@
       "label": "Require Explicit Heuristic Approval",
       "fieldtype": "Check",
       "description": "Only explicitly included jobs appear in this search."
+    },
+    {
+      "fieldname": "research_strategies",
+      "label": "Assigned Research Strategies",
+      "fieldtype": "Table",
+      "options": "Job Search Assigned Research Strategy",
+      "description": "Select reusable research strategies. Lower effective priority numbers run first; an empty Priority Override uses the strategy default."
     },
     {
       "fieldname": "overrides",

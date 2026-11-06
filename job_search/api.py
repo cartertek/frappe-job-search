@@ -399,3 +399,10 @@ def perform_job_action(opportunity, action, rationale=None, scope=None, search=N
     from job_search.workflow_actions import perform_action
 
     return success(perform_action(opportunity, action, rationale, scope, search, offer_details))
+
+
+@frappe.whitelist()
+def get_search_research_strategies(search):
+    """Return assigned strategies in execution order, with full instructions."""
+    from job_search.strategies import get_search_strategies
+    return success({"search": search, "strategies": get_search_strategies(search)})

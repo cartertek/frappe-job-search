@@ -46,6 +46,7 @@ def after_migrate():
 
 WORKSPACE_LABELS = {
     'Job Search Search': 'Search',
+    'Job Search Research Strategy': 'Research Strategy',
     'Job Search Opportunity': 'Job',
     'Job Search Employer': 'Organization',
     'Job Search Task': 'Task',
@@ -64,7 +65,7 @@ WORKSPACE_LABELS = {
 def ensure_workspace():
     """Keep display labels friendly while retaining stable underlying DocTypes."""
     names = (
-        "Job Search Search", "Job Search Opportunity", "Job Search Employer", "Job Search Task",
+        "Job Search Search", "Job Search Research Strategy", "Job Search Opportunity", "Job Search Employer", "Job Search Task",
         "Job Search Posting", "Job Search Research", "Job Search Decision",
         "Job Search Application", "Job Search Interview", "Job Search Procedure Execution",
     )

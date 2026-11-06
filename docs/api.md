@@ -36,3 +36,7 @@ Idempotency: re-registering an identical posting URL returns its opportunity; st
 ### Semantic Job fields and review API
 
 Use the native **Job Description** (`job_description`), **Research Findings & Sources** (`research_findings`), **Agent Recommendation** (`research_recommendation`), **Application Materials for Review** (`application_materials_for_review`), **Interview Preparation** (`interview_preparation`), and **Human Feedback / Instructions** (`human_feedback_and_instructions`) fields in Job records. The `publish_human_review` endpoint accepts the matching semantic argument names; its previous `posting_digest`, `research_digest`, `recommendation`, `application_review`, and `interview_brief` arguments remain accepted for backward compatibility. Do not use the old column names for new records or direct Frappe field writes.
+
+### Research strategies
+
+`get_search_research_strategies(search)` returns `data.search` and `data.strategies`, with each assigned strategy's ID, name, full research instructions, default priority, optional priority override, and effective priority. The list is sorted in execution order (lowest effective numeric priority first; assignment order breaks ties). Agent research must follow **all** assigned strategies for the selected search in that order. This is independent of the heuristic-claim approval gate.
