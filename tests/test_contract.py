@@ -185,6 +185,8 @@ class SchemaTest(unittest.TestCase):
                 "currency",
                 "compensation_period",
                 "posted_on",
+                "last_active_on",
+                "last_active_source_url",
             },
             "job_details_section": {"job_description"},
             "research_heuristics_section": {"research_heuristics"},
@@ -228,7 +230,7 @@ class SchemaTest(unittest.TestCase):
             {f["fieldname"] for f in fields[names.index("research_notes_section") + 1 :]},
             groups["research_notes_section"],
         )
-        self.assertEqual(38, len([f for f in fields if f["fieldname"] in set().union(*groups.values())
+        self.assertEqual(40, len([f for f in fields if f["fieldname"] in set().union(*groups.values())
                                  and f["fieldname"] != "research_heuristics"]))
         js = (BASE / "job_search_opportunity/job_search_opportunity.js").read_text()
         css = (BASE / "job_search_opportunity/job_search_opportunity.css").read_text()

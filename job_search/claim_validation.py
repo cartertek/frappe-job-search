@@ -7,6 +7,8 @@ the explicit "None" sentinel for an undated source (GitHub issue #13).
 import re
 from datetime import date
 
+from job_search.recency import date_in_window
+
 UNPUBLISHED_DATE = "None"
 
 
@@ -37,10 +39,7 @@ def claim_field_errors(row):
     return errors
 
 
-def source_date_matches_search(value, posted_after):
+def source_date_matches_search(value, active_since):
     """Undated sources are valid only for searches without a date cutoff."""
     date_value = parse_source_date(value)
-    return not posted_after or (
-        date_value is not None
-        and date_value >= date.fromisoformat(str(posted_after)[:10])
-    )
+    return date_in_window(date_value, active_since)

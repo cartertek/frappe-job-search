@@ -19,7 +19,8 @@
     "allow_compensation_heuristic",
     "currency",
     "compensation_period",
-    "posted_after",
+    "active_in_past_count",
+    "active_in_past_unit",
     "heuristics",
     "require_heuristics",
     "research_strategies",
@@ -72,7 +73,8 @@
     {
       "fieldname": "salary_min",
       "label": "Minimum Compensation",
-      "fieldtype": "Currency"
+      "fieldtype": "Currency",
+      "description": "Qualify advertised compensation when its upper bound (or single advertised amount) is at least this threshold."
     },
     {
       "fieldname": "allow_compensation_heuristic",
@@ -93,9 +95,17 @@
       "options": "\nYear\nMonth\nHour\nProject"
     },
     {
-      "fieldname": "posted_after",
-      "label": "Posted On Or After",
-      "fieldtype": "Date"
+      "fieldname": "active_in_past_count",
+      "label": "Active In the Past",
+      "fieldtype": "Int",
+      "description": "Positive number of days, weeks, months, or years. Measured back from today using the Job Last Active Date; leave both fields empty for no date restriction."
+    },
+    {
+      "fieldname": "active_in_past_unit",
+      "label": "Unit",
+      "fieldtype": "Select",
+      "options": "\nDays\nWeeks\nMonths\nYears",
+      "description": "Unit for the rolling Active In the Past window."
     },
     {
       "fieldname": "heuristics",

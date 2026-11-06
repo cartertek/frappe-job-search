@@ -28,6 +28,8 @@ def after_migrate():
     migrate_workflow_statuses()
     migrate_legacy_search_filters()
     migrate_heuristics_table()
+    migrate_active_in_past()
+    backfill_last_active_on()
     backfill_rejection_details()
     ensure_workspace()
     ensure_app_logo()
@@ -43,6 +45,60 @@ def after_migrate():
     from frappe.translate import clear_cache as clear_translation_cache
 
     clear_translation_cache()
+
+
+
+def migrate_active_in_past():
+    """Preserve existing cutoffs at migration time as a rolling number of days.
+
+    Legacy Posted On Or After is no longer a form field, but Frappe retains its
+    database column. Only upgrade currently unset windows; keep existing edits.
+    Does not alter document owners, modification attribution, or workflow states.
+    """
+    from frappe.utils import getdate, nowdate
+
+    marker = "job_search:active_in_past_v1"
+    if frappe.db.get_default(marker):
+        return
+    columns = set(frappe.db.get_table_columns("Job Search Search"))
+    if not {"posted_after", "active_in_past_count", "active_in_past_unit"}.issubset(columns):
+        return
+    current = getdate(nowdate())
+    for row in frappe.db.sql(
+        "SELECT name, posted_after, active_in_past_count, active_in_past_unit "
+        "FROM `tabJob Search Search` WHERE posted_after IS NOT NULL", as_dict=True
+    ):
+        if row.active_in_past_count or row.active_in_past_unit:
+            continue
+        days = (current - getdate(row.posted_after)).days
+        if days >= 1:
+            frappe.db.set_value("Job Search Search", row.name,
+                                {"active_in_past_count": days, "active_in_past_unit": "Days"},
+                                update_modified=False)
+    frappe.db.set_default(marker, "1")
+
+
+
+def backfill_last_active_on():
+    """Use the documented original posting as earliest positive activity evidence.
+
+    Does not claim the vacancy remains open today: that requires new research.
+    Skip records without both an original publication date and its source URL.
+    Never alter approval, exclusion, rejection, owner or modification metadata.
+    """
+    marker = "job_search:last_active_backfill_v1"
+    if frappe.db.get_default(marker):
+        return
+    required = {"posted_on", "posting_url", "last_active_on", "last_active_source_url"}
+    if not required.issubset(set(frappe.db.get_table_columns("Job Search Opportunity"))):
+        return
+    frappe.db.sql(
+        "UPDATE `tabJob Search Opportunity` SET "
+        "last_active_on=posted_on, last_active_source_url=posting_url "
+        "WHERE last_active_on IS NULL AND posted_on IS NOT NULL "
+        "AND posting_url IS NOT NULL AND TRIM(posting_url) != ''"
+    )
+    frappe.db.set_default(marker, "1")
 
 
 WORKSPACE_LABELS = {

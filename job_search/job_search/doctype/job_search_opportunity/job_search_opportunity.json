@@ -45,6 +45,8 @@
     "currency",
     "compensation_period",
     "posted_on",
+    "last_active_on",
+    "last_active_source_url",
     "job_details_section",
     "job_description",
     "research_heuristics_section",
@@ -280,6 +282,19 @@
       "fieldname": "posted_on",
       "label": "Posted On",
       "fieldtype": "Date"
+    },
+    {
+      "fieldname": "last_active_on",
+      "label": "Last Active Date",
+      "fieldtype": "Date",
+      "description": "Most recent date supported by evidence of active recruiting for this exact opening. Original posting date is recorded separately."
+    },
+    {
+      "fieldname": "last_active_source_url",
+      "label": "Last Active Evidence URL",
+      "fieldtype": "Data",
+      "options": "URL",
+      "description": "Source establishing active recruiting for this opening on the Last Active Date."
     },
     {
       "fieldname": "job_details_section",

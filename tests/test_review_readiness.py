@@ -33,22 +33,27 @@ class ReviewReadiness(unittest.TestCase):
         self.fake.utils = types.ModuleType('frappe.utils')
         self.fake.utils.now_datetime = lambda: '2026-10-27 20:00:00'
         self.fake.utils.getdate = lambda value: date.fromisoformat(str(value)[:10])
+        self.fake.utils.nowdate = lambda: '2026-11-06'
         self.fake.db = record(exists=lambda *a: True, get_value=lambda *a, **k: False)
         self.search = record(name='SEARCH1', enabled=1,
             title_matches='Python Engineer', location_match='Portland, OR',
             employment_type='Full Time', work_arrangement='Remote', seniority='Senior',
-            posted_after='2026-09-01', salary_min=120000, currency='USD',
+            active_in_past_count=60, active_in_past_unit='Days',
+            salary_min=120000, currency='USD',
             compensation_period='Year', require_heuristics=0, overrides=[],
             heuristics=[record(name='H1', heuristic_name='Personal contact'),
                         record(name='H2', heuristic_name='Hiring evidence')])
         self.job = record(name='JOB1', organization='Employer', job_title='Python Engineer',
             location='Portland, OR', employment_type='Full Time', work_arrangement='Remote',
-            seniority='Senior', posted_on='2026-10-01', compensation_min=130000,
+            seniority='Senior', posted_on='2026-10-01', last_active_on='2026-10-15',
+            compensation_min=110000, compensation_max=130000,
             currency='USD', compensation_period='Year', active_job_search='SEARCH1',
             globally_rejected=0, research_heuristics=[
                 record(heuristic_id='builtin:job-title', heuristic_name='Job Title', quote='Python Engineer', source='https://example.org/title'),
                 record(heuristic_id='H1', heuristic_name='Personal contact', quote='Contact recruiter', source='https://example.org/contact'),
                 record(heuristic_id='H2', heuristic_name='Hiring evidence', quote='We are hiring', source='https://example.org/job')])
+        from job_search import recency
+        recency.nowdate = lambda: '2026-11-06'
         self.fake.get_doc = lambda *args: self.search
         perms = types.ModuleType('job_search.permissions')
         perms.require_doc = lambda *args: None
@@ -148,13 +153,13 @@ class ReviewReadiness(unittest.TestCase):
         self.job.employment_type = 'Contract'
         self.job.work_arrangement = 'Hybrid'
         self.job.seniority = 'Junior'
-        self.job.posted_on = None
-        self.job.compensation_min = 80000
+        self.job.last_active_on = None
+        self.job.compensation_max = 80000
         self.job.currency = 'EUR'
         self.job.compensation_period = 'Hour'
         errors = self.errors()
         for key in ('Location', 'Employment Type', 'Work Arrangement',
-                    'Seniority', 'Posted On', 'Minimum Compensation', 'Currency',
+                    'Seniority', 'Last Active Date', 'Advertised Compensation Maximum', 'Currency',
                     'Compensation Period'):
             with self.subTest(key=key):
                 self.assertIn(key, ' '.join(errors))
@@ -192,20 +197,25 @@ class ReviewReadiness(unittest.TestCase):
 
     def test_source_date_must_meet_active_search_cutoff(self):
         row = self.job.research_heuristics[1]
-        row.source_date = '2026-08-31'
+        row.source_date = '2026-09-06'
         errors = self.errors()
-        self.assertIn('Source Date must be on or after 2026-09-01', ' '.join(errors))
+        self.assertIn('Source Date must be within the active window (on or after 2026-09-07)', ' '.join(errors))
         self.assertIn("Research heuristic 'Personal contact' requires at least one sourced claim", errors)
-        row.source_date = '2026-09-01'
+        row.source_date = '2026-09-07'
         self.assertEqual([], self.errors())  # inclusive boundary
         row.source_date = '2026-10-31'
         self.assertEqual([], self.errors())
+
+    def test_future_heuristic_publication_not_current(self):
+        self.job.research_heuristics[1].source_date = '2026-11-07'
+        self.assertIn('Source Date must be within the active window', ' '.join(self.errors()))
 
     def test_undated_source_only_counts_when_search_has_no_cutoff(self):
         row = self.job.research_heuristics[1]
         row.source_date = 'None'
         self.assertIn('None cannot meet a configured date cutoff', ' '.join(self.errors()))
-        self.search.posted_after = None
+        self.search.active_in_past_count = None
+        self.search.active_in_past_unit = None
         self.assertEqual([], self.errors())
 
     def test_source_dates_and_reasoning_are_required(self):
@@ -217,7 +227,7 @@ class ReviewReadiness(unittest.TestCase):
             with self.subTest(value=bad):
                 row.source_date = bad
                 self.assertIn('Source Date', ' '.join(self.errors()))
-        row.source_date = '2026-09-01'
+        row.source_date = '2026-09-07'
         self.assertEqual([], self.errors())
 
     def test_save_rejects_blank_reasoning_and_invalid_date(self):
@@ -239,7 +249,7 @@ class ReviewReadiness(unittest.TestCase):
             quote='An older invitation', reasoning='Historical signal',
             source='https://example.org/older', source_date='2026-08-15'))
         errors = self.errors()
-        self.assertIn('Source Date must be on or after 2026-09-01', ' '.join(errors))
+        self.assertIn('Source Date must be within the active window (on or after 2026-09-07)', ' '.join(errors))
         self.assertNotIn("Research heuristic 'Personal contact' requires at least one sourced claim", errors)
 
     def test_excluded_rejected_or_explicit_approval_required(self):

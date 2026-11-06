@@ -34,7 +34,8 @@ class ResearchStrategyTests(unittest.TestCase):
             record(research_strategy='A', priority_override=0, idx=1),
             record(research_strategy='B', priority_override=50, idx=2),
             record(research_strategy='C', priority_override=1, idx=3),
-        ], overrides=[], salary_min=None)
+        ], overrides=[], salary_min=None,
+            active_in_past_count=None, active_in_past_unit=None)
         with patch.dict(sys.modules, {'frappe':fake, 'frappe.model':model,
                     'frappe.model.document':document, 'job_search.permissions':perms}):
             path=ROOT/'job_search/strategies.py'

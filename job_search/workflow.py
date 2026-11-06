@@ -7,6 +7,7 @@ from frappe.utils import now_datetime
 
 from job_search.claim_validation import claim_field_errors, source_date_matches_search
 from job_search.heuristics import COMPENSATION_HEURISTIC_ID, research_heuristics
+from job_search.recency import active_window_start
 from job_search.searches import match_failures
 
 STAGES = (
@@ -102,6 +103,7 @@ def _review_readiness_failures(deal):
     required = {identifier: name for identifier, name in defined.items()
                 if identifier != COMPENSATION_HEURISTIC_ID or deal.compensation_not_given}
     valid_claims = {identifier: 0 for identifier in required}
+    activity_start = active_window_start(search.active_in_past_count, search.active_in_past_unit)
     for row in deal.research_heuristics:
         identifier = row.heuristic_id
         if identifier not in defined:
@@ -119,10 +121,10 @@ def _review_readiness_failures(deal):
         errors.extend(f"Heuristic claim '{label}': {message}" for message in field_errors)
         if field_errors:
             continue
-        if not source_date_matches_search(row.source_date, search.posted_after):
+        if not source_date_matches_search(row.source_date, activity_start):
             errors.append(
-                f"Heuristic claim '{label}' Source Date must be on or after "
-                f"{search.posted_after}; None cannot meet a configured date cutoff"
+                f"Heuristic claim '{label}' Source Date must be within the active "
+                f"window (on or after {activity_start}); None cannot meet a configured date cutoff"
             )
         elif quote and source and source.startswith(('https://', 'http://')) and identifier in valid_claims:
             valid_claims[identifier] += 1

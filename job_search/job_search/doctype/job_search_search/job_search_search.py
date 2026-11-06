@@ -1,6 +1,8 @@
 import frappe
 from frappe.model.document import Document
 
+from job_search.recency import active_window_start
+
 
 class JobSearchSearch(Document):
     def validate(self):
@@ -20,6 +22,10 @@ class JobSearchSearch(Document):
                 frappe.throw('Research strategy priority override cannot be negative')
         if self.salary_min is not None and self.salary_min < 0:
             frappe.throw("Minimum compensation cannot be negative")
+        try:
+            active_window_start(self.active_in_past_count, self.active_in_past_unit)
+        except ValueError as exc:
+            frappe.throw(str(exc))
 
 
 # Native Frappe non-editable child-grid row template. Unlike static grid columns,

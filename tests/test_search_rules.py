@@ -13,7 +13,8 @@ ROOT = Path(__file__).resolve().parents[1]
 def obj(**kwargs):
     fields = dict(job_title='Python Engineer', location='Portland, OR',
                   employment_type='Full Time', work_arrangement='Remote',
-                  seniority='Senior', posted_on='2026-10-01', compensation_min=130000,
+                  seniority='Senior', posted_on='2026-10-01', last_active_on='2026-10-30',
+                  compensation_min=100000, compensation_max=130000,
                   currency='USD', compensation_period='Year')
     fields.update(kwargs)
     return types.SimpleNamespace(**fields)
@@ -22,7 +23,8 @@ def obj(**kwargs):
 def search(**kwargs):
     fields = dict(title_matches='Python Engineer', location_match='Portland, OR',
                   employment_type='Full Time', work_arrangement='Remote',
-                  seniority='Senior', posted_after='2026-09-01', salary_min=120000,
+                  seniority='Senior', active_in_past_count=30, active_in_past_unit='Days',
+                  salary_min=120000,
                   currency='USD', compensation_period='Year')
     fields.update(kwargs)
     return types.SimpleNamespace(**fields)
@@ -35,6 +37,7 @@ class SearchRules(unittest.TestCase):
         fake.utils = types.ModuleType('frappe.utils')
         from datetime import date
         fake.utils.getdate = lambda x: date.fromisoformat(str(x))
+        fake.utils.nowdate = lambda: '2026-11-06'
         sys.modules['frappe'] = fake
         sys.modules['frappe.utils'] = fake.utils
         perms = types.ModuleType('job_search.permissions')
@@ -44,6 +47,8 @@ class SearchRules(unittest.TestCase):
         spec = importlib.util.spec_from_file_location(
             'standalone_search_rules', ROOT / 'job_search/searches.py'
         )
+        from job_search import recency
+        recency.nowdate = lambda: '2026-11-06'
         cls.module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(cls.module)
 
@@ -51,8 +56,8 @@ class SearchRules(unittest.TestCase):
         self.assertTrue(self.module.matches(obj(), search()))
         for change in [dict(location='Austin'),
                        dict(employment_type='Contract'), dict(work_arrangement='Hybrid'),
-                       dict(seniority='Junior'), dict(posted_on=None),
-                       dict(compensation_min=115000),
+                       dict(seniority='Junior'), dict(last_active_on=None),
+                       dict(compensation_max=115000),
                        dict(currency='EUR'), dict(compensation_period='Hour')]:
             with self.subTest(change=change):
                 self.assertFalse(self.module.matches(obj(**change), search()))
@@ -71,6 +76,21 @@ class SearchRules(unittest.TestCase):
         self.assertTrue(self.module.matches(obj(job_title='Software Engineer'), criteria))
         self.assertTrue(self.module.matches(obj(job_title='Senior Software Engineer'), criteria))
         self.assertTrue(self.module.matches(obj(), search(title_matches='\n  Python Engineer  \n\n')))
+
+    def test_range_ceiling_controls_compensation(self):
+        self.assertTrue(self.module.matches(obj(compensation_min=186000, compensation_max=217000),
+                                             search(salary_min=200000)))
+        self.assertFalse(self.module.matches(obj(compensation_min=170000, compensation_max=195000),
+                                              search(salary_min=200000)))
+        self.assertTrue(self.module.matches(obj(compensation_min=200000, compensation_max=None),
+                                             search(salary_min=200000)))
+
+    def test_rolling_activity_date(self):
+        self.assertTrue(self.module.matches(obj(posted_on='2026-03-01', last_active_on='2026-10-15'),
+                                            search()))
+        self.assertFalse(self.module.matches(obj(last_active_on='2026-10-01'), search()))
+        self.assertTrue(self.module.matches(obj(last_active_on='2026-10-07'), search()))
+        self.assertFalse(self.module.matches(obj(last_active_on='2026-11-15'), search()))
 
     def test_no_filters(self):
         self.assertTrue(self.module.matches(obj(), search(**{k:None for k in vars(search())})))

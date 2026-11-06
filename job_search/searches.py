@@ -1,9 +1,9 @@
 """Independent job collections, declarative search matching and explicit overrides."""
 
 import frappe
-from frappe.utils import getdate
 
 from job_search.permissions import require_doc, require_operator
+from job_search.recency import active_window_start, date_in_window
 
 JOB = 'Job Search Opportunity'
 EMPLOYER = 'Job Search Employer'
@@ -25,9 +25,11 @@ def match_failures(job, search):
     ):
         if needed and (job_value or "").casefold() != needed.casefold():
             failures.append(f"{label}: {job_value or '(missing)'}; required: {needed}")
-    if search.posted_after and (not job.posted_on or getdate(job.posted_on) < getdate(search.posted_after)):
+    activity_start = active_window_start(search.active_in_past_count, search.active_in_past_unit)
+    if not date_in_window(job.last_active_on, activity_start):
         failures.append(
-            f"Posted On: {job.posted_on or '(missing)'}; required on or after {search.posted_after}"
+            f"Last Active Date: {job.last_active_on or '(missing)'}; "
+            f"required within the past {search.active_in_past_count} {search.active_in_past_unit}"
         )
     if not getattr(job, "compensation_not_given", False):
         if search.compensation_period and job.compensation_period != search.compensation_period:
@@ -38,9 +40,13 @@ def match_failures(job, search):
         if search.salary_min:
             if search.currency and job.currency != search.currency:
                 failures.append(f"Currency: {job.currency or '(missing)'}; required: {search.currency}")
-            if job.compensation_min is not None and float(job.compensation_min) < float(search.salary_min):
+            ceiling = (
+                job.compensation_max if getattr(job, "compensation_max", None) is not None
+                else job.compensation_min
+            )
+            if ceiling is not None and float(ceiling) < float(search.salary_min):
                 failures.append(
-                    f"Minimum Compensation: {job.compensation_min}; required at least {search.salary_min}"
+                    f"Advertised Compensation Maximum: {ceiling}; required at least {search.salary_min}"
                 )
     return failures
 
@@ -56,7 +62,8 @@ def matching_jobs(search_name):
     # Avoid leaking any jobs not readable to this user through membership records.
     jobs = frappe.get_list(JOB, fields=[
         'name', 'organization', 'job_title', 'location', 'employment_type',
-        'work_arrangement', 'seniority', 'posted_on', 'compensation_min',
+        'work_arrangement', 'seniority', 'posted_on', 'last_active_on',
+        'compensation_min', 'compensation_max',
         'currency', 'compensation_period', 'compensation_not_given', 'globally_rejected', 'status',
     ], limit_page_length=100000)
     employers = {j.organization for j in jobs if j.organization}
