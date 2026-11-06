@@ -1,7 +1,5 @@
 """Research strategy ordering for an individual Job Search."""
 
-import frappe
-
 from job_search.permissions import require_doc, require_operator
 
 

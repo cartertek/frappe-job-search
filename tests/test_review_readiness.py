@@ -199,7 +199,8 @@ class ReviewReadiness(unittest.TestCase):
         row = self.job.research_heuristics[1]
         row.source_date = '2026-09-06'
         errors = self.errors()
-        self.assertIn('Source Date must be within the active window (on or after 2026-09-07)', ' '.join(errors))
+        self.assertIn('Source Date must be within the active window (on or after 2026-09-07)',
+                      ' '.join(errors))
         self.assertIn("Research heuristic 'Personal contact' requires at least one sourced claim", errors)
         row.source_date = '2026-09-07'
         self.assertEqual([], self.errors())  # inclusive boundary
@@ -249,7 +250,8 @@ class ReviewReadiness(unittest.TestCase):
             quote='An older invitation', reasoning='Historical signal',
             source='https://example.org/older', source_date='2026-08-15'))
         errors = self.errors()
-        self.assertIn('Source Date must be within the active window (on or after 2026-09-07)', ' '.join(errors))
+        self.assertIn('Source Date must be within the active window (on or after 2026-09-07)',
+                      ' '.join(errors))
         self.assertNotIn("Research heuristic 'Personal contact' requires at least one sourced claim", errors)
 
     def test_excluded_rejected_or_explicit_approval_required(self):
