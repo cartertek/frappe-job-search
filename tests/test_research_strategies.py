@@ -97,3 +97,20 @@ class ResearchStrategyTests(unittest.TestCase):
 
 if __name__=='__main__':
     unittest.main()
+
+class ResearchStrategyRenameContract(unittest.TestCase):
+    def test_unprefixed_doctypes_and_navigation(self):
+        strategy=json.loads((BASE/'research_strategy/research_strategy.json').read_text())
+        assignment=json.loads((BASE/'assigned_research_strategy/assigned_research_strategy.json').read_text())
+        search=json.loads((BASE/'job_search_search/job_search_search.json').read_text())
+        self.assertEqual(strategy['name'],'Research Strategy')
+        self.assertEqual(assignment['name'],'Assigned Research Strategy')
+        self.assertEqual(assignment['fields'][0]['options'],'Research Strategy')
+        self.assertEqual(next(f for f in search['fields'] if f['fieldname']=='research_strategies')['options'],
+                         'Assigned Research Strategy')
+        setup=(ROOT/'job_search/setup/__init__.py').read_text()
+        self.assertIn("'Research Strategy': 'Research Strategies'",setup)
+        self.assertIn('row.link_to = "Research Strategy"',setup)
+        self.assertIn('Research Strategies',setup)
+        patches=(ROOT/'job_search/patches.txt').read_text()
+        self.assertIn('job_search.patches.v4_rename_research_strategy',patches)
