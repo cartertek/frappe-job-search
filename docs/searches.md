@@ -41,7 +41,7 @@ The Job form requires either **Compensation Min** or **Compensation Not Given**.
 
 ## Assigned research strategies
 
-**Research Strategies** are independent, reusable top-level `Job Search Research Strategy` records. Each strategy has a **Strategy Name**, **Research Instructions** describing how an agent should research, and a **Default Priority**. Smaller positive priorities run earlier (1 is the highest priority).
+**Research Strategies** are independent, reusable top-level `Research Strategy` records. Each strategy has a **Strategy Name**, **Research Instructions** describing how an agent should research, and a **Default Priority**. Smaller positive priorities run earlier (1 is the highest priority).
 
 Add strategies to a search through the **Assigned Research Strategies** child table (`research_strategies`). Each assignment links to a reusable strategy and has an optional **Priority Override**. An empty override (or 0) inherits the strategy's default; a positive override changes the effective priority **only for that search**. A strategy may be assigned at most once per search. Changing a strategy's default priority or instructions affects searches using it without a local override or a copied instruction document. Tied effective priorities are ordered by assignment row order. Strategies are distinct from research heuristics: strategies describe how to conduct research, whereas heuristics are assessed using sourced claims.
 

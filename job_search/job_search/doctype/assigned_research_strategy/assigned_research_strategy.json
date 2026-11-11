@@ -1,6 +1,6 @@
 {
   "doctype": "DocType",
-  "name": "Job Search Assigned Research Strategy",
+  "name": "Assigned Research Strategy",
   "module": "Job Search",
   "custom": 0,
   "istable": 1,
@@ -17,7 +17,7 @@
       "fieldname": "research_strategy",
       "label": "Research Strategy",
       "fieldtype": "Link",
-      "options": "Job Search Research Strategy",
+      "options": "Research Strategy",
       "reqd": 1,
       "in_list_view": 1
     },

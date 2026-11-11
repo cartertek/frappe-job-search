@@ -47,11 +47,11 @@ class ResearchStrategyTests(unittest.TestCase):
             module=importlib.util.module_from_spec(spec)
             spec.loader.exec_module(module)
             self.search_validator=module.JobSearchSearch.validate
-            path=BASE/'job_search_research_strategy/job_search_research_strategy.py'
+            path=BASE/'research_strategy/research_strategy.py'
             spec=importlib.util.spec_from_file_location('test_issue14_strategy_doc',path)
             module=importlib.util.module_from_spec(spec)
             spec.loader.exec_module(module)
-            self.strategy_validator=module.JobSearchResearchStrategy.validate
+            self.strategy_validator=module.ResearchStrategy.validate
 
     def test_priority_override_and_inheritance(self):
         result=self.strategy.ordered_strategies(self.search)
@@ -90,9 +90,9 @@ class ResearchStrategyTests(unittest.TestCase):
     def test_search_table_references_top_level_strategy(self):
         search=json.loads((BASE/'job_search_search/job_search_search.json').read_text())
         table=next(f for f in search['fields'] if f['fieldname']=='research_strategies')
-        self.assertEqual(table['options'],'Job Search Assigned Research Strategy')
-        child=json.loads((BASE/'job_search_assigned_research_strategy/job_search_assigned_research_strategy.json').read_text())
-        self.assertEqual(child['fields'][0]['options'],'Job Search Research Strategy')
+        self.assertEqual(table['options'],'Assigned Research Strategy')
+        child=json.loads((BASE/'assigned_research_strategy/assigned_research_strategy.json').read_text())
+        self.assertEqual(child['fields'][0]['options'],'Research Strategy')
 
 
 if __name__=='__main__':

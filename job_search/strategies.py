@@ -11,7 +11,7 @@ def ordered_strategies(search):
     """
     result = []
     for row in (search.research_strategies or []):
-        strategy = require_doc("Job Search Research Strategy", row.research_strategy, "read")
+        strategy = require_doc("Research Strategy", row.research_strategy, "read")
         default = int(strategy.default_priority)
         effective = int(row.priority_override or default)
         result.append({

@@ -124,7 +124,7 @@
       "fieldname": "research_strategies",
       "label": "Assigned Research Strategies",
       "fieldtype": "Table",
-      "options": "Job Search Assigned Research Strategy",
+      "options": "Assigned Research Strategy",
       "description": "Select reusable research strategies. Lower effective priority numbers run first; an empty Priority Override uses the strategy default."
     },
     {

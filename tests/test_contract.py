@@ -30,8 +30,8 @@ EXPECTED = {
     "Job Search Membership",
     "Job Search Heuristic",
     "Job Search Heuristic Value",
-    "Job Search Research Strategy",
-    "Job Search Assigned Research Strategy",
+    "Research Strategy",
+    "Assigned Research Strategy",
 }
 CHILD = {
     "Job Search Heuristic",
@@ -41,7 +41,7 @@ CHILD = {
     "Job Search Interview Contact",
     "Job Search Membership",
     "Job Search Heuristic Value",
-    "Job Search Assigned Research Strategy",
+    "Assigned Research Strategy",
 }
 
 

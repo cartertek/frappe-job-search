@@ -103,7 +103,7 @@ def backfill_last_active_on():
 
 WORKSPACE_LABELS = {
     'Job Search Search': 'Search',
-    'Job Search Research Strategy': 'Research Strategy',
+    'Research Strategy': 'Research Strategies',
     'Job Search Opportunity': 'Job',
     'Job Search Employer': 'Organization',
     'Job Search Task': 'Task',
@@ -122,7 +122,7 @@ WORKSPACE_LABELS = {
 def ensure_workspace():
     """Keep display labels friendly while retaining stable underlying DocTypes."""
     names = (
-        "Job Search Search", "Job Search Research Strategy", "Job Search Opportunity",
+        "Job Search Search", "Research Strategy", "Job Search Opportunity",
         "Job Search Employer", "Job Search Task",
         "Job Search Posting", "Job Search Research", "Job Search Decision",
         "Job Search Application", "Job Search Interview", "Job Search Procedure Execution",
@@ -134,6 +134,11 @@ def ensure_workspace():
                   for name in names])
     if frappe.db.exists("Workspace", "Job Search"):
         doc = frappe.get_doc("Workspace", "Job Search")
+        # Replace the legacy prefixed navigation target without leaving a duplicate.
+        for row in doc.shortcuts:
+            if row.type == "DocType" and row.link_to == "Job Search Research Strategy":
+                row.link_to = "Research Strategy"
+                row.label = "Research Strategies"
         by_doctype = {row.link_to: row for row in doc.shortcuts if row.type == "DocType"}
         for item in links:
             if item["link_to"] in by_doctype:
@@ -144,9 +149,10 @@ def ensure_workspace():
             "Searches": "Search", "Jobs": "Job", "Organizations": "Organization",
             "Tasks": "Task", "Postings": "Posting", "Decisions": "Decision",
             "Applications": "Application", "Interviews": "Interview",
-            "Procedure Runs": "Procedure Run",
+            "Procedure Runs": "Procedure Run", "Research Strategy": "Research Strategies",
         }
         old_to_new = {name: WORKSPACE_LABELS[name] for name in names}
+        old_to_new['Job Search Research Strategy'] = 'Research Strategies'
         old_to_new.update(legacy_plural)
         current = frappe.parse_json(doc.content or "[]")
         seen = set()

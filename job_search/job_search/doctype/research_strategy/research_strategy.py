@@ -2,7 +2,7 @@ import frappe
 from frappe.model.document import Document
 
 
-class JobSearchResearchStrategy(Document):
+class ResearchStrategy(Document):
     def validate(self):
         if not (self.strategy_name or '').strip():
             frappe.throw('Research Strategy Name is required')
