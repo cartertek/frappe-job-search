@@ -32,7 +32,6 @@ def after_migrate():
     backfill_last_active_on()
     backfill_rejection_details()
     ensure_workspace()
-    ensure_sidebar_navigation()
     repair_dangling_desktop_icon_parents()
     ensure_app_logo()
     frappe.clear_cache()
@@ -178,52 +177,6 @@ def ensure_workspace():
             "content": json.dumps(content), "shortcuts": links,
         })
         doc.insert(ignore_permissions=True)
-
-
-def ensure_sidebar_navigation():
-    """Ensure Research Strategies appears in the actual Job Search sidebar.
-
-    The workspace's shortcut tiles are distinct from Frappe's sidebar menu.
-    Keep the existing sidebar ordering/customizations and make this idempotent.
-    """
-    if not frappe.db.exists("Sidebar", "Job Search"):
-        return
-    sidebar = frappe.get_doc("Sidebar", "Job Search")
-    existing = [item for item in sidebar.items
-                if item.link_type == "DocType" and item.link_to == "Research Strategy"]
-    legacy = [item for item in sidebar.items
-              if item.link_type == "DocType"
-              and item.link_to == "Job Search Research Strategy"]
-    if existing:
-        for item in legacy:
-            sidebar.remove(item)
-        changed = bool(legacy)
-        for item in existing:
-            if item.label != "Research Strategies":
-                item.label = "Research Strategies"
-                changed = True
-        if changed:
-            sidebar.save(ignore_permissions=True)
-        return
-    if legacy:
-        item = legacy[0]
-        item.link_to = "Research Strategy"
-        item.label = "Research Strategies"
-        for duplicate in legacy[1:]:
-            sidebar.remove(duplicate)
-    else:
-        # Keep the collection beside Search, before the Job records.
-        row = sidebar.append("items", {
-            "type": "Link", "link_type": "DocType",
-            "link_to": "Research Strategy", "label": "Research Strategies",
-        })
-        search = next((item for item in sidebar.items
-                       if item.link_type == "DocType"
-                       and item.link_to == "Job Search Search"), None)
-        if search:
-            sidebar.items.remove(row)
-            sidebar.items.insert(sidebar.items.index(search) + 1, row)
-    sidebar.save(ignore_permissions=True)
 
 
 def repair_dangling_desktop_icon_parents():

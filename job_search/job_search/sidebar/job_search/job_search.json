@@ -5,7 +5,7 @@
   "module": "Job Search",
   "app": "job_search",
   "standard": 1,
-  "header_icon": "\ud83d\udcbc",
+  "header_icon": "💼",
   "items": [
     {
       "doctype": "Sidebar Item",
@@ -21,6 +21,13 @@
       "link_type": "DocType",
       "link_to": "Job Search Search",
       "label": "Search"
+    },
+    {
+      "doctype": "Sidebar Item",
+      "type": "Link",
+      "link_type": "DocType",
+      "link_to": "Research Strategy",
+      "label": "Research Strategies"
     },
     {
       "doctype": "Sidebar Item",
