@@ -32,7 +32,7 @@ curl -X POST https://SITE/api/method/job_search.api.register_job \
   -d '{"employer":"Example Ltd","title":"Software Engineer","source_url":"https://example.org/careers/42","description":"Full original job description here"}'
 ```
 
-`register_opportunity` creates the pursuit without claiming that a qualifying Job exists. New Opportunities cannot advance to Ready to Review until at least one linked Job is verified as Active and satisfies the selected qualification Search's requirements.
+`register_opportunity` creates the pursuit without claiming that a qualifying Job exists. New Opportunities cannot advance to Ready to Review until at least one linked Job is verified as Active and satisfies the selected active Job Search's requirements.
 
 For source-specific Job updates, use the Job DocType and `capture_posting`. Human-facing research findings (`research_findings`), recommendation (`research_recommendation`), application materials for review (`application_materials_for_review`), interview preparation (`interview_preparation`), and human instructions (`human_feedback_and_instructions`) are Opportunity fields. The complete `job_description` and `research_heuristics` are Job fields. The deprecated `posting_digest` argument to `publish_human_review` is not accepted for new Opportunity writes; save a real Job Posting instead.
 

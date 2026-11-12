@@ -6,6 +6,7 @@ import frappe
 from frappe.utils import now_datetime
 
 from job_search.claim_validation import claim_field_errors, source_date_matches_search
+from job_search.display import job_label
 from job_search.heuristics import COMPENSATION_HEURISTIC_ID, research_heuristics
 from job_search.recency import active_window_start
 from job_search.searches import match_failures
@@ -75,7 +76,10 @@ def _job_readiness_failures(job, search):
     """Job-specific evidence gate. Shared evidence is allowed only where applicable."""
     errors = []
     if job.availability_status != "Active":
-        errors.append(f"Job {job.name} is not confirmed active ({job.availability_status or 'Unknown'})")
+        errors.append(
+            f"Job {job_label(job)} is not confirmed active "
+            f"({job.availability_status or 'Unknown'})"
+        )
     errors.extend(match_failures(job, search))
     if not job.job_description or not job.job_description.strip():
         errors.append("Full original Job Description is required")
@@ -113,13 +117,13 @@ def _job_readiness_failures(job, search):
 def _review_readiness_failures(deal):
     """An Opportunity qualifies for a Search if at least one associated Job qualifies."""
     if not deal.active_job_search:
-        return ["Qualification Search is required"]
+        return ["Active Job Search is required"]
     if not frappe.db.exists("Job Search Search", deal.active_job_search):
-        return ["Qualification Search does not exist"]
+        return ["Active Job Search does not exist"]
     search = frappe.get_doc("Job Search Search", deal.active_job_search)
     errors = []
     if not search.enabled:
-        errors.append("Qualification Search is disabled")
+        errors.append("Active Job Search is disabled")
     if deal.globally_rejected:
         errors.append("Opportunity is globally rejected")
     if frappe.db.get_value("Job Search Employer", deal.organization, "globally_rejected"):
@@ -127,9 +131,9 @@ def _review_readiness_failures(deal):
     override = next((r.override for r in search.overrides
                      if r.opportunity == deal.name), None)
     if override == "Exclude":
-        errors.append("Opportunity is excluded from the Qualification Search")
+        errors.append("Opportunity is excluded from the Active Job Search")
     if search.require_heuristics and override != "Include":
-        errors.append("Qualification Search requires an explicit Include for this Opportunity")
+        errors.append("Active Job Search requires an explicit Include for this Opportunity")
     if errors:
         return errors
     if not deal.jobs:
@@ -138,12 +142,12 @@ def _review_readiness_failures(deal):
     for row in deal.jobs:
         job = frappe.get_doc("Job", row.job)
         if job.organization != deal.organization:
-            job_errors.append(f"Job {job.name} belongs to another Organization")
+            job_errors.append(f"Job {job_label(job)} belongs to another Organization")
             continue
         failures = _job_readiness_failures(job, search)
         if not failures:
             return []
-        job_errors.extend(f"Job {job.name}: {failure}" for failure in failures)
+        job_errors.extend(f"Job {job_label(job)}: {failure}" for failure in failures)
     return ["No associated Job currently qualifies for this Opportunity"] + job_errors[:20]
 
 
@@ -216,10 +220,10 @@ def validate_deal(doc, method=None):
     linked = set()
     for row in doc.jobs:
         if row.job in linked:
-            frappe.throw(f"Duplicate Job in Opportunity: {row.job}")
+            frappe.throw(f"Duplicate Job in Opportunity: {job_label(row.job)}")
         linked.add(row.job)
         if frappe.db.get_value("Job", row.job, "organization") != doc.organization:
-            frappe.throw(f"Job {row.job} does not belong to the Opportunity Organization")
+            frappe.throw(f"Job {job_label(row.job)} does not belong to the Opportunity Organization")
     before = doc.get_doc_before_save() if not doc.is_new() else None
     previous = before.status if before else None
     status = doc.status or (previous if previous else "Discovered")

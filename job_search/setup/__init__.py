@@ -24,6 +24,9 @@ def after_migrate():
     from job_search.opportunity_migration import migrate_opportunities_v5
 
     migrate_opportunities_v5()
+    from job_search.opportunity_cleanup import reconcile_opportunities_v6
+
+    reconcile_opportunities_v6()
     migrate_legacy_search_filters()
     migrate_heuristics_table()
     migrate_active_in_past()

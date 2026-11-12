@@ -7,7 +7,7 @@ The **Opportunity** owns the pursuit lifecycle. The **Job** owns only job-specif
 | From | Action / next status | Requirements |
 | --- | --- | --- |
 | Discovered | Begin Research → Researching | Operator begins investigating the Organization/hiring effort |
-| Researching | Ready to Review | A configured, enabled Qualification Search and **at least one currently valid linked Job** pass all evidence and search requirements |
+| Researching | Ready to Review | A configured, enabled Active Job Search and **at least one currently valid linked Job** pass all evidence and search requirements |
 | Ready to Review | Mark Qualified → Qualified | Signed-in human Pursue decision with rationale, cited Opportunity research and completed research/qualification procedure (or explicitly approved exception) |
 | Ready to Review | Needs Research → Researching | Further evidence needed; no human decision fabricated |
 | Qualified | Mark Applied → Applied | Human Authorize Application decision, saved confirmed Opportunity-level application with submitted materials/date |
@@ -20,7 +20,7 @@ All transitions run through Frappe server hooks. Stage history and signed human 
 
 ## Ready-to-Review qualification
 
-An Opportunity uses its **Qualification Search** (`active_job_search`) to evaluate its associated Jobs. It must have at least one Job meeting **all** of that Search's deterministic filters and the required heuristic-claim evidence, while the Search and Organization/Opportunity remain eligible. A Job with `Closed`, `Rejected`, or `Unknown` availability is **not confirmed Active** and cannot qualify.
+An Opportunity uses its **Active Job Search** (`active_job_search`) to evaluate its associated Jobs. It must have at least one Job meeting **all** of that Search's deterministic filters and the required heuristic-claim evidence, while the Search and Organization/Opportunity remain eligible. A Job with `Closed`, `Rejected`, or `Unknown` availability is **not confirmed Active** and cannot qualify.
 
 Each linked Job retains its **Job Description** (full original source body), **Job Posting** history, identity/requisition, geography, work arrangement, employment type, seniority, compensation, evidenced Last Active Date and dated source, and **Heuristic Claims** table. Each required claim has the exact quote, source URL, reasoning, and a real source publication date `YYYY-MM-DD` (or literal `None` when no publication date exists). If the Search has an Active In the Past cutoff, evidence must meet it; an undated claim cannot meet a dated cutoff. The server checks completeness and dates, not the truth of the claim; agents must research and verify the underlying facts.
 

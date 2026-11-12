@@ -88,9 +88,15 @@ def matching_jobs(search_name):
             if override != 'Include' and (search.require_heuristics or not deterministic):
                 continue
             result = found.setdefault(name,{'opportunity':name,'organization':opp.organization,
-                'opportunity_name':opp.opportunity_name,'status':opp.status,'qualifying_jobs':[],
+                'opportunity_name':opp.opportunity_name,
+                'organization_name':frappe.db.get_value(EMPLOYER,opp.organization,'organization_name'),
+                'status':opp.status,'qualifying_jobs':[],'qualifying_job_labels':[],
                 'match_reason':'Explicit Include' if override=='Include' else 'Filters'})
             result['qualifying_jobs'].append(job.name)
+            title=(job.job_title or job.name)
+            result['qualifying_job_labels'].append(
+                f'{title} ({job.name})' if title != job.name else job.name
+            )
     return list(found.values())
 
 

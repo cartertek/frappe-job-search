@@ -12,7 +12,8 @@ frappe.ui.form.on('Opportunity', {
         await frm.reload_doc();
       } catch (error) {
         frappe.msgprint({title:__('Opportunity action failed'),
-          message:__('Review the error and try again.'),indicator:'red'});
+          message:__('Could not update {0}. See the error details above.',
+          [frappe.utils.escape_html(frm.doc.opportunity_name || frm.doc.name)]),indicator:'red'});
         throw error;
       }
     };

@@ -1,6 +1,7 @@
 import frappe
 from frappe.model.document import Document
 
+from job_search.display import opportunity_label
 from job_search.recency import active_window_start
 
 
@@ -9,7 +10,7 @@ class JobSearchSearch(Document):
         observed = set()
         for row in self.overrides:
             if row.opportunity in observed:
-                frappe.throw(f"Duplicate override for opportunity {row.opportunity}")
+                frappe.throw(f"Duplicate override for opportunity {opportunity_label(row.opportunity)}")
             observed.add(row.opportunity)
             if row.override not in ("Include", "Exclude"):
                 frappe.throw("Invalid opportunity override")

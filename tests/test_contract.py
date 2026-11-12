@@ -26,6 +26,7 @@ EXPECTED = {
     "Opportunity",
     "Job",
     "Opportunity Job",
+    "Opportunity Consolidation",
     "Job Search Employer",
     "Job Search Task",
     "Job Search Search",
@@ -44,8 +45,8 @@ CHILD = {
     "Job Search Interview Contact",
     "Job Search Membership",
     "Job Search Heuristic Value",
-    "Assigned Research Strategy",    "Opportunity Job",
-
+    "Assigned Research Strategy",
+    "Opportunity Job",
 }
 
 
@@ -130,10 +131,12 @@ class SchemaTest(unittest.TestCase):
         job_fields={f['fieldname']:f for f in job['fields']}
         opp_fields={f['fieldname']:f for f in opportunity['fields']}
         self.assertNotIn('status',job_fields)
+        self.assertNotIn('active_job_search',job_fields)
         self.assertEqual(job_fields['availability_status']['options'].splitlines(),
                          ['Unknown','Active','Closed','Rejected'])
         self.assertNotIn('availability_status',opp_fields)
         self.assertIn('status',opp_fields)
+        self.assertEqual(opp_fields['active_job_search']['label'],'Active Job Search')
         self.assertNotIn('research_heuristics',opp_fields)
         self.assertIn('research_heuristics',job_fields)
         self.assertNotIn('job_description',opp_fields)

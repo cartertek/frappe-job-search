@@ -82,10 +82,10 @@
     },
     {
       "fieldname": "active_job_search",
-      "label": "Qualification Search",
+      "label": "Active Job Search",
       "fieldtype": "Link",
       "options": "Job Search Search",
-      "description": "Search used for this opportunity\u2019s current Ready to Review qualification gate. Other searches may also match it."
+      "description": "Search whose filters and research heuristics must be complete before Ready to Review."
     },
     {
       "fieldname": "eligibility_status",
