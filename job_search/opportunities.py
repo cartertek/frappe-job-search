@@ -16,6 +16,18 @@ def jobs_for_opportunity(opportunity):
                           'parenttype': 'Opportunity'}, pluck='job', limit_page_length=100000)
 
 
+def ensure_rejection_activity(opportunity, reason):
+    """Append one Rejection activity with today's date and the reason as Notes."""
+    if any(row.type == 'Rejection' for row in opportunity.activity_log):
+        return False
+    from frappe.utils import nowdate
+
+    opportunity.append('activity_log', {
+        'date': nowdate(), 'type': 'Rejection', 'notes': reason.strip(),
+    })
+    return True
+
+
 def recheck_for_job(doc, method=None):
     """Reassess all associated Opportunities when a Job's evidence changes.
 

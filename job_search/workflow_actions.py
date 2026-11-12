@@ -2,6 +2,7 @@
 
 import frappe
 
+from job_search.opportunities import ensure_rejection_activity
 from job_search.permissions import require_approver, require_doc, require_operator, require_opportunity
 from job_search.workflow import (
     _has_completed_research_procedure,
@@ -111,6 +112,8 @@ def perform_action(opportunity, action, rationale=None, scope=None, search=None,
             # The initiating Job must also visibly reflect its rejection.
             if job.status not in ("Rejected", "Accepted"):
                 job.status = "Rejected"
+            job.save()
+        if scope in ('opportunity', 'organization') and ensure_rejection_activity(job, rationale):
             job.save()
         # Research rejection is an operator action, not a human authorization.
         # Record its rationale under the actual signed-in actor, without creating

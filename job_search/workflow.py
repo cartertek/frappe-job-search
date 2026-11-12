@@ -235,6 +235,12 @@ def validate_deal(doc, method=None):
         linked.add(row.job)
         if frappe.db.get_value("Job", row.job, "organization") != doc.organization:
             frappe.throw(f"Job {job_label(row.job)} does not belong to the Opportunity Organization")
+    # Frappe displays child table rows in idx order, so normalize idx by Date
+    # on every save. Equal dates retain their existing relative ordering.
+    activities = sorted(doc.activity_log, key=lambda row: str(row.date or ''))
+    for index, row in enumerate(activities, start=1):
+        row.idx = index
+    doc.activity_log = activities
     before = doc.get_doc_before_save() if not doc.is_new() else None
     previous = before.status if before else None
     status = doc.status or (previous if previous else "Discovered")

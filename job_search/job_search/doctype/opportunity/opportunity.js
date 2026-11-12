@@ -1,4 +1,12 @@
 frappe.ui.form.on('Opportunity', {
+  onload(frm) {
+    // Existing Activity rows must display oldest first, even before save.
+    const rows = frm.doc.activity_log || [];
+    if (rows.length < 2) return;
+    rows.sort((a,b) => String(a.date || '').localeCompare(String(b.date || '')));
+    rows.forEach((row,i) => { row.idx = i+1; });
+    frm.refresh_field('activity_log');
+  },
   refresh(frm) {
     const status = frm.doc.status;
     const colors = {Discovered:'gray', Researching:'yellow', 'Ready to Review':'blue',

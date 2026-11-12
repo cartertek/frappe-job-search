@@ -17,8 +17,10 @@ class OpportunityActivityTests(unittest.TestCase):
         self.assertEqual(fields['date']['default'],'Today')
         self.assertTrue(fields['date']['reqd'])
         self.assertEqual(fields['type']['options'].splitlines(), [
-            'Message','Application','Interview','Offer','Rejection','Acceptation','Note',
+            '', 'Message','Application','Interview','Offer','Rejection','Acceptation','Note',
         ])
+        self.assertEqual(fields['type'].get('default'), '')
+        self.assertTrue(fields['type']['reqd'])
         for name in ('contact','platform','notes'):
             self.assertFalse(fields[name].get('reqd', 0))
 
@@ -28,6 +30,24 @@ class OpportunityActivityTests(unittest.TestCase):
         self.assertEqual(fields['activity_log']['options'],'Opportunity Activity')
         self.assertEqual(fields['activity_log']['fieldtype'],'Table')
         self.assertNotIn('description',fields['jobs'])
+
+    def test_rejection_activity_and_chronological_order_are_enforced(self):
+        opportunities=(BASE/'job_search/opportunities.py').read_text()
+        actions=(BASE/'job_search/workflow_actions.py').read_text()
+        workflow=(BASE/'job_search/workflow.py').read_text()
+        js=(DT/'opportunity/opportunity.js').read_text()
+        self.assertIn("row.type == 'Rejection'",opportunities)
+        self.assertIn("'date': nowdate(), 'type': 'Rejection', 'notes': reason.strip()", opportunities)
+        self.assertIn(
+            "scope in ('opportunity', 'organization') and ensure_rejection_activity(job, rationale)",
+            actions,
+        )
+        self.assertNotIn('newly_rejected',opportunities)
+        recheck = opportunities.split('def recheck_for_job(', 1)[1].split('def reject_job(', 1)[0]
+        self.assertNotIn('ensure_rejection_activity(', recheck)
+        self.assertIn("sorted(doc.activity_log, key=lambda row: str(row.date or ''))",workflow)
+        self.assertIn('row.idx = index',workflow)
+        self.assertIn("String(a.date || '').localeCompare(String(b.date || ''))",js)
 
     def test_dialog_only_for_missing_activity_and_default_today(self):
         source=(DT/'opportunity/opportunity.js').read_text()
