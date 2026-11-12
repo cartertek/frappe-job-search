@@ -1,42 +1,41 @@
 # Operator API
 
-Each method is exposed as POST to /api/method/job_search.api.METHOD (or the Frappe method request convention). Pass JSON/form arguments in the usual Frappe manner. Success returns an ok=true envelope with data. Validation failures use Frappe exceptions and standard rollback semantics; some errors are not converted to a structured error envelope.
+Whitelisted methods are exposed at `POST /api/method/job_search.api.METHOD` with standard Frappe authentication and arguments. A success response is `{ "ok": true, "data": ... }`. Invalid actions throw Frappe exceptions and must not be bypassed using raw status writes. Use a named operator account; human decisions require the signed-in approver.
 
-| Method | Description |
+| Method | Purpose |
 | --- | --- |
-| register_opportunity | Register employer, Job Search Opportunity, and saved posting/discovery source; deduplicate exact URL or strict role match |
-| capture_posting | Record a full posting snapshot; unchanged content is idempotent, changed content produces a new immutable revision |
-| add_research | Add source-backed research and optionally create linked source records |
-| start_procedure | Start a specific active procedure version against a Job or employer |
-| complete_procedure_step | Complete one execution step and record findings |
-| complete_procedure | Complete after required steps and assessment |
-| authorize_decision | Human approver-only authorization: Pursue, Authorize Application, Accept Offer, Withdraw, Override (only when appropriate; never auto-issue on the operator's behalf) |
-| perform_job_action | Agents with Job Search Operator permission may reject opportunities with a rationale and scope, or move researched opportunities to Ready to Review. Reject does not issue a human Decision record. Pursue and Accept Offer still require a signed-in approver |
-| transition_opportunity | Validated Job stage change; Ready to Review requires a matching active search and complete heuristic claims (exact quote, reasoning, source URL, and valid publication date meeting search cutoff), Qualified requires human Pursue approval and cited completed research; later stages require corresponding authorizations and records |
-| record_application | Record a confirmed external submission, checking prior approval and materials |
-| record_interview | Record interview round, schedule and Frappe Contacts |
-| create_follow_up | Add linked Job Search Task |
-| get_work_queue | Query opportunities, incomplete executions, and active linked Job Search tasks |
-| get_follow_up_queue | Group open Job Search Tasks as overdue, upcoming, later or unscheduled (optional horizon_days default 14; argument `horizon`) |
-| get_research_queue | Query opportunities with missing/unverified/stale research (optional `stale_after_days`, default 90) |
-| get_company_dossier | Employer, opportunities, postings, research and sources |
-| get_opportunity_context | Read the Job/employer dossier and linked records |
+| `register_opportunity(employer, name?)` | Reuse or create an Opportunity for an Organization; no Job required on initial discovery |
+| `register_job(employer, title, source_url?, description?, requisition_id?, location?, source_name?, opportunity?)` | Create/deduplicate an independent Job, prefer an existing Opportunity at its Organization, explicitly select one when the Organization has multiple, and optionally capture the complete original posting |
+| `associate_job(opportunity, job)` | Link an existing Job to an Opportunity at the same Organization; idempotent, does not forbid multiple Opportunity links |
+| `capture_posting(job, description, source_name, source_url?, posting_title?, requisition_id?, snapshot?, opportunity?)` | Save an immutable complete posting snapshot for a Job. Unchanged latest content is idempotent; changed content creates a revision. Opportunity must be related to the Job |
+| `reject_job(job, reason)` / `reopen_job(job, reason)` | Independent Job rejection / reset to **Unknown** for re-verification; does not reject an Opportunity or claim the Job is active |
+| `perform_opportunity_action(opportunity, action, rationale?, scope?, search?, offer_details?)` | Pursuit transition, research handoff, qualification, rejection, reopening. Rejection scopes: `search`, `opportunity`, `organization` |
+| `transition_opportunity(opportunity, stage, reason?, decision?, exception?, override_decision?)` | Server-validated Opportunity stage transition; not an approval bypass |
+| `set_search_membership(search, opportunity, override)` | Per-Search Opportunity `Include`, `Exclude`, or `Default` override |
+| `get_search_results(search)` | Matching Opportunities with IDs of matching Jobs and match reason |
+| `get_search_research_strategies(search)` | Full assigned strategy instructions sorted by effective priority |
+| `add_research(..., opportunity?, organization?, job?, sources?, procedure_execution?)` | Record cited research and source evidence with appropriate scope |
+| `start_procedure`, `complete_procedure_step`, `complete_procedure` | Versioned procedure execution linked to Opportunity or Organization |
+| `authorize_decision`, `record_human_decision` | Real approver-only decisions with rationale |
+| `publish_human_review`, `request_human_review` | Opportunity research summaries and human review task |
+| `record_application`, `record_interview`, `create_follow_up` | Opportunity-level submissions, interviews, and follow-ups |
+| `get_opportunity_context`, `get_company_dossier` | Combined Opportunity/Job/Organization evidence and history |
+| `get_work_queue`, `get_research_queue`, `get_follow_up_queue`, `get_human_action_queue` | Operating queues, keyed by Opportunity |
+| `reopen_organization(organization, reason)` | Reverse an Organization-wide rejection explicitly; separate from reopening individual Opportunities |
 
-Frappe native REST resource endpoints remain appropriate for routine record CRUD. All operations should run under a dedicated, named operator user with Job Search Operator permissions, never as Administrator.
+**Example:**
 
-Example:
+```sh
+curl -X POST https://SITE/api/method/job_search.api.register_job \
+  -H 'Authorization: token API_KEY:API_SECRET' \
+  -H 'Content-Type: application/json' \
+  -d '{"employer":"Example Ltd","title":"Software Engineer","source_url":"https://example.org/careers/42","description":"Full original job description here"}'
+```
 
-    curl -X POST https://SITE/api/method/job_search.api.register_opportunity \
-      -H "Authorization: token API_KEY:API_SECRET" \
-      -H "Content-Type: application/json" \
-      -d '{"employer":"Example Ltd","title":"Software Engineer","source_url":"https://example.org/careers/42","description":"Full original posting text"}'
+`register_opportunity` creates the pursuit without claiming that a qualifying Job exists. New Opportunities cannot advance to Ready to Review until at least one linked Job is verified as Active and satisfies the selected qualification Search's requirements.
 
-Idempotency: re-registering an identical posting URL returns its opportunity; strict employer + requisition + title + location may reuse a Job; weaker matches are flagged. Submitted application reference is unique within a Job. If posting content changes at the same URL, the registration/capture API records a new snapshot linked to its predecessor. The old snapshot cannot be edited in-place. Reverting to an earlier description creates another observation in the history.
+For source-specific Job updates, use the Job DocType and `capture_posting`. Human-facing research findings (`research_findings`), recommendation (`research_recommendation`), application materials for review (`application_materials_for_review`), interview preparation (`interview_preparation`), and human instructions (`human_feedback_and_instructions`) are Opportunity fields. The complete `job_description` and `research_heuristics` are Job fields. The deprecated `posting_digest` argument to `publish_human_review` is not accepted for new Opportunity writes; save a real Job Posting instead.
 
-### Semantic Job fields and review API
+**Rejection details:** Search-only rejection writes an Opportunity Exclude override on only that Search and **does not** move the shared Opportunity to Rejected. Opportunity-global rejection sets the Opportunity global flag and status; Organization rejection affects every Opportunity at that Organization. Job rejection only invalidates that Job. Reopening a rejected Opportunity does not automatically reopen its Organization or rejected Jobs.
 
-Use the native **Job Description** (`job_description`), **Research Findings & Sources** (`research_findings`), **Agent Recommendation** (`research_recommendation`), **Application Materials for Review** (`application_materials_for_review`), **Interview Preparation** (`interview_preparation`), and **Human Feedback / Instructions** (`human_feedback_and_instructions`) fields in Job records. The `publish_human_review` endpoint accepts the matching semantic argument names; its previous `posting_digest`, `research_digest`, `recommendation`, `application_review`, and `interview_brief` arguments remain accepted for backward compatibility. Do not use the old column names for new records or direct Frappe field writes.
-
-### Research strategies
-
-`get_search_research_strategies(search)` returns `data.search` and `data.strategies`, with each assigned strategy's ID, name, full research instructions, default priority, optional priority override, and effective priority. The list is sorted in execution order (lowest effective numeric priority first; assignment order breaks ties). Agent research must follow **all** assigned strategies for the selected search in that order. This is independent of the heuristic-claim approval gate.
+Research Strategies are independent top-level `Research Strategy` documents. Every assigned strategy must be followed in effective-priority order as returned by `get_search_research_strategies`, independent of heuristic qualification claims.

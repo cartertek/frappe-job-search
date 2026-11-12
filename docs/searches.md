@@ -1,48 +1,23 @@
-# Job Search collections and searches
+# Job Search collections and research strategies
 
-`Job Search Opportunity` (jobs) and `Job Search Employer` (organizations) are independent collections. The `Job Search Search` collection consists of named reusable searches over jobs; a search never owns or duplicates a job or organization.
+**Organization** (`Job Search Employer`) is an independent employer record. **Job** is an independent, specific position. **Opportunity** is the hiring pursuit at an Organization and references one or more Jobs; presume one Opportunity per Organization unless distinct hiring teams/divisions justify separation. **Job Search Search** evaluates reusable criteria against linked Jobs and returns matching Opportunities. A single Opportunity can participate in multiple Searches, and Searches never own or duplicate Jobs or Opportunities.
 
-## Deterministic filters
+## Deterministic filters and eligibility
 
-Each search may filter deterministically by location text, employment type, work arrangement, seniority, posting date, and minimum compensation (with currency/period for comparable values). Empty filters impose no condition. Location uses case-insensitive full-field equality; enumerated fields use exact matching. A missing posted date does not match a configured date. When a job has stated compensation, its minimum is compared with the search minimum if present. Checking **Compensation Not Given** bypasses the numeric compensation filter; research heuristics may then assess expected pay. A currency is considered only when a compensation minimum is set, avoiding Frappe's implicit default currency accidentally filtering the collection.
+Each Search can filter Job attributes: location, employment type, work arrangement, seniority, evidenced Last Active Date within a rolling Active In the Past interval, and minimum compensation with currency and period. Unset filters impose no restriction. Job titles to match are a **heuristic**, not an exact string filter. When salary is unpublished, Compensation Not Given bypasses numeric pay comparison, and an optional configured built-in Minimum Compensation heuristic can assess expected pay for Ready to Review.
 
-By default, all non-rejected jobs matching these filters appear in the search. Changes to jobs or filters immediately affect results without a separate synchronization step.
+The Search returns one **Opportunity** per matching hiring effort, with all the matching Job IDs. A Job with Closed or Rejected availability is excluded. Organization-wide rejection and Opportunity-global rejection take precedence over explicit Include, followed by the Search's per-Opportunity Exclude. An Include override can admit a Job-supported Opportunity despite filters for discovery, but **never bypasses Ready to Review evidence requirements**. When Require Explicit Heuristic Approval is enabled, an Include override is required for inclusion.
 
-## Subjective heuristics
+## Heuristics, claims, and research strategies
 
-`Custom Research Heuristics` is the child table on each search. The separate **Job Titles to Match** field defines a built-in **Job Title** research heuristic, not an exact-title filter. Its generated instructions explain that a job title should resemble one of the listed titles and/or its posting description should describe a matching role; the titles are included in that instruction. A Job Title row appears on the Job assessment table when at least one reference title is supplied. Each row has a required **Name** and **Description**, recording an individual subjective criterion for the researching agent. The application does **not** pretend to evaluate those instructions deterministically. When `Require Explicit Heuristic Approval` is enabled, only jobs explicitly added via an **Include** override appear in the search. The agent must evaluate the instructions and explicitly include jobs using the API or the Overrides table. The Job form has an **Active Job Search** link and a **Heuristic Claims** child table. Each claim requires its configured heuristic, an exact verbatim quote, **Reasoning** explaining why the quotation supports that heuristic, a URL to the source containing that quote, and **Source Date**. Source Date must be a real `YYYY-MM-DD` publication date or the literal `None` if the source has no publication date. Several claims per heuristic are allowed, but each must be valid; for Ready to Review, each required heuristic needs at least one valid claim dated on or after the active search’s **Posted On Or After** date. `None` cannot satisfy a configured date cutoff (it can satisfy a search without a cutoff). Publication date is not the date the researcher accessed the page. See [Job workflow](workflows.md) for the stricter transition checks.
+Search criteria include individually named heuristic instructions and optionally a built-in Job Title heuristic generated from reference titles. **Job** owns the specific claim records and evidence: heuristic ID/name, exact quotation, nonblank reasoning, source URL, and published Source Date (`YYYY-MM-DD` or `None`). The selected Search controls the required heuristic set and active-date cutoff. The researcher must verify that shared evidence actually applies to the Job being qualified. Claims do not automatically approve an Opportunity.
 
-## Override and rejection precedence
+Reusable top-level **Research Strategy** records describe *how* to research. Assign strategies through the Search's **Assigned Research Strategies** child table; each assignment can optionally override its default numeric priority. Lower positive priorities execute first; blank or zero inherits the default. Follow **every** assigned strategy in effective-priority order, using `job_search.api.get_search_research_strategies(search)` as the authoritative instructions. Strategies are separate from heuristic evaluations.
 
-1. **Reject organization globally:** none of its jobs appear in any search, even when explicitly included.
-2. **Reject job globally:** it appears in no search, even when explicitly included.
-3. **Exclude in this search:** the job never appears in this particular search.
-4. **Include in this search:** the job appears regardless of deterministic filters and regardless of the `Require Explicit Heuristic Approval` setting, unless globally rejected.
-5. **Default/no override:** matching deterministic filters cause inclusion, but only if explicit heuristic approval is not required.
+## Rejections and overrides
 
-An override is stored on the search as a `Job Search Membership` child record; `Default` removes it. Only one override per search+job is allowed. Global rejection is stored on the underlying job or employer. These actions do not modify other search filters or delete records.
+The Search's **Explicit Opportunity Overrides** table maps one Opportunity to Include/Exclude, with Default removing its row. Search-only exclusion applies to that Search only; it does not change the Opportunity's shared pursuit stage. Use the Opportunity's Reject action for Opportunity-global or Organization-wide rejection. Independently rejecting a Job changes only Job availability and prevents that Job from qualifying, without rejecting its associated Opportunities.
 
-## Desk UI and API
+Open the **Job Search** workspace and select a Search. **View Matching Opportunities** returns each qualified-by-filters Opportunity with its matching Job IDs. **Remove** creates a Search-only Opportunity exclusion. Manage all associated Jobs from their Opportunity's **Jobs** child table, and use the independent Jobs list to research opening-specific evidence.
 
-Open `/desk/job-search` → **Job Search Search**. Set search filters and researcher heuristics, save, then use **View Matching Jobs** to see results. **Remove** next to a result explicitly excludes it from that search. The search form's **Explicit Job Overrides** table supports manual inclusion and exclusion for any job, including jobs that do not meet the deterministic filters. The job and organization forms provide **Reject Job Globally** and **Reject Organization Globally** actions.
-
-Agent endpoints in `job_search.api`:
-
-- `get_search_results(search)` — matching non-rejected jobs and match reason.
-- `set_search_membership(search, job, override)` — `Include`, `Exclude`, or `Default`.
-- `reject_job(job)` — permanently sets the global rejection flag (it can be reversed by a properly authorized human editing the record).
-- `reject_organization(organization)` — globally rejects the employer and thus all its jobs.
-
-Current Job statuses are **Discovered, Researching, Ready to Review, Qualified, Applied, Interviewing, Accepted, Rejected**. Search membership is independent of these statuses: using **Reject → Search Only** marks the Job **Rejected** and excludes it from the selected search, without setting the global rejection flag. **Ready to Review**, however, requires a matching active search and completed heuristic values; an Include override cannot bypass its deterministic checks. See [Job status workflow](workflows.md).
-
-## Compensation without a published amount
-
-The Job form requires either **Compensation Min** or **Compensation Not Given**. Checking **Compensation Not Given** clears and disables Compensation Min, Compensation Max, Currency, and Compensation Period. A search may enable **Allow Heuristic** under **Minimum Compensation**. When enabled and a minimum is configured, a built-in **Minimum Compensation** research heuristic asks the researcher to determine, using the company size, role and market, whether expected compensation is well above the stated minimum. The instructions include that minimum. The heuristic is **required at Ready to Review only when Compensation Not Given is checked**; it is optional when actual compensation is supplied.
-
-## Assigned research strategies
-
-**Research Strategies** are independent, reusable top-level `Research Strategy` records. Each strategy has a **Strategy Name**, **Research Instructions** describing how an agent should research, and a **Default Priority**. Smaller positive priorities run earlier (1 is the highest priority).
-
-Add strategies to a search through the **Assigned Research Strategies** child table (`research_strategies`). Each assignment links to a reusable strategy and has an optional **Priority Override**. An empty override (or 0) inherits the strategy's default; a positive override changes the effective priority **only for that search**. A strategy may be assigned at most once per search. Changing a strategy's default priority or instructions affects searches using it without a local override or a copied instruction document. Tied effective priorities are ordered by assignment row order. Strategies are distinct from research heuristics: strategies describe how to conduct research, whereas heuristics are assessed using sourced claims.
-
-**Required agent workflow:** At the start of researching any Job Search, retrieve its assigned research strategies and **follow every assigned strategy in effective-priority order** before finalizing that search's opportunity research. Do not assume strategies from another Job Search apply. Use `job_search.api.get_search_research_strategies(search)` to fetch the current authoritative ordered list with instructions, default, override, and effective priority. A Job Search with no assigned strategies has no additional strategy-specific steps.
+See [Opportunity workflows](workflows.md), [Architecture](architecture.md), and [API](api.md).
