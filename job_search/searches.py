@@ -109,13 +109,13 @@ def set_membership(search_name, opportunity_name, override):
     return {'search':search_name,'opportunity':opportunity_name,'override':override}
 
 
-def reject_job(job_name):
-    frappe.throw('Reject a Job with job_search.api.reject_job(job, reason)')
-
-
-def reject_employer(employer_name):
+def reject_employer(employer_name, reason):
     require_operator()
-    employer = require_doc(EMPLOYER, employer_name, 'write')
-    employer.globally_rejected = 1
-    employer.save()
+    employer=require_doc(EMPLOYER,employer_name,'write')
+    if not (reason or '').strip():
+        frappe.throw('Organization rejection reason required')
+    if not employer.globally_rejected:
+        employer.globally_rejected=1
+        employer.save()
+    employer.add_comment('Comment',f'Organization rejected globally: {reason.strip()}')
     return employer.name

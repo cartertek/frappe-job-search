@@ -70,8 +70,8 @@ def add_research(title, evidence_class, content, category="General Observations"
                  opportunity=None, organization=None, sources=None, procedure_execution=None,
                  job=None):
     require_operator()
-    if not opportunity and not organization:
-        frappe.throw("Research must relate to an employer or opportunity")
+    if not opportunity and not organization and not job:
+        frappe.throw("Research must relate to a Job, Opportunity, or Organization")
     if opportunity:
         deal = require_opportunity(opportunity, "read")
         organization = organization or deal.organization
@@ -419,8 +419,9 @@ def associate_job(opportunity, job):
 
 
 @frappe.whitelist()
-def reject_organization(organization):
-    frappe.throw('Reject an Organization through an Opportunity with scope=organization')
+def reject_organization(organization, reason):
+    from job_search.searches import reject_employer
+    return success({'organization':reject_employer(organization,reason)})
 
 
 @frappe.whitelist()
