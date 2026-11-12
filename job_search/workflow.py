@@ -175,6 +175,16 @@ def _validate_transition(deal, previous, next_stage):
             frappe.throw(
                 "Qualified requires cited research and a completed procedure or approved exception"
             )
+    required_activity = {
+        "Applied": "Application",
+        "Interviewing": "Interview",
+        "Accepted": "Acceptation",
+    }.get(next_stage)
+    if required_activity and not any(
+        row.type == required_activity for row in deal.activity_log
+    ):
+        frappe.throw(f"{next_stage} requires an {required_activity} Activity Log entry")
+
     if next_stage == "Applied":
         require_decision(deal.name, "Authorize Application", ctx.get("decision"))
         if not _count("Job Search Application", deal.name):

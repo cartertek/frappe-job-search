@@ -32,6 +32,8 @@
     "latest_application",
     "interview_schedule",
     "globally_rejected",
+    "activity_section",
+    "activity_log",
     "research_notes_section",
     "research_findings",
     "research_recommendation",
@@ -77,8 +79,7 @@
       "fieldname": "jobs",
       "label": "Jobs",
       "fieldtype": "Table",
-      "options": "Opportunity Job",
-      "description": "Jobs supporting this hiring opportunity; one job may be linked to multiple opportunities."
+      "options": "Opportunity Job"
     },
     {
       "fieldname": "active_job_search",
@@ -191,6 +192,17 @@
       "fieldtype": "Check",
       "default": "0",
       "in_list_view": 1
+    },
+    {
+      "fieldname": "activity_section",
+      "label": "Activity Log",
+      "fieldtype": "Section Break"
+    },
+    {
+      "fieldname": "activity_log",
+      "label": "Activities",
+      "fieldtype": "Table",
+      "options": "Opportunity Activity"
     },
     {
       "fieldname": "research_notes_section",

@@ -26,6 +26,7 @@ EXPECTED = {
     "Opportunity",
     "Job",
     "Opportunity Job",
+    "Opportunity Activity",
     "Opportunity Consolidation",
     "Job Search Employer",
     "Job Search Task",
@@ -35,6 +36,7 @@ EXPECTED = {
     "Job Search Heuristic Value",
     "Research Strategy",
     "Assigned Research Strategy",
+    "Opportunity Activity",
     "Opportunity Job",
 }
 CHILD = {
@@ -46,6 +48,7 @@ CHILD = {
     "Job Search Membership",
     "Job Search Heuristic Value",
     "Assigned Research Strategy",
+    "Opportunity Activity",
     "Opportunity Job",
 }
 
