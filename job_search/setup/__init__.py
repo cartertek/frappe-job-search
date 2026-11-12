@@ -33,6 +33,9 @@ def after_migrate():
     backfill_rejection_details()
     ensure_workspace()
     repair_dangling_desktop_icon_parents()
+    from job_search.desktop_integrity import audit_desktop_layouts
+
+    audit_desktop_layouts()
     ensure_app_logo()
     frappe.clear_cache()
     # Frappe 16 caches Desk FormMeta separately in frappe.client_cache. A normal
