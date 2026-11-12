@@ -64,7 +64,7 @@ frappe.ui.form.on('Job', {
   },
   refresh(frm) {
     if (!frm.is_new()) frm.add_custom_button(__('Load Heuristic Choices'),
-      () => sync_research_heuristics(frm), __('More Actions');
+      () => sync_research_heuristics(frm), __('More Actions'));
     const colors = {Unknown:'gray', Active:'green', Closed:'orange', Rejected:'red'};
     if (frm.doc.availability_status) frm.page.set_indicator(
       __(frm.doc.availability_status), colors[frm.doc.availability_status] || 'gray');
