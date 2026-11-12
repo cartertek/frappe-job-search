@@ -10,7 +10,7 @@ The **Opportunity** owns the pursuit lifecycle. The **Job** owns only job-specif
 | Researching | Ready to Review | A configured, enabled Active Job Search and **at least one currently valid linked Job** pass all evidence and search requirements; cited Opportunity research and a completed research/qualification procedure are also required before handoff |
 | Ready to Review | Mark Qualified → Qualified | Signed-in human Pursue decision (rationale optional); no additional Job, research, procedure, or eligibility checks at this stage |
 | Ready to Review | Needs Research → Researching | Further evidence needed; no human decision fabricated |
-| Qualified | Mark Applied → Applied | Human Authorize Application decision, saved confirmed Opportunity-level application with submitted materials/date |
+| Qualified | Mark Applied → Applied | Signed-in human approver and a dated Application Activity Log row; no separate authorization or detailed submission record required |
 | Applied | Begin Interviewing → Interviewing | At least one Opportunity-level interview record |
 | Interviewing | Accept Offer → Accepted | Offer details and human Accept Offer decision |
 | Active stages | Reject with scope | Operator must record rationale and choose Search Only, Opportunity Globally or Entire Organization |
@@ -41,4 +41,4 @@ Every Opportunity includes an editable **Activity Log** child table with **Date*
 
 Before **Mark Applied**, **Begin Interviewing**, or **Accept Offer**, the system checks for a matching Activity Log row (respectively **Application**, **Interview**, **Acceptation**). If no row exists, the form prompts for Date (default today), optional Contact, Platform and Notes; the matching Type is set automatically. The new activity and stage transition are saved together. If the required row already exists, there is no extra activity prompt. For Accept Offer, the existing offer details and human-approval rationale dialog is retained, and the activity fields are included only when Acceptation is missing. Direct REST/ORM status transitions enforce the same activity requirement.
 
-An Activity Log entry does **not** bypass the existing requirement for explicit application authorization, a saved confirmed application, or a recorded interview; those are separate controls and may need to be completed before the stage transition.
+Mark Applied requires the actual human approver and a dated Application activity, not a separate approval or detailed submission record. Optional detailed application records remain available. Begin Interviewing still requires the existing interview record, and Accept Offer retains its human acceptance and offer-details requirements.

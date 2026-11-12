@@ -26,8 +26,7 @@ TRANSITIONS = {
     "Accepted": {"Rejected"},
     "Rejected": {"Researching"},
 }
-DECISIONS = {"Qualified": "Pursue", "Applied": "Authorize Application",
-             "Accepted": "Accept Offer"}
+DECISIONS = {"Qualified": "Pursue", "Accepted": "Accept Offer"}
 
 
 def _decision(opportunity, decision, requested=None):
@@ -191,15 +190,12 @@ def _validate_transition(deal, previous, next_stage):
         frappe.throw(f"{next_stage} requires an {required_activity} Activity Log entry")
 
     if next_stage == "Applied":
-        require_decision(deal.name, "Authorize Application", ctx.get("decision"))
-        if not _count("Job Search Application", deal.name):
-            frappe.throw("Applied requires a saved, confirmed application submission")
-        applications = frappe.get_all("Job Search Application",
-            filters={"opportunity": deal.name},
-            fields=["submitted_on", "resume", "cover_letter", "materials"],
-        )
-        if not any(a.submitted_on and (a.resume or a.cover_letter or a.materials) for a in applications):
-            frappe.throw("Applied requires a submission date and identified application materials")
+        # The human Mark Applied action and its dated Application activity are
+        # the complete transition requirements. Detailed submission records and
+        # separate Authorize Application decisions are optional historical data.
+        from job_search.permissions import require_approver
+
+        require_approver()  # Protect direct ORM / REST status writes as well.
     if next_stage == "Interviewing" and not _count("Job Search Interview", deal.name):
         frappe.throw("Interviewing requires an interview record")
     if next_stage == "Accepted" and not (deal.offer_details or "").strip():
@@ -249,6 +245,11 @@ def validate_deal(doc, method=None):
     doc.status = status
     if previous and previous != status:
         _validate_transition(doc, previous, status)
+        if status == "Applied" and not doc.applied_on:
+            dates = [row.date for row in doc.activity_log
+                     if row.type == "Application" and row.date]
+            if dates:
+                doc.applied_on = max(dates)
     if not doc.active_job_search:
         doc.eligibility_status = "Unverified"
     else:

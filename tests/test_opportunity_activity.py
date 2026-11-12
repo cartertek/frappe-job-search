@@ -52,7 +52,11 @@ class OpportunityActivityTests(unittest.TestCase):
         self.assertIn('if not isinstance(activity, dict):',action)
         self.assertIn('getdate(date)',action)
         self.assertIn('"date": date, "type": activity_type',action)
-        self.assertIn('Existing application/authorization/interview safeguards remain',action)
+        self.assertIn('The Application activity records Mark Applied',action)
+        self.assertNotIn('action == "mark_applied" and job.eligibility_status',action)
+        self.assertNotIn('require_decision(deal.name, "Authorize Application"',workflow)
+        self.assertIn('require_approver()  # Protect direct ORM / REST',workflow)
+        self.assertIn('doc.applied_on = max(dates)',workflow)
         api=(BASE/'job_search/api.py').read_text()
         self.assertIn('offer_details=None, activity=None',api)
 
