@@ -32,7 +32,6 @@ def after_migrate():
     backfill_last_active_on()
     backfill_rejection_details()
     ensure_workspace()
-    repair_dangling_desktop_icon_parents()
     from job_search.desktop_integrity import audit_desktop_layouts
 
     audit_desktop_layouts()
@@ -180,26 +179,6 @@ def ensure_workspace():
             "content": json.dumps(content), "shortcuts": links,
         })
         doc.insert(ignore_permissions=True)
-
-
-def repair_dangling_desktop_icon_parents():
-    """Repair legacy app-label desktop parents only when their parent is missing.
-
-    Restore the existing three-icon layout (Framework, Job Search, Wiki) without
-    creating duplicate app icons or touching unrelated user customizations.
-    """
-    if not frappe.db.exists("DocType", "Desktop Icon"):
-        return
-    if (frappe.db.exists("Desktop Icon", "Framework")
-            and not frappe.db.exists("Desktop Icon", "Frappe Framework")):
-        for row in frappe.get_all("Desktop Icon", filters={"parent_icon": "Frappe Framework"},
-                                  pluck="name"):
-            frappe.db.set_value("Desktop Icon", row, "parent_icon", "Framework")
-    if (frappe.db.exists("Desktop Icon", "Job Search")
-            and not frappe.db.exists("Desktop Icon", "Frappe Job Search")
-            and frappe.db.get_value("Desktop Icon", "Job Search", "parent_icon")
-            == "Frappe Job Search"):
-        frappe.db.set_value("Desktop Icon", "Job Search", "parent_icon", None)
 
 
 def ensure_app_logo():
