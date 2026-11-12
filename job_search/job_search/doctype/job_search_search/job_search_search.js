@@ -10,8 +10,8 @@ frappe.ui.form.on('Job Search Search', {
       const rows = opportunities.map(opp => `
         <tr>
           <td><a href="${esc(frappe.utils.get_form_link('Opportunity', opp.opportunity))}">${esc(opp.opportunity_name)}</a></td>
-          <td>${esc(opp.organization)}</td>
-          <td>${esc((opp.qualifying_jobs || []).join(', '))}</td>
+          <td>${esc(opp.organization_name || opp.organization)}</td>
+          <td>${esc((opp.qualifying_job_labels || opp.qualifying_jobs || []).join(', '))}</td>
           <td>${esc(opp.match_reason)}</td>
           <td><button type="button" class="btn btn-xs btn-default" data-remove="${esc(opp.opportunity)}">Remove</button></td>
         </tr>`).join('');

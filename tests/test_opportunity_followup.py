@@ -13,7 +13,8 @@ class OpportunityFollowupContract(unittest.TestCase):
         self.assertNotIn('active_job_search',job['field_order'])
         field=next(f for f in opportunity['fields'] if f['fieldname']=='active_job_search')
         self.assertEqual(field['label'],'Active Job Search')
-        self.assertIn('get_job_active_searches', (BASE/'job_search/job_search/doctype/job/job.js').read_text())
+        job_js=(BASE/'job_search/job_search/doctype/job/job.js').read_text()
+        self.assertIn('get_job_active_searches',job_js)
 
     def test_consolidation_fails_closed_and_preserves_historical_records(self):
         source=(BASE/'job_search/opportunity_cleanup.py').read_text()
@@ -37,12 +38,18 @@ class OpportunityFollowupContract(unittest.TestCase):
             source=(BASE/'job_search/job_search/doctype'/form).read_text()
             self.assertIn(f'frm.doc.{field}',source)
             self.assertIn('Could not update',source)
+        search_ui=(BASE/'job_search/job_search/doctype/job_search_search/job_search_search.js').read_text()
+        self.assertIn('qualifying_job_labels',search_ui)
+        self.assertIn('organization_name',search_ui)
 
     def test_archive_is_operator_read_only(self):
         archived=json.loads((BASE/'job_search/job_search/doctype/opportunity_consolidation/opportunity_consolidation.json').read_text())
         self.assertTrue(archived['read_only'])
         self.assertEqual(archived['name'],'Opportunity Consolidation')
-        self.assertTrue(all(p.get('read') and not p.get('write') and not p.get('delete') for p in archived['permissions']))
+        self.assertTrue(all(
+            p.get('read') and not p.get('write') and not p.get('delete')
+            for p in archived['permissions']
+        ))
 
 if __name__=='__main__':
     unittest.main()
