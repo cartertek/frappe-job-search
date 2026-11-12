@@ -60,9 +60,14 @@ class AgentRejection(unittest.TestCase):
         self.assertTrue(any(c[0]=='comment' and 'Fails remote requirement' in c[2]
                             for c in self.calls if isinstance(c, tuple)))
 
-    def test_second_rejection_does_not_duplicate_activity(self):
+    def test_repeated_search_only_rejection_creates_no_activity(self):
         self.module.perform_action('job1', 'reject', rationale='First', scope='search')
         self.module.perform_action('job1', 'reject', rationale='Second', scope='search')
+        self.assertEqual(len(self.job.activity_log), 0)
+
+    def test_repeated_global_rejections_do_not_duplicate_activity(self):
+        self.module.perform_action('job1', 'reject', rationale='First', scope='opportunity')
+        self.module.perform_action('job1', 'reject', rationale='Second', scope='opportunity')
         self.assertEqual(len(self.job.activity_log), 1)
         self.assertEqual(self.job.activity_log[0].notes, 'First')
 
@@ -71,6 +76,7 @@ class AgentRejection(unittest.TestCase):
                                             scope='search', search='search1')
         self.assertEqual('Researching', result['status'])
         self.assertEqual(0, self.job.globally_rejected)
+        self.assertEqual([], self.job.activity_log)
         self.assertIn('save', self.calls)
         self.assertTrue(any(c[0] == 'comment' and 'Outside scope' in c[2]
                             for c in self.calls if isinstance(c, tuple)))

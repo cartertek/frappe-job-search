@@ -113,7 +113,7 @@ def perform_action(opportunity, action, rationale=None, scope=None, search=None,
             if job.status not in ("Rejected", "Accepted"):
                 job.status = "Rejected"
             job.save()
-        if ensure_rejection_activity(job, rationale):
+        if scope in ('opportunity', 'organization') and ensure_rejection_activity(job, rationale):
             job.save()
         # Research rejection is an operator action, not a human authorization.
         # Record its rationale under the actual signed-in actor, without creating

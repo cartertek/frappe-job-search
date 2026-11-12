@@ -45,6 +45,6 @@ Mark Applied requires the actual human approver and a dated Application activity
 
 ## Rejection activities and log order
 
-Rejecting a Job automatically records one **Rejection** activity on each associated Opportunity, dated today, with the rejection reason in **Notes** (no prompt and no Contact/Platform values). Opportunity rejections, including Search-only exclusions, follow the same rule. If the Opportunity already contains a Rejection activity, no additional Rejection row is generated. The independently rejected Job retains its own availability status and reason; an Opportunity Search-only rejection does not globally reject the pursuit.
+Rejecting an **Opportunity Globally** or **Entire Organization** automatically records one **Rejection** activity, dated today, with the rejection reason in **Notes** (no prompt and no Contact/Platform values). If the Opportunity already contains a Rejection activity, no additional row is generated. **Rejecting an individual Job does not add an Opportunity activity** and only changes that Job’s own availability and rejection reason. A **Search Only** exclusion does not add a Rejection activity or globally reject the pursuit.
 
 Manually created Activity Log rows start with **Type blank** and require an explicit Type selection. The Activity Log displays in **Date ascending** order (oldest first), and this order is preserved on saving, including updates made through the API.

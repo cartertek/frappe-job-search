@@ -38,9 +38,13 @@ class OpportunityActivityTests(unittest.TestCase):
         js=(DT/'opportunity/opportunity.js').read_text()
         self.assertIn("row.type == 'Rejection'",opportunities)
         self.assertIn("'date': nowdate(), 'type': 'Rejection', 'notes': reason.strip()", opportunities)
-        self.assertIn('ensure_rejection_activity(job, rationale)',actions)
-        self.assertIn('newly_rejected',opportunities)
-        self.assertIn('ensure_rejection_activity(',opportunities)
+        self.assertIn(
+            "scope in ('opportunity', 'organization') and ensure_rejection_activity(job, rationale)",
+            actions,
+        )
+        self.assertNotIn('newly_rejected',opportunities)
+        recheck = opportunities.split('def recheck_for_job(', 1)[1].split('def reject_job(', 1)[0]
+        self.assertNotIn('ensure_rejection_activity(', recheck)
         self.assertIn("sorted(doc.activity_log, key=lambda row: str(row.date or ''))",workflow)
         self.assertIn('row.idx = index',workflow)
         self.assertIn("String(a.date || '').localeCompare(String(b.date || ''))",js)
