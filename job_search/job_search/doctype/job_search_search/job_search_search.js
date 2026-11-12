@@ -9,7 +9,7 @@ frappe.ui.form.on('Job Search Search', {
       const esc = value => frappe.utils.escape_html(String(value || ''));
       const rows = opportunities.map(opp => `
         <tr>
-          <td><a href="/app/opportunity/${encodeURIComponent(opp.opportunity)}">${esc(opp.opportunity_name)}</a></td>
+          <td><a href="${esc(frappe.utils.get_form_link('Opportunity', opp.opportunity))}">${esc(opp.opportunity_name)}</a></td>
           <td>${esc(opp.organization)}</td>
           <td>${esc((opp.qualifying_jobs || []).join(', '))}</td>
           <td>${esc(opp.match_reason)}</td>

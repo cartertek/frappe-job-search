@@ -169,6 +169,10 @@ class SchemaTest(unittest.TestCase):
         child=json.loads((BASE/'job_search_membership/job_search_membership.json').read_text())
         field=next(f for f in child['fields'] if f['fieldname']=='opportunity')
         self.assertEqual(field['options'],'Opportunity')
+        search_js=(BASE/'job_search_search/job_search_search.js').read_text()
+        self.assertIn("frappe.utils.get_form_link('Opportunity'",search_js)
+        self.assertIn('data-remove',search_js)
+        self.assertNotIn('/app/opportunity/',search_js)
         search_doc=json.loads((BASE/'job_search_search/job_search_search.json').read_text())
         self.assertEqual(next(f for f in search_doc['fields'] if f['fieldname']=='overrides')['label'],
                          'Explicit Opportunity Overrides')
