@@ -181,6 +181,8 @@ class SchemaTest(unittest.TestCase):
         self.assertIn('rename_doc("DocType", old, new',patch)
         migration=(APP/'opportunity_migration.py').read_text()
         self.assertIn('verify_opportunity_migration()',migration)
+        self.assertIn("availability_status='Unknown'",migration)
+        self.assertNotIn("THEN 'Rejected'",migration)
         self.assertIn('Job Search Transition',migration)
         self.assertIn('Job Search Decision',migration)
 

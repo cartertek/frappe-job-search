@@ -82,17 +82,13 @@ def migrate_opportunities_v5():
                 WHERE (job IS NULL OR job='') AND opportunity IS NOT NULL AND opportunity!=''
             ''')
 
-    # The Job's new availability is separate from the legacy pursuit status.
-    # Do not infer *current* activity from historical posting or research dates.
+    # Old rejection scopes belong to the *pursuit*, now Opportunity. They
+    # provide no evidence that an individual Job was unavailable or separately
+    # rejected. Preserve those historical scopes on Opportunity and initialize
+    # newly independent Job availability as Unknown pending verification.
     frappe.db.sql('''
-        UPDATE `tabJob` SET availability_status=
-          CASE WHEN rejection_scope='Job Globally' OR globally_rejected=1 THEN 'Rejected'
-               ELSE 'Unknown' END
+        UPDATE `tabJob` SET availability_status='Unknown'
         WHERE availability_status IS NULL OR availability_status=''
-    ''')
-    frappe.db.sql('''
-        UPDATE `tabJob` SET job_rejection_reason=rejection_reason
-        WHERE availability_status='Rejected' AND job_rejection_reason IS NULL
     ''')
     # Historical Jobs must have a corresponding same-ID Opportunity exactly
     # once, at migration time. Subsequent Jobs may join existing Opportunities.
