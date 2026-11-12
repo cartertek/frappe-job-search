@@ -16,6 +16,18 @@ def jobs_for_opportunity(opportunity):
                           'parenttype': 'Opportunity'}, pluck='job', limit_page_length=100000)
 
 
+def ensure_rejection_activity(opportunity, reason):
+    """Append one Rejection activity with today's date and the reason as Notes."""
+    if any(row.type == 'Rejection' for row in opportunity.activity_log):
+        return False
+    from frappe.utils import nowdate
+
+    opportunity.append('activity_log', {
+        'date': nowdate(), 'type': 'Rejection', 'notes': reason.strip(),
+    })
+    return True
+
+
 def recheck_for_job(doc, method=None):
     """Reassess all associated Opportunities when a Job's evidence changes.
 
@@ -25,15 +37,26 @@ def recheck_for_job(doc, method=None):
     """
     from job_search.workflow import _review_readiness_failures
 
+    previous = doc.get_doc_before_save()
+    newly_rejected = (doc.availability_status == 'Rejected'
+                      and (not previous or previous.availability_status != 'Rejected'))
     for name in opportunities_for_job(doc.name):
         opportunity = frappe.get_doc('Opportunity', name)
+        # Job rejection is independent of Opportunity scope, but its dated
+        # rejection activity belongs to every associated Opportunity.
+        activity_added = (newly_rejected and ensure_rejection_activity(
+            opportunity, doc.job_rejection_reason or 'Job rejected'
+        ))
         if not opportunity.active_job_search:
+            if activity_added:
+                opportunity.save(ignore_permissions=True)
             continue
         eligible = not _review_readiness_failures(opportunity)
         desired = 'Eligible' if eligible else 'Needs Research'
         if (
             opportunity.eligibility_status == desired
             and (eligible or opportunity.status != 'Ready to Review')
+            and not activity_added
         ):
             continue
         if not eligible and opportunity.status == 'Ready to Review':

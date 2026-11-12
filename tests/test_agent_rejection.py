@@ -16,6 +16,7 @@ class AgentRejection(unittest.TestCase):
             organization="org1",
             active_job_search="search1",
             globally_rejected=0,
+            activity_log=[],
             save=lambda: self.calls.append("save"),
             add_comment=lambda kind, text: self.calls.append(("comment", kind, text)),
         )
@@ -30,12 +31,17 @@ class AgentRejection(unittest.TestCase):
         perms.require_opportunity = lambda *args: self.job
         perms.require_doc = lambda *args: types.SimpleNamespace(overrides=[], save=lambda: None,
             append=lambda *a: None)
+        opportunities = types.ModuleType('job_search.opportunities')
+        opportunities.ensure_rejection_activity = lambda doc,reason: (
+            doc.activity_log.append(types.SimpleNamespace(type='Rejection', notes=reason)) or True
+        ) if not any(r.type=='Rejection' for r in doc.activity_log) else False
         workflow = types.ModuleType('job_search.workflow')
         workflow._review_readiness_failures = lambda *a: []
         workflow._has_research = lambda *a: True
         workflow._has_completed_research_procedure = lambda *a: True
         with patch.dict(sys.modules, {'frappe': frappe, 'job_search.permissions': perms,
-                                      'job_search.workflow': workflow}):
+                                      'job_search.workflow': workflow,
+                                      'job_search.opportunities': opportunities}):
             path = Path(__file__).resolve().parents[1] / 'job_search/workflow_actions.py'
             spec = importlib.util.spec_from_file_location('agent_rejection_test', path)
             self.module = importlib.util.module_from_spec(spec)
@@ -47,10 +53,18 @@ class AgentRejection(unittest.TestCase):
         )
         self.assertEqual('Rejected', result['status'])
         self.assertEqual(1, self.job.globally_rejected)
+        self.assertEqual([(r.type, r.notes) for r in self.job.activity_log],
+                         [('Rejection', 'Fails remote requirement')])
         self.assertIn('operator', self.calls)
         self.assertNotIn('approver', self.calls)
         self.assertTrue(any(c[0]=='comment' and 'Fails remote requirement' in c[2]
                             for c in self.calls if isinstance(c, tuple)))
+
+    def test_second_rejection_does_not_duplicate_activity(self):
+        self.module.perform_action('job1', 'reject', rationale='First', scope='search')
+        self.module.perform_action('job1', 'reject', rationale='Second', scope='search')
+        self.assertEqual(len(self.job.activity_log), 1)
+        self.assertEqual(self.job.activity_log[0].notes, 'First')
 
     def test_search_only_rejects_status_without_global_rejection(self):
         result = self.module.perform_action('job1', 'reject', rationale='Outside scope',
