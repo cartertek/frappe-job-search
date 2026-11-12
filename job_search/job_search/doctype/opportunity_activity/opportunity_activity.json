@@ -1,0 +1,57 @@
+{
+  "doctype": "DocType",
+  "name": "Opportunity Activity",
+  "module": "Job Search",
+  "custom": 0,
+  "istable": 1,
+  "engine": "InnoDB",
+  "autoname": "hash",
+  "editable_grid": 1,
+  "field_order": [
+    "date",
+    "type",
+    "contact",
+    "platform",
+    "notes"
+  ],
+  "fields": [
+    {
+      "fieldname": "date",
+      "label": "Date",
+      "fieldtype": "Date",
+      "reqd": 1,
+      "in_list_view": 1,
+      "default": "Today"
+    },
+    {
+      "fieldname": "type",
+      "label": "Type",
+      "fieldtype": "Select",
+      "options": "Message\nApplication\nInterview\nOffer\nRejection\nAcceptation\nNote",
+      "reqd": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "contact",
+      "label": "Contact",
+      "fieldtype": "Data",
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "platform",
+      "label": "Platform",
+      "fieldtype": "Data",
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "notes",
+      "label": "Notes",
+      "fieldtype": "Small Text",
+      "in_list_view": 1
+    }
+  ],
+  "permissions": [],
+  "sort_field": "idx",
+  "sort_order": "ASC",
+  "actions": []
+}

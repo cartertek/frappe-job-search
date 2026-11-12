@@ -34,3 +34,11 @@ Each linked Job retains its **Job Description** (full original source body), **J
 - **Job-only rejection:** changes Job availability to Rejected and records a reason. This is not any of the above Opportunity scopes. Reopening resets its availability to Unknown for a new verification, rather than asserting it is Active.
 
 Review records, original postings, comments, decisions, assignments, task history and signed-in author attribution are retained; agents never impersonate the user or Administrator.
+
+## Opportunity Activity Log (issue #18)
+
+Every Opportunity includes an editable **Activity Log** child table with **Date**, **Type**, **Contact**, **Platform**, and **Notes**. Date defaults to the current day, and Type is one of **Message, Application, Interview, Offer, Rejection, Acceptation, Note**. Contact, Platform and Notes are optional. These entries track the actual communication and pursuit history alongside (not in place of) the existing detailed application/interview/approval records.
+
+Before **Mark Applied**, **Begin Interviewing**, or **Accept Offer**, the system checks for a matching Activity Log row (respectively **Application**, **Interview**, **Acceptation**). If no row exists, the form prompts for Date (default today), optional Contact, Platform and Notes; the matching Type is set automatically. The new activity and stage transition are saved together. If the required row already exists, there is no extra activity prompt. For Accept Offer, the existing offer details and human-approval rationale dialog is retained, and the activity fields are included only when Acceptation is missing. Direct REST/ORM status transitions enforce the same activity requirement.
+
+An Activity Log entry does **not** bypass the existing requirement for explicit application authorization, a saved confirmed application, or a recorded interview; those are separate controls and may need to be completed before the stage transition.

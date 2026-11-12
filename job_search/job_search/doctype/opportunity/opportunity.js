@@ -7,6 +7,8 @@ frappe.ui.form.on('Opportunity', {
     if (frm.is_new()) return;
     const run = async (action, values={}) => {
       try {
+        // Save any edited Activity Log rows before attempting a stage change.
+        if (frm.is_dirty()) await frm.save();
         await frappe.call({method:'job_search.api.perform_opportunity_action',
           args:{opportunity:frm.doc.name, action, ...values}});
         await frm.reload_doc();
@@ -22,6 +24,37 @@ frappe.ui.form.on('Opportunity', {
         primary_action: async values => {
           modal.get_primary_btn().prop('disabled',true);
           try {await run(action,values);modal.hide();}
+          finally {modal.get_primary_btn().prop('disabled',false);}
+        }});
+      modal.show();
+    };
+    const activityTypes = {mark_applied:'Application',
+      begin_interviewing:'Interview', accept_offer:'Acceptation'};
+    const activityFields = [
+      {fieldname:'activity_date',label:__('Date'),fieldtype:'Date',
+        default:frappe.datetime.get_today(),reqd:1},
+      {fieldname:'activity_contact',label:__('Contact'),fieldtype:'Data'},
+      {fieldname:'activity_platform',label:__('Platform'),fieldtype:'Data'},
+      {fieldname:'activity_notes',label:__('Notes'),fieldtype:'Small Text'},
+    ];
+    const activityAction = (label,action,otherFields=[]) => {
+      const type=activityTypes[action];
+      const exists=(frm.doc.activity_log || []).some(row=>row.type===type);
+      if (exists && !otherFields.length) return run(action);
+      const fields=exists ? otherFields : [...activityFields,...otherFields];
+      const modal=new frappe.ui.Dialog({title:__(label),fields,
+        primary_action_label:__(label),primary_action:async values=>{
+          const args={...values};
+          if (!exists) {
+            args.activity={date:values.activity_date,contact:values.activity_contact,
+              platform:values.activity_platform,notes:values.activity_notes};
+            delete args.activity_date;
+            delete args.activity_contact;
+            delete args.activity_platform;
+            delete args.activity_notes;
+          }
+          modal.get_primary_btn().prop('disabled',true);
+          try {await run(action,args);modal.hide();}
           finally {modal.get_primary_btn().prop('disabled',false);}
         }});
       modal.show();
@@ -45,11 +78,14 @@ frappe.ui.form.on('Opportunity', {
       primary('Mark Qualified','qualify');
       frm.add_custom_button(__('Needs Research'),()=>run('needs_research'));
     }
-    if (status === 'Qualified') primary('Mark Applied','mark_applied');
-    if (status === 'Applied') primary('Begin Interviewing','begin_interviewing');
-    if (status === 'Interviewing') primary('Accept Offer','accept_offer',[
+    if (status === 'Qualified') frm.page.set_primary_action(__('Mark Applied'),
+      () => activityAction('Mark Applied','mark_applied'));
+    if (status === 'Applied') frm.page.set_primary_action(__('Begin Interviewing'),
+      () => activityAction('Begin Interviewing','begin_interviewing'));
+    if (status === 'Interviewing') frm.page.set_primary_action(__('Accept Offer'),
+      () => activityAction('Accept Offer','accept_offer',[
       {fieldname:'offer_details',label:__('Offer Details'),fieldtype:'Small Text',reqd:1,
-       default:frm.doc.offer_details||''},...reason]);
+       default:frm.doc.offer_details||''},...reason]));
     if (status !== 'Rejected') frm.add_custom_button(__('Reject Opportunity'),reject,
       __('More Actions'));
   },

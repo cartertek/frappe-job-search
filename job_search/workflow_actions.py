@@ -17,7 +17,8 @@ def _decision(job, action, rationale):
     return decision
 
 
-def perform_action(opportunity, action, rationale=None, scope=None, search=None, offer_details=None):
+def perform_action(opportunity, action, rationale=None, scope=None, search=None,
+                   offer_details=None, activity=None):
     if action in ("reject", "reopen", "begin_research", "ready_to_review", "needs_research"):
         require_operator()
     else:
@@ -135,7 +136,30 @@ def perform_action(opportunity, action, rationale=None, scope=None, search=None,
         if not (job.offer_details or "").strip():
             frappe.throw("Offer details are required")
         _decision(job, "Accept Offer", rationale)
-    # Mark Applied requires a recorded submission; Begin Interviewing requires an interview.
+    activity_type = {
+        "mark_applied": "Application",
+        "begin_interviewing": "Interview",
+        "accept_offer": "Acceptation",
+    }.get(action)
+    if activity_type and not any(row.type == activity_type for row in job.activity_log):
+        if isinstance(activity, str):
+            activity = frappe.parse_json(activity)
+        if not isinstance(activity, dict):
+            frappe.throw(f"Add an {activity_type} Activity Log entry before this transition")
+        from frappe.utils import getdate, nowdate
+
+        date = activity.get("date") or nowdate()
+        try:
+            date = str(getdate(date))
+        except (ValueError, TypeError):
+            frappe.throw("Activity date is invalid")
+        job.append("activity_log", {
+            "date": date, "type": activity_type,
+            "contact": activity.get("contact") or "",
+            "platform": activity.get("platform") or "",
+            "notes": activity.get("notes") or "",
+        })
+    # Existing application/authorization/interview safeguards remain in force.
     # Existing validation hooks enforce both, including for direct API calls.
     job.status = target
     job.save()

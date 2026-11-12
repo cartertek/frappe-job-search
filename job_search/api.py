@@ -435,10 +435,11 @@ def reopen_organization(organization, reason):
 
 @frappe.whitelist()
 def perform_opportunity_action(opportunity, action, rationale=None, scope=None, search=None,
-                       offer_details=None):
+                               offer_details=None, activity=None):
     from job_search.workflow_actions import perform_action
 
-    return success(perform_action(opportunity, action, rationale, scope, search, offer_details))
+    return success(perform_action(opportunity, action, rationale, scope, search,
+                                  offer_details, activity))
 
 
 @frappe.whitelist()
