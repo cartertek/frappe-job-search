@@ -6,6 +6,7 @@ import frappe
 from frappe.utils import now_datetime
 
 from job_search.claim_validation import claim_field_errors, source_date_matches_search
+from job_search.display import job_label
 from job_search.heuristics import COMPENSATION_HEURISTIC_ID, research_heuristics
 from job_search.recency import active_window_start
 from job_search.searches import match_failures
@@ -75,7 +76,10 @@ def _job_readiness_failures(job, search):
     """Job-specific evidence gate. Shared evidence is allowed only where applicable."""
     errors = []
     if job.availability_status != "Active":
-        errors.append(f"Job {job.name} is not confirmed active ({job.availability_status or 'Unknown'})")
+        errors.append(
+            f"Job {job_label(job)} is not confirmed active "
+            f"({job.availability_status or 'Unknown'})"
+        )
     errors.extend(match_failures(job, search))
     if not job.job_description or not job.job_description.strip():
         errors.append("Full original Job Description is required")
@@ -138,12 +142,12 @@ def _review_readiness_failures(deal):
     for row in deal.jobs:
         job = frappe.get_doc("Job", row.job)
         if job.organization != deal.organization:
-            job_errors.append(f"Job {job.name} belongs to another Organization")
+            job_errors.append(f"Job {job_label(job)} belongs to another Organization")
             continue
         failures = _job_readiness_failures(job, search)
         if not failures:
             return []
-        job_errors.extend(f"Job {job.name}: {failure}" for failure in failures)
+        job_errors.extend(f"Job {job_label(job)}: {failure}" for failure in failures)
     return ["No associated Job currently qualifies for this Opportunity"] + job_errors[:20]
 
 
@@ -216,10 +220,10 @@ def validate_deal(doc, method=None):
     linked = set()
     for row in doc.jobs:
         if row.job in linked:
-            frappe.throw(f"Duplicate Job in Opportunity: {row.job}")
+            frappe.throw(f"Duplicate Job in Opportunity: {job_label(row.job)}")
         linked.add(row.job)
         if frappe.db.get_value("Job", row.job, "organization") != doc.organization:
-            frappe.throw(f"Job {row.job} does not belong to the Opportunity Organization")
+            frappe.throw(f"Job {job_label(row.job)} does not belong to the Opportunity Organization")
     before = doc.get_doc_before_save() if not doc.is_new() else None
     previous = before.status if before else None
     status = doc.status or (previous if previous else "Discovered")

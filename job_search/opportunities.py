@@ -2,6 +2,7 @@
 
 import frappe
 
+from job_search.display import job_label, opportunity_label
 from job_search.permissions import require_doc, require_operator
 
 
@@ -71,7 +72,10 @@ def associate_job(opportunity, job):
     opp = require_doc('Opportunity', opportunity, 'write')
     linked = require_doc('Job', job, 'read')
     if linked.organization != opp.organization:
-        frappe.throw('Job and Opportunity must belong to the same Organization')
+        frappe.throw(
+            f'Job {job_label(linked)} and Opportunity {opportunity_label(opp)} '
+            'must belong to the same Organization'
+        )
     if job not in {r.job for r in opp.jobs}:
         opp.append('jobs', {'job': job})
         opp.save()

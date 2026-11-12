@@ -80,7 +80,9 @@ frappe.ui.form.on('Job', {
               args:{job:frm.doc.name,reason:values.reason}});
             dialog.hide();
             await frm.reload_doc();
-          } catch (error) { frappe.msgprint({message:__('Job action failed'),indicator:'red'}); throw error; }
+          } catch (error) { frappe.msgprint({title:__('Job action failed'),
+              message:__('Could not update {0}. See the error details above.',
+                [frappe.utils.escape_html(frm.doc.job_title || frm.doc.name)]),indicator:'red'}); throw error; }
         },
       });
       dialog.show();
