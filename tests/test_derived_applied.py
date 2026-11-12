@@ -16,6 +16,7 @@ class DerivedAppliedContract(unittest.TestCase):
         self.assertEqual(field['read_only'], 1)
         self.assertEqual(field['in_list_view'], 1)
         self.assertEqual(field['in_standard_filter'], 1)
+        self.assertEqual(field['search_index'], 1)
 
     def test_every_activity_write_path_is_covered_at_database_level(self):
         source = (BASE/'job_search/applied_sync.py').read_text()
