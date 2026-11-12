@@ -51,7 +51,7 @@ def require_decision(opportunity, kind, requested=None):
 
 
 def _has_research(deal):
-    # A research record must have evidence, not just unsupported prose.
+    """The research handoff needs an evidenced Opportunity research record."""
     findings = frappe.get_all("Job Search Research", filters={"opportunity": deal.name}, pluck="name")
     for name in findings:
         doc = frappe.get_doc("Job Search Research", name)
@@ -61,6 +61,7 @@ def _has_research(deal):
 
 
 def _has_completed_research_procedure(deal):
+    """A research/qualification procedure is completed before human review."""
     rows = frappe.get_all("Job Search Procedure Execution",
         filters={"opportunity": deal.name, "status": "Completed"},
         fields=["procedure"])
@@ -164,17 +165,21 @@ def _validate_transition(deal, previous, next_stage):
 
     if next_stage == "Ready to Review":
         errors = _review_readiness_failures(deal)
+        if not _has_research(deal):
+            errors.append("Cited Opportunity research is required before Ready to Review")
+        if not _has_completed_research_procedure(deal):
+            errors.append(
+                "A completed research or qualification procedure is required before Ready to Review"
+            )
         if errors:
             frappe.throw("Cannot move to Ready to Review:<ul>" + "".join(
                 f"<li>{escape(message)}</li>" for message in errors
             ) + "</ul>")
 
     if next_stage == "Qualified":
+        # Ready to Review is the final evidence gate. The actual human
+        # approver decides whether to Pursue without additional validation.
         require_decision(deal.name, "Pursue", ctx.get("decision"))
-        if not override and not (_has_research(deal) and _has_completed_research_procedure(deal)):
-            frappe.throw(
-                "Qualified requires cited research and a completed procedure or approved exception"
-            )
     required_activity = {
         "Applied": "Application",
         "Interviewing": "Interview",

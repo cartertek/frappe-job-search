@@ -60,6 +60,7 @@ class ReviewReadiness(unittest.TestCase):
                           active_job_search='SEARCH1',globally_rejected=0,
                           jobs=[record(job='JOB1')],status='Researching')
         self.fake.get_doc = lambda dt,name: self.search if dt=='Job Search Search' else self.job
+        self.fake.get_all = lambda *args, **kwargs: []
         perms = types.ModuleType('job_search.permissions')
         perms.require_doc = lambda *args: None
         perms.require_operator = lambda: None
@@ -282,6 +283,12 @@ class ReviewReadiness(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'Personal contact'):
             self.workflow._validate_transition(self.opp, 'Researching', 'Ready to Review')
         self.job.research_heuristics[1].quote = 'Contacted recruiter'
+        with self.assertRaisesRegex(ValueError, 'Cited Opportunity research'):
+            self.workflow._validate_transition(self.opp, 'Researching', 'Ready to Review')
+        self.workflow._has_research = lambda deal: True
+        with self.assertRaisesRegex(ValueError, 'completed research or qualification procedure'):
+            self.workflow._validate_transition(self.opp, 'Researching', 'Ready to Review')
+        self.workflow._has_completed_research_procedure = lambda deal: True
         self.assertIsNotNone(self.workflow._validate_transition(self.opp, 'Researching', 'Ready to Review'))
 
     def test_heuristics_reordered_by_search_keep_stable_identity(self):

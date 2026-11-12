@@ -31,6 +31,7 @@ class AgentRejection(unittest.TestCase):
         perms.require_doc = lambda *args: types.SimpleNamespace(overrides=[], save=lambda: None,
             append=lambda *a: None)
         workflow = types.ModuleType('job_search.workflow')
+        workflow._review_readiness_failures = lambda *a: []
         workflow._has_research = lambda *a: True
         workflow._has_completed_research_procedure = lambda *a: True
         with patch.dict(sys.modules, {'frappe': frappe, 'job_search.permissions': perms,
@@ -114,6 +115,18 @@ class AgentRejection(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'organization is globally rejected'):
             self.module.perform_action('job1', 'reopen', rationale='New research')
 
+    def test_ready_to_review_requires_research_and_completed_procedure(self):
+        self.module._has_research = lambda *a: False
+        with self.assertRaisesRegex(ValueError, 'cited Opportunity research'):
+            self.module.perform_action('job1', 'ready_to_review')
+        self.module._has_research = lambda *a: True
+        self.module._has_completed_research_procedure = lambda *a: False
+        with self.assertRaisesRegex(ValueError, 'research or qualification procedure'):
+            self.module.perform_action('job1', 'ready_to_review')
+        self.module._has_completed_research_procedure = lambda *a: True
+        self.module.perform_action('job1', 'ready_to_review')
+        self.assertEqual(self.job.status, 'Ready to Review')
+
     def test_research_handoff_uses_operator(self):
         self.module.perform_action('job1', 'ready_to_review')
         self.assertIn('operator', self.calls)
@@ -127,6 +140,16 @@ class AgentRejection(unittest.TestCase):
         self.assertEqual(decisions,[(self.job, 'Pursue', '')])
         self.assertIn('approver', self.calls)
         self.assertNotIn('operator', self.calls)
+
+    def test_qualification_is_human_decision_without_rechecking_eligibility(self):
+        self.job.status = 'Ready to Review'
+        self.job.eligibility_status = 'Needs Research'
+        decisions = []
+        self.module._decision = lambda *args: decisions.append(args)
+        self.module.perform_action('job1', 'qualify')
+        self.assertEqual(self.job.status, 'Qualified')
+        self.assertEqual(decisions, [(self.job, 'Pursue', '')])
+        self.assertIn('approver', self.calls)
 
     def test_rejection_requires_reason(self):
         with self.assertRaisesRegex(ValueError,'rationale'):
