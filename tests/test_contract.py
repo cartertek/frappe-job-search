@@ -154,6 +154,8 @@ class SchemaTest(unittest.TestCase):
         opp_js=(BASE/'opportunity/opportunity.js').read_text()
         self.assertIn("frappe.ui.form.on('Job'",job_js)
         self.assertIn('Load Heuristic Choices',job_js)
+        self.assertIn('.job-value-record',(BASE/'job/job.css').read_text())
+        self.assertNotIn('.job-value-record',(BASE/'opportunity/opportunity.css').read_text())
         self.assertIn('Reject Job',job_js)
         self.assertIn("frappe.ui.form.on('Opportunity'",opp_js)
         for action in ('Begin Research','Ready to Review','Mark Qualified',
