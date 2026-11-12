@@ -1,5 +1,6 @@
 """Opportunity stage invariants, independent of UI and REST mutation entrypoint."""
 
+from collections import Counter
 from html import escape
 
 import frappe
@@ -244,7 +245,13 @@ def validate_deal(doc, method=None):
     # The field is a database-synchronized, filterable snapshot, not a manual
     # pursuit status. Set it on ORM saves too so the in-memory document and
     # database agree even while Frappe is still persisting child rows.
+    application_dates = [row.date for row in activities if row.type == "Application" and row.date]
     doc.applied = 1 if any(row.type == "Application" for row in activities) else 0
+    doc.applied_on = max(application_dates) if application_dates else None
+    contact_counts = Counter(str(row.contact).strip() for row in activities
+                             if str(row.contact or "").strip())
+    doc.common_contact = (sorted(contact_counts, key=lambda name: (-contact_counts[name], name))[0]
+                          if contact_counts else None)
     before = doc.get_doc_before_save() if not doc.is_new() else None
     previous = before.status if before else None
     status = doc.status or (previous if previous else "Discovered")
@@ -255,11 +262,6 @@ def validate_deal(doc, method=None):
     doc.status = status
     if previous and previous != status:
         _validate_transition(doc, previous, status)
-        if status == "Applied" and not doc.applied_on:
-            dates = [row.date for row in doc.activity_log
-                     if row.type == "Application" and row.date]
-            if dates:
-                doc.applied_on = max(dates)
     if not doc.active_job_search:
         doc.eligibility_status = "Unverified"
     else:
