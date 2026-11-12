@@ -132,8 +132,6 @@ def perform_action(opportunity, action, rationale=None, scope=None, search=None,
             frappe.throw("Complete cited Opportunity research before Ready to Review")
         if not _has_completed_research_procedure(job):
             frappe.throw("Complete a research or qualification procedure before Ready to Review")
-    if action == "mark_applied" and job.eligibility_status != "Eligible":
-        frappe.throw("At least one currently valid Job must qualify before proceeding")
     if action == "qualify":
         # Only the human Pursue decision is needed at this stage. The
         # research and Job validation happened on Ready to Review.
@@ -167,8 +165,8 @@ def perform_action(opportunity, action, rationale=None, scope=None, search=None,
             "platform": activity.get("platform") or "",
             "notes": activity.get("notes") or "",
         })
-    # Existing application/authorization/interview safeguards remain in force.
-    # Existing validation hooks enforce both, including for direct API calls.
+    # The Application activity records Mark Applied; human approval is checked
+    # by the action and the transition hook. Interview/offer guards remain.
     job.status = target
     job.save()
     return {"status": target, "opportunity": job.name}
