@@ -22,14 +22,18 @@ class QualificationRationaleContract(unittest.TestCase):
         fields = json.loads((decision_path / 'job_search_decision.json').read_text())['fields']
         self.assertFalse(next(f for f in fields if f['fieldname'] == 'rationale').get('reqd'))
 
-    def test_server_still_checks_research_and_approver(self):
+    def test_all_research_checks_are_on_ready_to_review_not_qualified(self):
         source = (BASE / 'job_search/workflow_actions.py').read_text()
         self.assertIn('require_approver()', source)
-        self.assertIn('_review_readiness_failures(job)', source)
-        self.assertNotIn('_has_completed_research_procedure', source)
+        self.assertNotIn('Complete cited research and a research procedure before qualifying', source)
+        self.assertIn('if action == "ready_to_review":', source)
+        self.assertIn('if not _has_completed_research_procedure(job):', source)
         workflow=(BASE / 'job_search/workflow.py').read_text()
         self.assertIn('if next_stage == "Qualified":', workflow)
         self.assertIn('errors = _review_readiness_failures(deal)', workflow)
+        self.assertNotIn('Cannot qualify this Opportunity', workflow)
+        self.assertNotIn('if action in ("qualify", "mark_applied")', source)
+        self.assertIn('if not _has_completed_research_procedure(deal):', workflow)
         self.assertNotIn('Qualified requires cited research', workflow)
         self.assertIn('_decision(job, "Pursue", rationale)', source)
         self.assertIn('if action == "accept_offer" and not rationale:', source)

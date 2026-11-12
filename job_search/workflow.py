@@ -50,6 +50,25 @@ def require_decision(opportunity, kind, requested=None):
     return name
 
 
+def _has_research(deal):
+    """The research handoff needs an evidenced Opportunity research record."""
+    findings = frappe.get_all("Job Search Research", filters={"opportunity": deal.name}, pluck="name")
+    for name in findings:
+        doc = frappe.get_doc("Job Search Research", name)
+        if doc.evidence_class in ("Verified Fact", "Supported Interpretation") and doc.sources:
+            return True
+    return False
+
+
+def _has_completed_research_procedure(deal):
+    """A research/qualification procedure is completed before human review."""
+    rows = frappe.get_all("Job Search Procedure Execution",
+        filters={"opportunity": deal.name, "status": "Completed"},
+        fields=["procedure"])
+    return any(frappe.db.get_value("Job Search Procedure", x.procedure, "procedure_id")
+               in ("research-employer", "research-opening", "qualify") for x in rows)
+
+
 def _count(doctype, opportunity):
     return frappe.db.count(doctype, {"opportunity": opportunity})
 
@@ -146,19 +165,20 @@ def _validate_transition(deal, previous, next_stage):
 
     if next_stage == "Ready to Review":
         errors = _review_readiness_failures(deal)
+        if not _has_research(deal):
+            errors.append("Cited Opportunity research is required before Ready to Review")
+        if not _has_completed_research_procedure(deal):
+            errors.append(
+                "A completed research or qualification procedure is required before Ready to Review"
+            )
         if errors:
             frappe.throw("Cannot move to Ready to Review:<ul>" + "".join(
                 f"<li>{escape(message)}</li>" for message in errors
             ) + "</ul>")
 
     if next_stage == "Qualified":
-        # Pursuit approval is a human decision. Qualification evidence belongs
-        # to the linked Jobs; no separate Opportunity research/procedure gate.
-        errors = _review_readiness_failures(deal)
-        if errors:
-            frappe.throw("Cannot qualify this Opportunity:<ul>" + "".join(
-                f"<li>{escape(message)}</li>" for message in errors
-            ) + "</ul>")
+        # Ready to Review is the final evidence gate. The actual human
+        # approver decides whether to Pursue without additional validation.
         require_decision(deal.name, "Pursue", ctx.get("decision"))
     required_activity = {
         "Applied": "Application",
