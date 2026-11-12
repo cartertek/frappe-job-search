@@ -21,6 +21,10 @@ jobs:
         run: python -m pip install --upgrade ruff build
       - name: Ruff lint
         run: ruff check .
+      - name: Check JavaScript syntax (DocType form and list scripts)
+        run: |
+          set -euo pipefail
+          find job_search -type f -name '*.js' -print0 | xargs -0 -r -n1 node --check
       - name: Compile Python
         run: python -m compileall -q job_search tests
       - name: Validate schema contracts
