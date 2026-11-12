@@ -74,7 +74,13 @@ def _compatible(group):
     scopes = {d.rejection_scope or '' for d in group}
     if scopes - {'', 'Search Only', 'Opportunity Globally', 'Entire Organization'}:
         return False
-    if len({d.status for d in group}) != 1:
+    statuses = {d.status for d in group}
+    # A current Researching position and another Ready to Review can belong
+    # to the same Organization. Preserve both original stage histories and
+    # retain the conservative Researching state until every Job is reviewed.
+    if len(statuses) != 1 and not statuses.issubset(
+        {'Discovered', 'Researching', 'Ready to Review'}
+    ):
         return False
     if len({bool(d.globally_rejected) for d in group}) != 1:
         return False
@@ -94,6 +100,16 @@ def _merge_one(source, canonical):
     job_titles = [frappe.db.get_value('Job', row.job, 'job_title') or row.job
                   for row in old.jobs]
     label = ', '.join(job_titles) or old.opportunity_name
+    if target.status != old.status:
+        target.research_findings = _merge_text(
+            target.research_findings,
+            f'Consolidated historical pursuit statuses: {target.status} and '
+            f'{old.status}. The merged Organization remains Researching until '
+            'the supporting Jobs are reassessed. Both original stages and '
+            'transitions are preserved in the consolidation archive.',
+            label, source,
+        )
+        target.status = 'Researching'
     for field in RICH_FIELDS:
         target.set(field, _merge_text(target.get(field), old.get(field), label, source))
     if (not target.rejection_reason and old.rejection_reason):
