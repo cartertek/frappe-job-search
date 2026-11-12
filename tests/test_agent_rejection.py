@@ -12,7 +12,7 @@ class AgentRejection(unittest.TestCase):
         self.calls = []
         self.job = types.SimpleNamespace(
             name="job1",
-            status="Researching",
+            status="Researching",eligibility_status="Eligible",
             organization="org1",
             active_job_search="search1",
             globally_rejected=0,
@@ -41,7 +41,9 @@ class AgentRejection(unittest.TestCase):
             spec.loader.exec_module(self.module)
 
     def test_agent_rejects_job_without_human_decision(self):
-        result = self.module.perform_action('job1','reject',rationale='Fails remote requirement',scope='job')
+        result = self.module.perform_action(
+            'job1', 'reject', rationale='Fails remote requirement', scope='opportunity'
+        )
         self.assertEqual('Rejected', result['status'])
         self.assertEqual(1, self.job.globally_rejected)
         self.assertIn('operator', self.calls)
@@ -52,7 +54,7 @@ class AgentRejection(unittest.TestCase):
     def test_search_only_rejects_status_without_global_rejection(self):
         result = self.module.perform_action('job1', 'reject', rationale='Outside scope',
                                             scope='search', search='search1')
-        self.assertEqual('Rejected', result['status'])
+        self.assertEqual('Researching', result['status'])
         self.assertEqual(0, self.job.globally_rejected)
         self.assertIn('save', self.calls)
         self.assertTrue(any(c[0] == 'comment' and 'Outside scope' in c[2]
@@ -62,7 +64,7 @@ class AgentRejection(unittest.TestCase):
     def test_search_only_defaults_to_active_job_search(self):
         result = self.module.perform_action('job1', 'reject',
             rationale='Does not match criteria', scope='search')
-        self.assertEqual('Rejected', result['status'])
+        self.assertEqual('Researching', result['status'])
         self.assertNotIn('approver', self.calls)
 
     def test_search_only_without_search_raises_clear_error(self):
@@ -95,7 +97,7 @@ class AgentRejection(unittest.TestCase):
 
     def test_reopen_rejected_job_restores_research_and_audits(self):
         self.job.status = 'Rejected'
-        self.job.rejection_scope = 'Job Globally'
+        self.job.rejection_scope = 'Opportunity Globally'
         self.job.rejection_search = None
         self.job.globally_rejected = 1
         result = self.module.perform_action("job1", "reopen", rationale="New evidence")
@@ -126,5 +128,5 @@ class AgentRejection(unittest.TestCase):
 
     def test_rejection_requires_reason(self):
         with self.assertRaisesRegex(ValueError,'rationale'):
-            self.module.perform_action('job1','reject',scope='job')
+            self.module.perform_action('job1','reject',scope='opportunity')
         self.assertFalse(any(isinstance(c,tuple) for c in self.calls))

@@ -1,4 +1,4 @@
-"""Human-only decisions entered on Job Search Opportunity's native Data tab.
+"""Human-only decisions entered on Opportunity's native Data tab.
 
 The request fields are one-time inputs, not an authorization record. Only an
 approver's signed-in request may produce the immutable Job Search Decision.
@@ -74,7 +74,7 @@ def save_human_action(doc, method=None):
             task.save()
         if doc.get("review_assignment"):
             todo = frappe.get_doc("ToDo", doc.review_assignment)
-            if todo.reference_type == "Job Search Opportunity" and todo.reference_name == doc.name:
+            if todo.reference_type == "Opportunity" and todo.reference_name == doc.name:
                 todo.status = "Closed"
                 todo.save(ignore_permissions=True)
 

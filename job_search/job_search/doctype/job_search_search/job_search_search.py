@@ -8,11 +8,11 @@ class JobSearchSearch(Document):
     def validate(self):
         observed = set()
         for row in self.overrides:
-            if row.job in observed:
-                frappe.throw(f"Duplicate override for job {row.job}")
-            observed.add(row.job)
+            if row.opportunity in observed:
+                frappe.throw(f"Duplicate override for opportunity {row.opportunity}")
+            observed.add(row.opportunity)
             if row.override not in ("Include", "Exclude"):
-                frappe.throw("Invalid job override")
+                frappe.throw("Invalid opportunity override")
         strategies = set()
         for row in self.research_strategies:
             if row.research_strategy in strategies:

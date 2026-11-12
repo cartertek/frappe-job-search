@@ -1,25 +1,19 @@
 # Standalone architecture
 
-The app runs on Frappe v16 without Frappe CRM. It owns Job Search Opportunity,
-Employer and Task DocTypes and all posting, research, source, procedure, execution,
-application, interview, transition and human-decision models. Frappe's built-in
-User, Contact, File, Comment and ToDo models remain available.
+The application runs on Frappe v16 without Frappe CRM. Frappe Users, Contacts, Files, Comments and ToDos remain available. The app owns these separate concepts:
 
-The human UI is a standard Desk Workspace and the Job Search Opportunity form.
-Pending human reviews have a **Record Decision** custom button which opens a
-native `frappe.ui.Dialog`; it calls `record_human_decision`. The server alone
-creates immutable signed Job Search Decision records, closes review tasks,
-and closes declined opportunities. These one-time inputs are hidden in the
-persistent form; the human sees the saved last decision and review status.
+- **Organization** (`Job Search Employer`): reusable employer identity, facts, and organization-wide rejection.
+- **Job** (`Job`): the specific position, compensation/location/type/recency, original description, posted snapshots, heuristic claims, and independent availability (`Unknown`, `Active`, `Closed`, `Rejected`). Job rejection disqualifies only that position.
+- **Opportunity** (`Opportunity`): one organization's hiring pursuit, normally one per Organization. Distinct divisions/hiring teams may have separate Opportunities. Contains a child table of **Opportunity Job** links, allowing multiple Jobs and permitting a Job to support multiple Opportunities. Owns all research/pursuit stage transitions, approvals, overall research summaries, rejection, applications, interviews, offers, and follow-ups.
+- **Job Search Search**: reusable criteria and assigned Research Strategies. A Search discovers matching Opportunities through their associated Jobs. A single Opportunity can match several Searches; per-search overrides are keyed by Opportunity, not Job.
+- **Posting**, **Source**, and **Research**: retain the existing historical records. Individual Postings are attached to the Job and optionally its Opportunity. Sources and Research may link to the Job when job-specific, the Opportunity when pursuit-specific, or the Organization when broadly applicable.
 
-Agents call the whitelisted `job_search.api` endpoints to create opportunities,
-append original posting text/revisions, cite research, complete versioned
-procedures and request human approval. Permission checks enforce the operator
-and approver roles; saving a stage through Frappe ORM runs the same server-side
-workflow validation as the API. A stage transition generates a retained event
-and, where appropriate, an idempotent Job Search Task.
+The Desk Job Search workspace includes separate **Opportunities**, **Jobs**, **Organizations**, and **Searches** collections. Agents use `job_search.api`; server-side hooks enforce stage transitions, role authorization, and evidence requirements on normal ORM/REST operations. Operators may investigate and reject, but **only the actual signed-in human approver** may authorize a Pursue/Apply/Accept decision. The application does not impersonate any user.
 
-The explicit `job_search.migration.migrate_from_crm` imports historical CRM-backed
-opportunities, employers and tasks preserving original document names. It then
-remaps native Frappe activity and assignment references for the imported rows.
-CRM stays installed until the import and user acceptance are verified.
+## Lifecycle boundaries
+
+- **Opportunity:** Discovered → Researching → Ready to Review → Qualified → Applied → Interviewing → Accepted, with scoped rejection and reopening.
+- **Job:** Unknown / Active / Closed / Rejected availability and independent Job rejection. Changing a Job triggers re-evaluation of its associated Opportunities without deleting historical decisions or activity.
+- **Posting:** Its own observation-level status and immutable revisions; neither the Job nor Opportunity pursuit status is inferred from the mere existence of a posting.
+
+The legacy `Job Search Opportunity` DocType represented individual Jobs. The version-5 migration renames that DocType and its SQL table to `Job`, creates a same-ID Opportunity for every existing Job, and attaches it with an `Opportunity Job` child record. This conservatively preserves distinct historical pursuits instead of automatically merging different approval or rejection histories. New Jobs normally reuse the existing Opportunity at their Organization, but can explicitly join another distinct hiring team or more than one Opportunity. Read [deployment](deployment.md) for the data-preservation and recovery contract.

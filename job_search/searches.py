@@ -5,7 +5,7 @@ import frappe
 from job_search.permissions import require_doc, require_operator
 from job_search.recency import active_window_start, date_in_window
 
-JOB = 'Job Search Opportunity'
+JOB = 'Job'
 EMPLOYER = 'Job Search Employer'
 SEARCH = 'Job Search Search'
 
@@ -57,62 +57,65 @@ def matches(job, search):
 
 
 def matching_jobs(search_name):
+    """Job-level deterministic matches, with Opportunity-level override/rejection."""
     require_operator()
     search = require_doc(SEARCH, search_name)
-    # Avoid leaking any jobs not readable to this user through membership records.
-    jobs = frappe.get_list(JOB, fields=[
-        'name', 'organization', 'job_title', 'location', 'employment_type',
-        'work_arrangement', 'seniority', 'posted_on', 'last_active_on',
-        'compensation_min', 'compensation_max',
-        'currency', 'compensation_period', 'compensation_not_given', 'globally_rejected', 'status',
-    ], limit_page_length=100000)
-    employers = {j.organization for j in jobs if j.organization}
-    rejected = set()
-    for org in employers:
-        if frappe.db.get_value(EMPLOYER, org, 'globally_rejected'):
-            rejected.add(org)
-    overrides = {r.job: r.override for r in search.overrides}
-    results = []
+    jobs = frappe.get_list('Job', fields=[
+        'name','organization','job_title','location','employment_type',
+        'work_arrangement','seniority','last_active_on','compensation_min',
+        'compensation_max','currency','compensation_period','compensation_not_given',
+        'availability_status'],limit_page_length=100000)
+    by_job = {}
+    for row in frappe.get_all('Opportunity Job', fields=['parent','job'],limit_page_length=100000):
+        by_job.setdefault(row.job, []).append(row.parent)
+    overrides = {r.opportunity: r.override for r in search.overrides}
+    permitted = {o.name:o for o in frappe.get_list('Opportunity',fields=[
+        'name','organization','opportunity_name','status','globally_rejected'],limit_page_length=100000)}
+    rejected_orgs = {name for name in {o.organization for o in permitted.values()} if
+                     frappe.db.get_value(EMPLOYER,name,'globally_rejected')}
+    found = {}
     for job in jobs:
-        if job.globally_rejected or job.organization in rejected:
-            continue  # Global rejection always wins, including explicit Include.
-        override = overrides.get(job.name)
-        if override == 'Exclude':
+        if job.availability_status in ('Closed','Rejected') or job.organization in rejected_orgs:
             continue
-        if override == 'Include' or (not search.require_heuristics and matches(job, search)):
-            results.append({
-                **dict(job),
-                'match_reason': 'Explicit Include' if override == 'Include' else 'Filters',
-            })
-    return results
+        deterministic = matches(job,search)
+        for name in by_job.get(job.name,[]):
+            opp = permitted.get(name)
+            if not opp or opp.globally_rejected or opp.organization != job.organization:
+                continue
+            override = overrides.get(name)
+            if override == 'Exclude':
+                continue
+            if override != 'Include' and (search.require_heuristics or not deterministic):
+                continue
+            result = found.setdefault(name,{'opportunity':name,'organization':opp.organization,
+                'opportunity_name':opp.opportunity_name,'status':opp.status,'qualifying_jobs':[],
+                'match_reason':'Explicit Include' if override=='Include' else 'Filters'})
+            result['qualifying_jobs'].append(job.name)
+    return list(found.values())
 
 
-def set_membership(search_name, job_name, override):
+def set_membership(search_name, opportunity_name, override):
     require_operator()
-    search = require_doc(SEARCH, search_name, 'write')
-    require_doc(JOB, job_name, 'read')
-    if override not in ('Include', 'Exclude', 'Default'):
+    search = require_doc(SEARCH,search_name,'write')
+    require_doc('Opportunity',opportunity_name,'read')
+    if override not in ('Include','Exclude','Default'):
         frappe.throw('Override must be Include, Exclude or Default')
-    existing = [r for r in search.overrides if r.job == job_name]
-    for row in existing:
-        search.remove(row)
+    for row in list(search.overrides):
+        if row.opportunity == opportunity_name:
+            search.remove(row)
     if override != 'Default':
-        search.append('overrides', {'job': job_name, 'override': override})
+        search.append('overrides',{'opportunity':opportunity_name,'override':override})
     search.save()
-    return {'search': search_name, 'job': job_name, 'override': override}
+    return {'search':search_name,'opportunity':opportunity_name,'override':override}
 
 
-def reject_job(job_name):
+def reject_employer(employer_name, reason):
     require_operator()
-    job = require_doc(JOB, job_name, 'write')
-    job.globally_rejected = 1
-    job.save()
-    return job.name
-
-
-def reject_employer(employer_name):
-    require_operator()
-    employer = require_doc(EMPLOYER, employer_name, 'write')
-    employer.globally_rejected = 1
-    employer.save()
+    employer=require_doc(EMPLOYER,employer_name,'write')
+    if not (reason or '').strip():
+        frappe.throw('Organization rejection reason required')
+    if not employer.globally_rejected:
+        employer.globally_rejected=1
+        employer.save()
+    employer.add_comment('Comment',f'Organization rejected globally: {reason.strip()}')
     return employer.name

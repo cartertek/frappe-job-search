@@ -14,6 +14,7 @@
     "category",
     "organization",
     "opportunity",
+    "job",
     "content",
     "evidence_class",
     "status",
@@ -47,7 +48,14 @@
       "fieldname": "opportunity",
       "label": "Opportunity",
       "fieldtype": "Link",
-      "options": "Job Search Opportunity"
+      "options": "Opportunity"
+    },
+    {
+      "fieldname": "job",
+      "fieldtype": "Link",
+      "label": "Job",
+      "options": "Job",
+      "in_standard_filter": 1
     },
     {
       "fieldname": "content",

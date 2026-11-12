@@ -1,5 +1,6 @@
 """Regression checks for disappearing Frappe desktop icons."""
 import unittest
+
 from job_search.desktop_integrity import find_desktop_layout_issues
 
 

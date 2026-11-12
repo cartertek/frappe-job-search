@@ -4,14 +4,13 @@ A **standalone Frappe v16 application** for researching and tracking job opportu
 
 ## Data model
 
-- **Job Search Opportunity** — independent job collection: employer link, details, workflow stage, decision/approval state, posting and application summaries, and global rejection flag.
-- **Job Search Search** — named deterministic job filters, subjective researcher instructions, heuristic approval requirement, and per-search explicit Include/Exclude overrides.
-- **Job Search Employer** — independent organization collection: employer identity, careers page, research and global rejection flag.
-- **Job Search Task** — deadlines, assignees, follow-ups, and review tasks.
-- **Job Search Posting, Source, Research, Procedure, Procedure Execution, Application, Interview, Decision, Transition** — source evidence and immutable historical records.
-- Built-in Frappe Users, Contacts, Comments, ToDos and file attachments are reused where appropriate.
+- **Organization** (`Job Search Employer`) — independent employer identity, research and global rejection.
+- **Job** (`Job`) — independent specific position: original description and posting history, location, compensation, recency, heuristic evidence, and a separate **Availability** (`Unknown`, `Active`, `Closed`, or `Rejected`). Rejecting a Job invalidates only that position.
+- **Opportunity** (`Opportunity`) — one hiring pursuit at an Organization, normally shared by its Jobs. A separate hiring team or division can warrant another Opportunity. Each Opportunity holds a **Jobs** child table; a Job can support more than one Opportunity. Opportunity owns the entire pursuit lifecycle (Discovered → Researching → Ready to Review → Qualified → Applied → Interviewing → Accepted, plus rejection), reviews, decisions, applications, interviews and offers.
+- **Job Search Search** — reusable deterministic Job filters, source-backed heuristics, prioritized Research Strategies, and **Opportunity-specific** Include/Exclude overrides. One Opportunity can match more than one Search.
+- **Job Search Posting, Source, Research, Procedure, Procedure Execution, Application, Interview, Decision, Transition, Task** — evidence and audit records. Posting is a separate, immutable Job-specific revision history; pursuit history belongs to Opportunity.
 
-A signed-in human with **Job Search Approver** authority uses the **Record Decision** button on a pending opportunity to open a one-time modal. Recording a `Decline` decision automatically closes the opportunity; other decisions are retained for agent-controlled stage transitions. Agents cannot impersonate approvers or submit external applications automatically.
+The Desk workspace and sidebar contain separate **Jobs** and **Opportunities** collections. Researching a Job can establish eligibility for its Opportunity, but it does not authorize a human Pursue decision. Agent research and rejection run as the signed-in operator; **human authorization is never impersonated**.
 
 ## Install on a new Frappe site
 
@@ -24,22 +23,21 @@ bench --site YOUR-SITE migrate
 
 Open `/desk` and the **Job Search** Workspace. Assign **Job Search Operator** to an agent and **Job Search Approver** to the human reviewer. Both may access the app-owned DocTypes; no CRM Sales role is necessary. Wiki is optional and deployed separately by the companion platform repository.
 
-## Upgrading an existing CRM-backed Job Search site
+## Upgrading from the previous Job-as-Opportunity model (issue #15)
 
-**Never uninstall CRM before migrating the Job Search data.** The old system stores opportunities in CRM Deal, employers in CRM Organization and tasks in CRM Task.
+**Back up the site and verify the backup before changing app code or migrating.** The former `Job Search Opportunity` DocType held individual Jobs and their pursuit stages. The new migration preserves every existing Job name/ID by renaming that DocType to `Job`, creates one same-ID `Opportunity` per historical Job with a linking child row, and moves the pursuit status and associated records to that Opportunity. Existing historical pursuits are not automatically merged, even at the same Organization, because doing so could destroy different approval and rejection histories. New Jobs normally reuse the Organization's existing Opportunity.
 
-1. Back up the database and public/private files, and verify the backup is accessible outside the container.
-2. While the existing CRM-containing image is still running, update the app code to this standalone release and run `bench --site YOUR-SITE migrate`. CRM remains installed during this step.
-3. Preview with `bench --site YOUR-SITE execute job_search.migration.migrate_from_crm`.
-4. Import historical records with `bench --site YOUR-SITE execute job_search.migration.migrate_from_crm --kwargs '{"confirm": True}'`. The operation is repeatable and preserves historical identifiers, timestamps and related activity links.
-5. Validate all opportunities, employers, tasks, posting/research history, approvals, and attachments in Job Search Workspace.
-6. Only after validation and once the CRM-free image is available, run `bench --site YOUR-SITE uninstall-app crm`, deploy the new image and migrate again.
+1. Validate the migration on a **separate copy of production data**. Record baseline Jobs, Organizations, Postings, Sources, Research, Decisions, Transitions, Tasks, Search Memberships, Comments, and Files.
+2. Back up production again; deploy the full compatible app release (schema and patch together) and run `bench --site YOUR-SITE migrate`. The v5 patch runs before DocType synchronization; after migration the app backfills Opportunities, Job links, source/job references, and search membership links.
+3. Verify **all historical Job IDs exist under `Job`** and have same-ID Opportunities and child links. Verify every historical Opportunity-linked task, transition, decision, application, interview, research record, source, and posting resolves; historical author/timestamps and approvals are preserved. Use `job_search.opportunity_migration.verify_opportunity_migration`.
+4. Repeat the migration once to confirm idempotency; run strict desktop integrity validation, build assets if required by the release, and validate Desk forms, Search results, Wiki research handbook, and actual operator workflows.
+5. **Do not roll back only the container image** after a schema migration; restore the matching database and files from the verified backup if rollback is required.
 
-See the companion [`job_search_platform`](https://github.com/JoshuaCWebDeveloper/job_search_platform) repository's cutover runbook. Rolling back an image **does not** roll back schema changes; retain the original backup.
+The older `job_search.migration.migrate_from_crm` is for importing from an ancient CRM-backed installation; it is not the migration mechanism for issue #15. Follow the companion [`job_search_platform`](https://github.com/JoshuaCWebDeveloper/job_search_platform) operations runbook when deploying the container stack.
 
 ## Agent API
 
-See [API reference](docs/api.md). Entry points live in `job_search.api`, including `register_opportunity`, `capture_posting`, `add_research`, `start_procedure`, `complete_procedure_step`, `complete_procedure`, `publish_human_review`, `request_human_review`, `record_human_decision`, `transition_opportunity`, `record_application`, `record_interview`, and the work/research/human-action queues.
+See [API reference](docs/api.md). Entry points live in `job_search.api`, including `register_opportunity`, `register_job`, `associate_job`, `capture_posting`, `add_research`, `start_procedure`, `complete_procedure_step`, `complete_procedure`, `publish_human_review`, `request_human_review`, `record_human_decision`, `transition_opportunity`, `record_application`, `record_interview`, and the work/research/human-action queues.
 
 ## Documentation
 

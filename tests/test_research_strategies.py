@@ -106,7 +106,8 @@ class ResearchStrategyRenameContract(unittest.TestCase):
         self.assertEqual(strategy['name'],'Research Strategy')
         self.assertEqual(assignment['name'],'Assigned Research Strategy')
         self.assertEqual(assignment['fields'][0]['options'],'Research Strategy')
-        self.assertEqual(next(f for f in search['fields'] if f['fieldname']=='research_strategies')['options'],
+        self.assertEqual(
+            next(f for f in search['fields'] if f['fieldname']=='research_strategies')['options'],
                          'Assigned Research Strategy')
         setup=(ROOT/'job_search/setup/__init__.py').read_text()
         self.assertIn("'Research Strategy': 'Research Strategies'",setup)

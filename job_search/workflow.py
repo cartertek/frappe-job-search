@@ -1,4 +1,4 @@
-"""Job Search Opportunity stage invariants, independent of UI and REST mutation entrypoint."""
+"""Opportunity stage invariants, independent of UI and REST mutation entrypoint."""
 
 from html import escape
 
@@ -71,67 +71,80 @@ def _count(doctype, opportunity):
     return frappe.db.count(doctype, {"opportunity": opportunity})
 
 
+def _job_readiness_failures(job, search):
+    """Job-specific evidence gate. Shared evidence is allowed only where applicable."""
+    errors = []
+    if job.availability_status != "Active":
+        errors.append(f"Job {job.name} is not confirmed active ({job.availability_status or 'Unknown'})")
+    errors.extend(match_failures(job, search))
+    if not job.job_description or not job.job_description.strip():
+        errors.append("Full original Job Description is required")
+    if not job.latest_posting:
+        errors.append("A captured Job Posting is required")
+    defined = {r["name"]: r["heuristic_name"] for r in research_heuristics(search)}
+    required = {identifier: label for identifier, label in defined.items()
+                if identifier != COMPENSATION_HEURISTIC_ID or job.compensation_not_given}
+    valid = {identifier: 0 for identifier in required}
+    activity_start = active_window_start(search.active_in_past_count, search.active_in_past_unit)
+    for row in job.research_heuristics:
+        identifier = row.heuristic_id
+        if identifier not in defined or row.heuristic_name != defined[identifier]:
+            errors.append(f"Unexpected or mismatched heuristic: {row.heuristic_name or identifier}")
+            continue
+        issues = claim_field_errors(row)
+        quote = (getattr(row, 'quote', None) or '').strip()
+        source = (getattr(row, 'source', None) or '').strip()
+        if not quote or not source.startswith(('http://','https://')):
+            issues.append('requires an exact quote and a valid source URL')
+        errors.extend(f"Heuristic {row.heuristic_name}: {msg}" for msg in issues)
+        if issues:
+            continue
+        if not source_date_matches_search(row.source_date, activity_start):
+            errors.append(f"Heuristic {row.heuristic_name}: source date outside active window")
+            continue
+        if identifier in valid and quote and source.startswith(('http://', 'https://')):
+            valid[identifier] += 1
+    for identifier, label in required.items():
+        if not valid[identifier]:
+            errors.append(f"Research heuristic '{label}' requires at least one sourced claim")
+    return errors
+
+
 def _review_readiness_failures(deal):
-    """All unmet requirements for a job to move to Ready to Review.
-
-    The active search is a strict qualification gate. An explicit Include does not
-    excuse a deterministic mismatch at this stage; the UI search results can still
-    use overrides for discovery separately.
-    """
+    """An Opportunity qualifies for a Search if at least one associated Job qualifies."""
     if not deal.active_job_search:
-        return ["Active Job Search is required"]
+        return ["Qualification Search is required"]
     if not frappe.db.exists("Job Search Search", deal.active_job_search):
-        return [f"Active Job Search {deal.active_job_search} does not exist"]
-
+        return ["Qualification Search does not exist"]
     search = frappe.get_doc("Job Search Search", deal.active_job_search)
     errors = []
     if not search.enabled:
-        errors.append(f"Active Job Search {search.name} is disabled")
-    errors.extend(match_failures(deal, search))
-
+        errors.append("Qualification Search is disabled")
     if deal.globally_rejected:
-        errors.append("Job is globally rejected")
+        errors.append("Opportunity is globally rejected")
     if frappe.db.get_value("Job Search Employer", deal.organization, "globally_rejected"):
-        errors.append("Employer is globally rejected")
-    override = next((row.override for row in search.overrides if row.job == deal.name), None)
+        errors.append("Organization is globally rejected")
+    override = next((r.override for r in search.overrides
+                     if r.opportunity == deal.name), None)
     if override == "Exclude":
-        errors.append("Job is explicitly excluded from the active job search")
+        errors.append("Opportunity is excluded from the Qualification Search")
     if search.require_heuristics and override != "Include":
-        errors.append("Active job search requires an explicit Include override")
-
-    defined = {row["name"]: row["heuristic_name"] for row in research_heuristics(search)}
-    required = {identifier: name for identifier, name in defined.items()
-                if identifier != COMPENSATION_HEURISTIC_ID or deal.compensation_not_given}
-    valid_claims = {identifier: 0 for identifier in required}
-    activity_start = active_window_start(search.active_in_past_count, search.active_in_past_unit)
-    for row in deal.research_heuristics:
-        identifier = row.heuristic_id
-        if identifier not in defined:
-            errors.append(f"Unexpected heuristic claim: {row.heuristic_name or identifier or '(unnamed)'}")
+        errors.append("Qualification Search requires an explicit Include for this Opportunity")
+    if errors:
+        return errors
+    if not deal.jobs:
+        return ["At least one Job is required"]
+    job_errors = []
+    for row in deal.jobs:
+        job = frappe.get_doc("Job", row.job)
+        if job.organization != deal.organization:
+            job_errors.append(f"Job {job.name} belongs to another Organization")
             continue
-        if row.heuristic_name != defined[identifier]:
-            errors.append(f"Heuristic claim name does not match configured heuristic: {row.heuristic_name}")
-            continue
-        quote = (getattr(row, 'quote', None) or '').strip()
-        source = (getattr(row, 'source', None) or '').strip()
-        label = defined[identifier]
-        if not quote or not source or not source.startswith(('https://', 'http://')):
-            errors.append(f"Heuristic claim '{label}' requires an exact quote and a valid source URL")
-        field_errors = claim_field_errors(row)
-        errors.extend(f"Heuristic claim '{label}': {message}" for message in field_errors)
-        if field_errors:
-            continue
-        if not source_date_matches_search(row.source_date, activity_start):
-            errors.append(
-                f"Heuristic claim '{label}' Source Date must be within the active "
-                f"window (on or after {activity_start}); None cannot meet a configured date cutoff"
-            )
-        elif quote and source and source.startswith(('https://', 'http://')) and identifier in valid_claims:
-            valid_claims[identifier] += 1
-    for identifier, name in required.items():
-        if valid_claims[identifier] < 1:
-            errors.append(f"Research heuristic '{name}' requires at least one sourced claim")
-    return errors
+        failures = _job_readiness_failures(job, search)
+        if not failures:
+            return []
+        job_errors.extend(f"Job {job.name}: {failure}" for failure in failures)
+    return ["No associated Job currently qualifies for this Opportunity"] + job_errors[:20]
 
 
 def _validate_transition(deal, previous, next_stage):
@@ -181,31 +194,46 @@ def _validate_transition(deal, previous, next_stage):
     return ctx, override
 
 
-def validate_deal(doc, method=None):
-    # Frappe's 'reqd' property does not prevent whitespace-only Data / Small Text.
-    # Validate both fields on every save, not only during Ready to Review.
-    for row in doc.get("research_heuristics") or []:
-        for message in claim_field_errors(row):
-            frappe.throw(f"Heuristic claim '{row.heuristic_name or '(unnamed)'}': {message}")
-    if doc.get("compensation_not_given"):
+def validate_job(doc, method=None):
+    if not doc.organization or not (doc.job_title or '').strip():
+        frappe.throw("A Job requires an Organization and Job Title")
+    if doc.availability_status not in ("Unknown", "Active", "Closed", "Rejected"):
+        frappe.throw("Invalid Job availability status")
+    if doc.availability_status == "Rejected" and not (doc.job_rejection_reason or '').strip():
+        frappe.throw("A rejected Job requires a rejection reason")
+    if doc.compensation_not_given:
         for field in ("compensation_min", "compensation_max", "currency", "compensation_period"):
             doc.set(field, None)
-    elif (doc.get("compensation_min") is None and doc.get("status") != "Rejected"
-          and (getattr(frappe.flags, "job_search_transition_context", None) or {}).get("action") != "reopen"):
-        frappe.throw("Minimum Compensation is required unless Compensation Not Given is checked")
-    old = doc.get_doc_before_save() if not doc.is_new() else None
-    if not doc.organization or not (doc.get("job_title") or "").strip():
-        frappe.throw("A Job Search opportunity requires an employer and job title")
-    old_stage = old.get("status") if old else None
-    stage = doc.get("status") or ("Discovered" if not old else old_stage)
-    # The standalone DocType owns its stage; status is read-only derived metadata.
-    if stage not in STAGES:
-        frappe.throw("Invalid Job Search status")
-    if doc.is_new() and stage != "Discovered":
-        frappe.throw("A new opportunity must begin in Discovered")
-    doc.status = stage
-    if old_stage and old_stage != stage:
-        _validate_transition(doc, old_stage, stage)
+    for row in doc.research_heuristics:
+        for error in claim_field_errors(row):
+            frappe.throw(f"Heuristic claim: {error}")
+
+
+def validate_deal(doc, method=None):
+    """Opportunity pursuit state is distinct from Job availability."""
+    if not doc.organization or not (doc.opportunity_name or '').strip():
+        frappe.throw("An Opportunity requires an Organization and name")
+    linked = set()
+    for row in doc.jobs:
+        if row.job in linked:
+            frappe.throw(f"Duplicate Job in Opportunity: {row.job}")
+        linked.add(row.job)
+        if frappe.db.get_value("Job", row.job, "organization") != doc.organization:
+            frappe.throw(f"Job {row.job} does not belong to the Opportunity Organization")
+    before = doc.get_doc_before_save() if not doc.is_new() else None
+    previous = before.status if before else None
+    status = doc.status or (previous if previous else "Discovered")
+    if status not in STAGES:
+        frappe.throw("Invalid Opportunity status")
+    if doc.is_new() and status != "Discovered":
+        frappe.throw("A new Opportunity must begin in Discovered")
+    doc.status = status
+    if previous and previous != status:
+        _validate_transition(doc, previous, status)
+    if not doc.active_job_search:
+        doc.eligibility_status = "Unverified"
+    else:
+        doc.eligibility_status = "Eligible" if not _review_readiness_failures(doc) else "Needs Research"
 
 
 def record_transition(doc, method=None):

@@ -28,8 +28,8 @@ def follow_up_queue(horizon=14):
     horizon = int(horizon)
     if not 0 <= horizon <= 365:
         frappe.throw("Horizon must be between 0 and 365 days")
-    deals = frappe.get_list("Job Search Opportunity", filters={},
-        fields=["name", "job_title", "organization"], limit_page_length=1000)
+    deals = frappe.get_list("Opportunity", filters={},
+        fields=["name", "opportunity_name", "organization"], limit_page_length=1000)
     names = {d.name for d in deals}
     tasks = frappe.get_list("Job Search Task", filters={
         "status": ["not in", ["Done", "Canceled"]],
@@ -50,8 +50,8 @@ def research_queue(stale_after_days=90):
     stale_after_days = int(stale_after_days)
     if not 1 <= stale_after_days <= 3650:
         frappe.throw("Research freshness threshold must be between 1 and 3650 days")
-    deals = frappe.get_list("Job Search Opportunity", filters={        "status": ["in", OPEN_STAGES]},
-        fields=["name", "organization", "job_title", "status", "priority"],
+    deals = frappe.get_list("Opportunity", filters={        "status": ["in", OPEN_STAGES]},
+        fields=["name", "organization", "opportunity_name", "status", "priority"],
         limit_page_length=1000)
     research = frappe.get_list("Job Search Research",
         fields=["name", "opportunity", "organization", "status", "last_verified",
@@ -82,7 +82,7 @@ def research_queue(stale_after_days=90):
             reasons.append("Research stage outstanding")
         if reasons:
             result.append({"opportunity": d.name, "organization": d.organization,
-                           "job_title": d.job_title, "stage": d.status,
+                           "opportunity_name": d.opportunity_name, "stage": d.status,
                            "priority": d.priority, "reasons": reasons,
                            "research_records": [r.name for r in items],
                            "stale_records": [r.name for r in stale]})
