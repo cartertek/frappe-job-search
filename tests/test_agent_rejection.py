@@ -31,8 +31,7 @@ class AgentRejection(unittest.TestCase):
         perms.require_doc = lambda *args: types.SimpleNamespace(overrides=[], save=lambda: None,
             append=lambda *a: None)
         workflow = types.ModuleType('job_search.workflow')
-        workflow._has_research = lambda *a: True
-        workflow._has_completed_research_procedure = lambda *a: True
+        workflow._review_readiness_failures = lambda *a: []
         with patch.dict(sys.modules, {'frappe': frappe, 'job_search.permissions': perms,
                                       'job_search.workflow': workflow}):
             path = Path(__file__).resolve().parents[1] / 'job_search/workflow_actions.py'
@@ -127,6 +126,20 @@ class AgentRejection(unittest.TestCase):
         self.assertEqual(decisions,[(self.job, 'Pursue', '')])
         self.assertIn('approver', self.calls)
         self.assertNotIn('operator', self.calls)
+
+    def test_qualification_requires_a_valid_linked_job_not_separate_research(self):
+        self.job.status = 'Ready to Review'
+        decisions=[]
+        self.module._decision = lambda *args: decisions.append(args)
+        self.module._review_readiness_failures = lambda *args: ['Job Senior Engineer is Closed']
+        with self.assertRaisesRegex(ValueError, 'Senior Engineer is Closed'):
+            self.module.perform_action('job1', 'qualify')
+        self.assertFalse(decisions)
+        self.assertEqual(self.job.status, 'Ready to Review')
+        self.module._review_readiness_failures = lambda *args: []
+        self.module.perform_action('job1', 'qualify')
+        self.assertEqual(self.job.status, 'Qualified')
+        self.assertEqual(len(decisions),1)
 
     def test_rejection_requires_reason(self):
         with self.assertRaisesRegex(ValueError,'rationale'):

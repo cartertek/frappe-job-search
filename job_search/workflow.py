@@ -50,24 +50,6 @@ def require_decision(opportunity, kind, requested=None):
     return name
 
 
-def _has_research(deal):
-    # A research record must have evidence, not just unsupported prose.
-    findings = frappe.get_all("Job Search Research", filters={"opportunity": deal.name}, pluck="name")
-    for name in findings:
-        doc = frappe.get_doc("Job Search Research", name)
-        if doc.evidence_class in ("Verified Fact", "Supported Interpretation") and doc.sources:
-            return True
-    return False
-
-
-def _has_completed_research_procedure(deal):
-    rows = frappe.get_all("Job Search Procedure Execution",
-        filters={"opportunity": deal.name, "status": "Completed"},
-        fields=["procedure"])
-    return any(frappe.db.get_value("Job Search Procedure", x.procedure, "procedure_id")
-               in ("research-employer", "research-opening", "qualify") for x in rows)
-
-
 def _count(doctype, opportunity):
     return frappe.db.count(doctype, {"opportunity": opportunity})
 
@@ -170,11 +152,14 @@ def _validate_transition(deal, previous, next_stage):
             ) + "</ul>")
 
     if next_stage == "Qualified":
+        # Pursuit approval is a human decision. Qualification evidence belongs
+        # to the linked Jobs; no separate Opportunity research/procedure gate.
+        errors = _review_readiness_failures(deal)
+        if errors:
+            frappe.throw("Cannot qualify this Opportunity:<ul>" + "".join(
+                f"<li>{escape(message)}</li>" for message in errors
+            ) + "</ul>")
         require_decision(deal.name, "Pursue", ctx.get("decision"))
-        if not override and not (_has_research(deal) and _has_completed_research_procedure(deal)):
-            frappe.throw(
-                "Qualified requires cited research and a completed procedure or approved exception"
-            )
     required_activity = {
         "Applied": "Application",
         "Interviewing": "Interview",

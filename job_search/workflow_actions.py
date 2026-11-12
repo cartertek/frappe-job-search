@@ -3,7 +3,7 @@
 import frappe
 
 from job_search.permissions import require_approver, require_doc, require_operator, require_opportunity
-from job_search.workflow import _has_completed_research_procedure, _has_research
+from job_search.workflow import _review_readiness_failures
 
 
 def _decision(job, action, rationale):
@@ -127,8 +127,9 @@ def perform_action(opportunity, action, rationale=None, scope=None, search=None,
     if action in ("qualify", "mark_applied") and job.eligibility_status != "Eligible":
         frappe.throw("At least one currently valid Job must qualify before proceeding")
     if action == "qualify":
-        if not (_has_research(job) and _has_completed_research_procedure(job)):
-            frappe.throw("Complete cited research and a research procedure before qualifying")
+        errors = _review_readiness_failures(job)
+        if errors:
+            frappe.throw("At least one associated Job must qualify: " + "; ".join(errors[:5]))
         _decision(job, "Pursue", rationale)
     elif action == "accept_offer":
         if offer_details:
