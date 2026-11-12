@@ -76,7 +76,7 @@ class OpportunityActivityTests(unittest.TestCase):
         self.assertNotIn('action == "mark_applied" and job.eligibility_status',action)
         self.assertNotIn('require_decision(deal.name, "Authorize Application"',workflow)
         self.assertIn('require_approver()  # Protect direct ORM / REST',workflow)
-        self.assertIn('doc.applied_on = max(dates)',workflow)
+        self.assertIn('doc.applied_on = max(application_dates) if application_dates else None',workflow)
         api=(BASE/'job_search/api.py').read_text()
         self.assertIn('offer_details=None, activity=None',api)
 

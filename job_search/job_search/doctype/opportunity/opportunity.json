@@ -25,6 +25,7 @@
     "deadline",
     "applied",
     "applied_on",
+    "common_contact",
     "next_action_on",
     "closure_reason",
     "offer_details",
@@ -154,7 +155,22 @@
     {
       "fieldname": "applied_on",
       "label": "Applied On",
-      "fieldtype": "Date"
+      "fieldtype": "Date",
+      "read_only": 1,
+      "in_list_view": 1,
+      "in_standard_filter": 1,
+      "search_index": 1,
+      "description": "Derived: most recent Application Activity date. Blank when no Application activity exists."
+    },
+    {
+      "fieldname": "common_contact",
+      "label": "Common Contact",
+      "fieldtype": "Data",
+      "read_only": 1,
+      "in_list_view": 1,
+      "in_standard_filter": 1,
+      "search_index": 1,
+      "description": "Most frequent non-empty Activity Contact (ties resolved alphabetically)."
     },
     {
       "fieldname": "next_action_on",

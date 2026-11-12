@@ -193,7 +193,6 @@ def record_application(opportunity, *, submission_method, submitted_on, authoriz
     application.insert()
     deal = require_opportunity(opportunity, "write")
     deal.latest_application = application.name
-    deal.applied_on = submitted_on
     deal.save()
     return application.name
 
