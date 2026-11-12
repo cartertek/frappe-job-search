@@ -30,6 +30,9 @@ def after_migrate():
     migrate_legacy_search_filters()
     migrate_heuristics_table()
     migrate_active_in_past()
+    from job_search.applied_sync import ensure_applied_sync
+
+    ensure_applied_sync()
     ensure_workspace()
     from job_search.desktop_integrity import audit_desktop_layouts
 

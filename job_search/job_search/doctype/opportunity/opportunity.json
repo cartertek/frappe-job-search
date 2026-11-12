@@ -23,6 +23,7 @@
     "priority",
     "discovered_on",
     "deadline",
+    "applied",
     "applied_on",
     "next_action_on",
     "closure_reason",
@@ -138,6 +139,16 @@
       "fieldname": "deadline",
       "label": "Deadline",
       "fieldtype": "Date"
+    },
+    {
+      "fieldname": "applied",
+      "label": "Applied",
+      "fieldtype": "Check",
+      "default": "0",
+      "read_only": 1,
+      "in_list_view": 1,
+      "in_standard_filter": 1,
+      "description": "Derived from the presence of an Application activity; not editable."
     },
     {
       "fieldname": "applied_on",

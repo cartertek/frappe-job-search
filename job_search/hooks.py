@@ -22,6 +22,7 @@ add_to_apps_screen = [
 
 after_install = "job_search.setup.after_install"
 after_migrate = "job_search.setup.after_migrate"
+before_uninstall = "job_search.applied_sync.drop_applied_triggers"
 fixtures = [{"dt": "Role", "filters": [["name", "in", ["Job Search Operator", "Job Search Approver"]]]}]
 
 doc_events = {
