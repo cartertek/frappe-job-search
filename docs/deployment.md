@@ -12,6 +12,26 @@ application authorization and interview workflows. Do not use raw database
 writes for operational workflow stage changes; only the historical importer
 uses SQL to retain original record identifiers and timestamps.
 
+# Deployment and migration
+
+Install `job_search` on Frappe v16; no CRM is needed for the current platform. **Never** run a destructive DocType migration against production before validating it on an isolated copy of a current production backup.
+
+## Job/Opportunity split — issue #15
+
+Before migration, preserve a verified database + file backup and baseline counts/IDs for `Job Search Opportunity`, `Job Search Employer`, `Job Search Posting`, `Job Search Source`, `Job Search Research`, `Job Search Transition`, `Job Search Decision`, `Job Search Application`, `Job Search Interview`, `Job Search Task`, procedure executions, and memberships. The pre-sync patch `job_search.patches.v5_split_opportunities` renames the old job-like DocType into **Job** (retaining its existing IDs and linked descriptions). The after-migrate backfill creates matching **Opportunity** records and **Opportunity Job** child rows for each historical Job and restores Opportunity lifecycle data. All cross-links are checked; data is not merged based on employer name. The migration is idempotent through the `job_search:opportunity_split_v5` marker.
+
+Current Job availability defaults to **Unknown** unless separately verified Active; historical pursuit stages, decisions and annotations remain on the newly created Opportunities. Existing Posting rows receive a `job` link while retaining their Opportunity references. Job-specific sources/research may also be linked to Job without discarding historical Opportunity IDs. Applications/interviews/offers/tasks/transitions retain the same Opportunity document ID as before. No human decisions are created by migration.
+
+Run after the migration:
+
+```sh
+bench --site YOUR-SITE execute job_search.opportunity_migration.verify_opportunity_migration
+bench --site YOUR-SITE execute job_search.desktop_integrity.audit_desktop_layouts --kwargs '{"strict": True}'
+bench --site YOUR-SITE clear-cache
+```
+
+Compare the post-migration record counts and IDs with the backup, then open real migrated Job and Opportunity records, verify their historical linked records and permissions, and exercise the Search Results UI. Repeat `bench migrate` to ensure no duplication. The migration has been tested with a copy of 23 Jobs and their historical records; do not assume that the same verification covers new or future records without checking them.
+
 ## Desktop icon regression checks
 
 Frappe Desktop Icons mode has **two independent sources**: `Desktop Icon` records used to build the permitted boot icons, and each person's saved `Desktop Layout` (a snapshot of icon names, folders and ordering). A missing `Desktop Icon` or an invalid `parent_icon` can make an entry disappear even when the layout still lists it. Frappe's migration orphan cleanup only removes missing-file **standard** desktop icons; custom icons can disappear from view without being deleted.
