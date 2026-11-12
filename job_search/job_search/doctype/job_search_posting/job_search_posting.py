@@ -2,7 +2,7 @@ import frappe
 from frappe.model.document import Document
 from frappe.utils import now_datetime, nowdate
 
-from job_search.permissions import require_opportunity, require_job
+from job_search.permissions import require_job, require_opportunity
 from job_search.postings import content_hash
 
 

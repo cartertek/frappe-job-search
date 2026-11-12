@@ -1,3 +1,4 @@
+# ruff: noqa: E501  # Markdown content is literal source text; wrapping alters Wiki material.
 """Convert official Research Handbook to the independent Job / Opportunity model.
 
 Read an exported Frappe Wiki Document JSON array (name/route/owner/content).
@@ -29,7 +30,8 @@ def change(page, original):
     s=original
     if page=='start-here':
         anchor='## Full opportunity research task\n'
-        if anchor not in s:raise ValueError('start-here missing anchor')
+        if anchor not in s:
+            raise ValueError('start-here missing anchor')
         s=s.replace(anchor,'''## Where information belongs
 
 **Organization** (`Job Search Employer`) is the reusable employer record. **Job** (`Job`) is the particular opening and contains the complete original description, postings, filters/compensation, source dates, heuristic claims, and **Availability** (`Unknown`, `Active`, `Closed`, or independently `Rejected`). **Opportunity** (`Opportunity`) is the organization-level hiring pursuit: normally one per Organization, with multiple linked Jobs; create separate Opportunities for genuinely separate hiring teams or divisions. Opportunity owns research workflow, decisions, applications, interviews, offers, tasks, and scoped rejection. A single Opportunity may qualify for multiple Job Searches. A rejected Job becomes invalid without rejecting its Opportunity.
@@ -63,7 +65,8 @@ A **Ready-to-Review Opportunity** is not human **Qualified** until the actual hu
         s=s.replace('in Research Findings, not in a legacy claim field','in Opportunity Research Findings, not in a legacy Job claim field')
     elif page=='evidence-standards':
         anchor='## Historical validity versus current status\n'
-        if anchor not in s:raise ValueError('evidence standards missing anchor')
+        if anchor not in s:
+            raise ValueError('evidence standards missing anchor')
         s=s.replace(anchor,'''## Evidence storage and availability
 
 The **Job** is the record for a specific vacancy and its original description, Posting snapshots, recency, qualification facts and independent **Availability** (`Unknown`, `Active`, `Closed`, or `Rejected`). A Posting describes the state of one observed listing; a currently reachable webpage is not, by itself, proof of active hiring. Verify the specific opening before marking its Job Active. **Opportunity** is the surrounding Organization hiring pursuit and may include more than one Job. Rejected/Closed Jobs cannot qualify an Opportunity, but other genuinely qualifying Jobs may. The Opportunity retains its human pursuit status and historical decisions separately from the changing Job availability.
@@ -71,7 +74,8 @@ The **Job** is the record for a specific vacancy and its original description, P
 '''+anchor,1)
     elif page=='discovery-methods':
         anchor='## Strategy-led batching and inexpensive screening\n'
-        if anchor not in s:raise ValueError('discovery methods missing anchor')
+        if anchor not in s:
+            raise ValueError('discovery methods missing anchor')
         s=s.replace(anchor,'''## Reuse of Jobs and Opportunities
 
 Deduplicate **Jobs** by concrete requisition and source evidence. Reuse the existing **Opportunity** for the Organization by default; open a second only when a distinct hiring team/division or separate recruiting effort is evidenced. Link multiple Jobs to one Opportunity rather than fabricating duplicate pursuits. A Job may be associated with multiple Opportunities when actually justified. A Job Search matches an Opportunity based on its associated Jobs; per-Search exclusions apply to the Opportunity, while independently rejected Jobs remain invalid for qualification.
@@ -79,13 +83,15 @@ Deduplicate **Jobs** by concrete requisition and source evidence. Reuse the exis
 '''+anchor,1)
     elif page=='contact-research':
         anchor='## Evidence grades (working framework, not measured probabilities)\n'
-        if anchor not in s:raise ValueError('contact research missing anchor')
+        if anchor not in s:
+            raise ValueError('contact research missing anchor')
         s=s.replace(anchor,'''## Relationship to the Opportunity
 
 A private contact pathway is often **Job-specific**: evidence must link a person to the particular opening and must not be automatically transferred to unrelated Jobs. Store the cited quote, source and date on the relevant Job heuristic claim; store the broader recruiting relationship and pursuit history on the **Opportunity**. When several Jobs belong to one hiring team, verify what each contact invitation actually covers before reusing it. A conversation's research evidence does not authorize outreach or an application; those decisions belong to the human-controlled Opportunity workflow.
 
 '''+anchor,1)
-    else:raise ValueError('Unexpected research handbook route: '+page)
+    else:
+        raise ValueError('Unexpected research handbook route: '+page)
     # Reject leftover obsolete statements that would contradict the new schema.
     obsolete=('Job Globally','Job Search Opportunity.job_description','Job status progression','The Job has one Status field','the Job status to Rejected without globally')
     residual=[phrase for phrase in obsolete if phrase in s]
@@ -118,4 +124,5 @@ def main():
     for before,after in zip(documents,rewritten):
         print(after['route'],len(before['content']),'->',len(after['content']))
 
-if __name__=='__main__':main()
+if __name__=='__main__':
+    main()

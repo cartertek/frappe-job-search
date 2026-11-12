@@ -41,7 +41,9 @@ class AgentRejection(unittest.TestCase):
             spec.loader.exec_module(self.module)
 
     def test_agent_rejects_job_without_human_decision(self):
-        result = self.module.perform_action('job1','reject',rationale='Fails remote requirement',scope='opportunity')
+        result = self.module.perform_action(
+            'job1', 'reject', rationale='Fails remote requirement', scope='opportunity'
+        )
         self.assertEqual('Rejected', result['status'])
         self.assertEqual(1, self.job.globally_rejected)
         self.assertIn('operator', self.calls)

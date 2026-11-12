@@ -34,7 +34,10 @@ def migrate_opportunities_v5():
     opp_cols = set(frappe.db.get_table_columns('Opportunity'))
     missing = set(shared) - job_cols - {'idx'}
     if missing:
-        frappe.throw('Cannot migrate Opportunities; missing historical columns: ' + ', '.join(sorted(missing)))
+        frappe.throw(
+            'Cannot migrate Opportunities; missing historical columns: '
+            + ', '.join(sorted(missing))
+        )
     fields = [f for f in shared if f in job_cols and f in opp_cols]
     select = [f'j.`{f}`' for f in fields]
     if 'rejection_scope' in fields:
@@ -133,6 +136,9 @@ def verify_opportunity_migration():
         if rows:
             orphans[dt] = rows
     if missing or missing_links or orphans:
-        frappe.throw(f'Opportunity migration integrity failed: missing={missing}, links={missing_links}, orphans={orphans}')
+        frappe.throw(
+            f'Opportunity migration integrity failed: missing={missing}, '
+            f'links={missing_links}, orphans={orphans}'
+        )
     return {'jobs': frappe.db.count('Job'), 'opportunities': frappe.db.count('Opportunity'),
             'opportunity_job_links': frappe.db.count('Opportunity Job')}

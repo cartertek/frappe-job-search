@@ -42,6 +42,7 @@ def apply(document_json):
 
 def main():
     import argparse
+
     import frappe
 
     p=argparse.ArgumentParser()
@@ -61,4 +62,5 @@ def main():
     finally:
         frappe.destroy()
 
-if __name__=='__main__':main()
+if __name__=='__main__':
+    main()

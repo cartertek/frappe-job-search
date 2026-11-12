@@ -41,7 +41,9 @@ def find_desktop_layout_issues(icons, layouts, private_workspaces=()):
                 issues.append({"kind": "unavailable_database_parent", "user": user, "icon": identity,
                                "parent": parent})
             parent = row.get("parent_icon")
-            if parent and parent not in {r.get("name") for r in rows} and parent not in {r.get("label") for r in rows}:
+            names = {r.get("name") for r in rows}
+            labels = {r.get("label") for r in rows}
+            if parent and parent not in names and parent not in labels:
                 issues.append({"kind": "missing_saved_parent", "user": user, "icon": identity,
                                "parent": parent})
     return issues

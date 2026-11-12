@@ -23,11 +23,16 @@ class WikiIssue15Tests(unittest.TestCase):
                          '# Wiki\n\n## A\n\nNew A\n\n## B\n\nOriginal B\n')
 
     def test_wiki_patch_tracks_original_hash(self):
-        old='# Contact Research\n\n## Evidence grades (working framework, not measured probabilities)\n\nExample\n'
+        old=(
+            '# Contact Research\n\n'
+            '## Evidence grades (working framework, not measured probabilities)\n\n'
+            'Example\n'
+        )
         entries=wiki.convert([{'name':'test','route':'docs/research-handbook/contact-research',
                                 'owner':'assistant','content':old}])
         self.assertEqual(entries[0]['original_sha256'],hashlib.sha256(old.encode()).hexdigest())
         self.assertIn('Relationship to the Opportunity',entries[0]['content'])
         self.assertNotEqual(entries[0]['content'],old)
 
-if __name__=='__main__':unittest.main()
+if __name__=='__main__':
+    unittest.main()

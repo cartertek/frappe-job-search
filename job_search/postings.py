@@ -5,8 +5,8 @@ import hashlib
 import frappe
 from frappe.utils import now_datetime, nowdate
 
-from job_search.permissions import require_doc, require_operator
 from job_search.opportunities import opportunities_for_job
+from job_search.permissions import require_doc, require_operator
 
 
 def content_hash(description):

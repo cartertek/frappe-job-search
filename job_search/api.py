@@ -78,8 +78,8 @@ def add_research(title, evidence_class, content, category="General Observations"
         if organization != deal.organization:
             frappe.throw("Research employer differs from opportunity employer")
     if job:
-        from job_search.permissions import require_job
         from job_search.opportunities import opportunities_for_job
+        from job_search.permissions import require_job
         role=require_job(job,'read')
         if organization and role.organization != organization:
             frappe.throw('Job belongs to another Organization')
@@ -268,8 +268,11 @@ def get_opportunity_context(opportunity):
     ):
         related[key] = frappe.get_list(doctype, filters={"opportunity": opportunity},
                                        fields=["name", "modified"], limit_page_length=500)
-    related['jobs'] = frappe.get_list('Job',filters={'name':['in',[row.job for row in deal.jobs] or ['__none__']]},
-        fields=['name','job_title','availability_status'],limit_page_length=500)
+    job_names = [row.job for row in deal.jobs] or ['__none__']
+    related['jobs'] = frappe.get_list(
+        'Job', filters={'name': ['in', job_names]},
+        fields=['name', 'job_title', 'availability_status'], limit_page_length=500,
+    )
     return success({"opportunity": deal.as_dict(), "employer": employer.as_dict(), **related})
 
 

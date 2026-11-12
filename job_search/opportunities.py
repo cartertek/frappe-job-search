@@ -30,7 +30,10 @@ def recheck_for_job(doc, method=None):
             continue
         eligible = not _review_readiness_failures(opportunity)
         desired = 'Eligible' if eligible else 'Needs Research'
-        if opportunity.eligibility_status == desired and (eligible or opportunity.status != 'Ready to Review'):
+        if (
+            opportunity.eligibility_status == desired
+            and (eligible or opportunity.status != 'Ready to Review')
+        ):
             continue
         if not eligible and opportunity.status == 'Ready to Review':
             opportunity.status = 'Researching'
