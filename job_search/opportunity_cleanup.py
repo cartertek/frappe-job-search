@@ -202,6 +202,12 @@ def reconcile_opportunities_v6():
         return
     if not frappe.db.exists('DocType', 'Opportunity Consolidation'):
         return
+    # A brand-new installation has no historical records to reconcile. Its
+    # dedicated assistant account may not exist yet; no identity switch is
+    # needed when there is literally no migration data to edit.
+    if not frappe.db.count('Job') and not frappe.db.count('Opportunity'):
+        frappe.db.set_default(MARKER, '1')
+        return
     previous = frappe.session.user
     if not frappe.db.exists('User', ASSISTANT):
         frappe.throw('Dedicated assistant account is required for opportunity cleanup')

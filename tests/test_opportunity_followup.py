@@ -27,6 +27,7 @@ class OpportunityFollowupContract(unittest.TestCase):
         self.assertIn('frappe.db.delete(\'Opportunity\'',source)
         self.assertIn('frappe.db.set_default(MARKER',source)
         self.assertIn('reconcile_opportunities_v6()',(BASE/'job_search/setup/__init__.py').read_text())
+        self.assertIn("not frappe.db.count('Job') and not frappe.db.count('Opportunity')",source)
 
     def test_friendly_names_are_used_in_errors_and_dialogs(self):
         helper=(BASE/'job_search/display.py').read_text()
