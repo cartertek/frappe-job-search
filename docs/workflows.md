@@ -8,7 +8,7 @@ The **Opportunity** owns the pursuit lifecycle. The **Job** owns only job-specif
 | --- | --- | --- |
 | Discovered | Begin Research → Researching | Operator begins investigating the Organization/hiring effort |
 | Researching | Ready to Review | A configured, enabled Active Job Search and **at least one currently valid linked Job** pass all evidence and search requirements |
-| Ready to Review | Mark Qualified → Qualified | Signed-in human Pursue decision with rationale, cited Opportunity research and completed research/qualification procedure (or explicitly approved exception) |
+| Ready to Review | Mark Qualified → Qualified | Signed-in human Pursue decision (rationale optional), cited Opportunity research and completed research/qualification procedure (or explicitly approved exception) |
 | Ready to Review | Needs Research → Researching | Further evidence needed; no human decision fabricated |
 | Qualified | Mark Applied → Applied | Human Authorize Application decision, saved confirmed Opportunity-level application with submitted materials/date |
 | Applied | Begin Interviewing → Interviewing | At least one Opportunity-level interview record |
