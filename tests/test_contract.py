@@ -26,6 +26,7 @@ EXPECTED = {
     "Opportunity",
     "Job",
     "Opportunity Job",
+    "Opportunity Consolidation",
     "Job Search Employer",
     "Job Search Task",
     "Job Search Search",
@@ -44,8 +45,8 @@ CHILD = {
     "Job Search Interview Contact",
     "Job Search Membership",
     "Job Search Heuristic Value",
-    "Assigned Research Strategy",    "Opportunity Job",
-
+    "Assigned Research Strategy",
+    "Opportunity Job",
 }
 
 
