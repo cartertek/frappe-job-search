@@ -1,4 +1,5 @@
 """Issue #15 follow-up: migration safety and friendly user messages."""
+import ast
 import json
 import unittest
 from pathlib import Path
@@ -41,6 +42,14 @@ class OpportunityFollowupContract(unittest.TestCase):
         search_ui=(BASE/'job_search/job_search/doctype/job_search_search/job_search_search.js').read_text()
         self.assertIn('qualifying_job_labels',search_ui)
         self.assertIn('organization_name',search_ui)
+
+    def test_mixed_preapproval_stages_are_resolved_conservatively(self):
+        code=(BASE/'job_search/opportunity_cleanup.py').read_text()
+        ast.parse(code)
+        self.assertIn("{'Discovered', 'Researching', 'Ready to Review'}",code)
+        self.assertIn("target.status = 'Researching'",code)
+        self.assertIn('Consolidated historical pursuit statuses',code)
+        self.assertIn('last_decision_record',code)
 
     def test_archive_is_operator_read_only(self):
         archived=json.loads((BASE/'job_search/job_search/doctype/opportunity_consolidation/opportunity_consolidation.json').read_text())
