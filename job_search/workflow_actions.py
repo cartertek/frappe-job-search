@@ -12,7 +12,8 @@ def _decision(job, action, rationale):
         "decision": action, "rationale": rationale,
     }).insert()
     job.db_set("last_decision_record", decision.name, update_modified=False)
-    job.db_set("last_decision", f"{action}: {rationale}"[:1000], update_modified=False)
+    job.db_set("last_decision", (f"{action}: {rationale}" if rationale else action)[:1000],
+               update_modified=False)
     return decision
 
 
@@ -114,7 +115,7 @@ def perform_action(opportunity, action, rationale=None, scope=None, search=None,
         return {"status": job.status, "scope": scope}
     if action not in allowed.get(job.status, set()):
         frappe.throw("Action is not available from this status")
-    if action in ("qualify", "accept_offer") and not rationale:
+    if action == "accept_offer" and not rationale:
         frappe.throw("Decision rationale is required")
     target = {
         "begin_research": "Researching", "ready_to_review": "Ready to Review",

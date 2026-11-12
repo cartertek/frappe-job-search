@@ -42,7 +42,7 @@ frappe.ui.form.on('Opportunity', {
     if (status === 'Discovered') primary('Begin Research','begin_research');
     if (status === 'Researching') primary('Ready to Review','ready_to_review');
     if (status === 'Ready to Review') {
-      primary('Mark Qualified','qualify',reason);
+      primary('Mark Qualified','qualify');
       frm.add_custom_button(__('Needs Research'),()=>run('needs_research'));
     }
     if (status === 'Qualified') primary('Mark Applied','mark_applied');

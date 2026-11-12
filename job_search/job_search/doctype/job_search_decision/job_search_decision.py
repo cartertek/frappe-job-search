@@ -9,7 +9,7 @@ class JobSearchDecision(Document):
     def before_insert(self):
         require_approver()
         require_opportunity(self.opportunity, "read")
-        if not (self.rationale or "").strip():
+        if self.decision != "Pursue" and not (self.rationale or "").strip():
             frappe.throw("Authorization rationale required")
         self.authorized_by = frappe.session.user
         self.authorized_at = now_datetime()

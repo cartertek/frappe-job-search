@@ -121,8 +121,10 @@ class AgentRejection(unittest.TestCase):
 
     def test_qualification_still_requires_approver(self):
         self.job.status = 'Ready to Review'
-        self.module._decision = lambda *args: None
-        self.module.perform_action('job1', 'qualify', rationale='Approved')
+        decisions=[]
+        self.module._decision = lambda *args: decisions.append(args)
+        self.module.perform_action('job1', 'qualify')
+        self.assertEqual(decisions,[(self.job, 'Pursue', '')])
         self.assertIn('approver', self.calls)
         self.assertNotIn('operator', self.calls)
 
