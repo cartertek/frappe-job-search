@@ -160,10 +160,11 @@ def _merge_one(source, canonical):
 
 
 def _tag(opportunity, tag):
-    if not frappe.db.exists('Tag Link', {'document_type': 'Opportunity',
-                                         'document_name': opportunity, 'tag': tag}):
-        frappe.get_doc({'doctype': 'Tag Link', 'document_type': 'Opportunity',
-                        'document_name': opportunity, 'tag': tag}).insert(ignore_permissions=True)
+    # Frappe stores tags twice: Tag Link AND the _user_tags display/search
+    # column. Inserting Tag Link alone leaves tags invisible on the form.
+    from frappe.desk.doctype.tag.tag import DocTags
+
+    DocTags('Opportunity').add(opportunity, tag)
 
 
 def _availability_from_postings():
@@ -197,6 +198,14 @@ def reconcile_opportunities_v6():
         for organization, items in groups.items():
             company_name = frappe.db.get_value('Job Search Employer', organization,
                                                'organization_name') or organization
+            # Only merge historical one-Job/one-Opportunity records. A genuine
+            # distinct division created after v5 must never be coalesced.
+            if len(items) > 1 and any(
+                not frappe.db.exists('Job', d.name) or
+                d.opportunity_name != frappe.db.get_value('Job', d.name, 'job_title')
+                for d in items
+            ):
+                frappe.throw(f'Cannot auto-merge distinct hiring efforts at {company_name}')
             if len(items) > 1 and not _compatible(items):
                 frappe.throw(f'Opportunity consolidation needs review for {company_name}: '
                              'incompatible historical decisions or workflows')
