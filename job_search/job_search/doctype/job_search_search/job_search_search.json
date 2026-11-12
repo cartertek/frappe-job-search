@@ -129,7 +129,7 @@
     },
     {
       "fieldname": "overrides",
-      "label": "Explicit Job Overrides",
+      "label": "Explicit Opportunity Overrides",
       "fieldtype": "Table",
       "options": "Job Search Membership"
     }

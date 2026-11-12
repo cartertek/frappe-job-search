@@ -167,6 +167,9 @@ class SchemaTest(unittest.TestCase):
         child=json.loads((BASE/'job_search_membership/job_search_membership.json').read_text())
         field=next(f for f in child['fields'] if f['fieldname']=='opportunity')
         self.assertEqual(field['options'],'Opportunity')
+        search_doc=json.loads((BASE/'job_search_search/job_search_search.json').read_text())
+        self.assertEqual(next(f for f in search_doc['fields'] if f['fieldname']=='overrides')['label'],
+                         'Explicit Opportunity Overrides')
         opp=json.loads((BASE/'opportunity/opportunity.json').read_text())
         self.assertEqual(next(f for f in opp['fields'] if f['fieldname']=='jobs')['options'],
                          'Opportunity Job')
