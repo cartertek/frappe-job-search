@@ -241,6 +241,10 @@ def validate_deal(doc, method=None):
     for index, row in enumerate(activities, start=1):
         row.idx = index
     doc.activity_log = activities
+    # The field is a database-synchronized, filterable snapshot, not a manual
+    # pursuit status. Set it on ORM saves too so the in-memory document and
+    # database agree even while Frappe is still persisting child rows.
+    doc.applied = 1 if any(row.type == "Application" for row in activities) else 0
     before = doc.get_doc_before_save() if not doc.is_new() else None
     previous = before.status if before else None
     status = doc.status or (previous if previous else "Discovered")
