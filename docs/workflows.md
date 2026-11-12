@@ -42,3 +42,9 @@ Every Opportunity includes an editable **Activity Log** child table with **Date*
 Before **Mark Applied**, **Begin Interviewing**, or **Accept Offer**, the system checks for a matching Activity Log row (respectively **Application**, **Interview**, **Acceptation**). If no row exists, the form prompts for Date (default today), optional Contact, Platform and Notes; the matching Type is set automatically. The new activity and stage transition are saved together. If the required row already exists, there is no extra activity prompt. For Accept Offer, the existing offer details and human-approval rationale dialog is retained, and the activity fields are included only when Acceptation is missing. Direct REST/ORM status transitions enforce the same activity requirement.
 
 Mark Applied requires the actual human approver and a dated Application activity, not a separate approval or detailed submission record. Optional detailed application records remain available. Begin Interviewing still requires the existing interview record, and Accept Offer retains its human acceptance and offer-details requirements.
+
+## Rejection activities and log order
+
+Rejecting a Job automatically records one **Rejection** activity on each associated Opportunity, dated today, with the rejection reason in **Notes** (no prompt and no Contact/Platform values). Opportunity rejections, including Search-only exclusions, follow the same rule. If the Opportunity already contains a Rejection activity, no additional Rejection row is generated. The independently rejected Job retains its own availability status and reason; an Opportunity Search-only rejection does not globally reject the pursuit.
+
+Manually created Activity Log rows start with **Type blank** and require an explicit Type selection. The Activity Log displays in **Date ascending** order (oldest first), and this order is preserved on saving, including updates made through the API.
