@@ -16,7 +16,7 @@ The **Opportunity** owns the pursuit lifecycle. The **Job** owns only job-specif
 | Active stages | Reject with scope | Operator must record rationale and choose Search Only, Opportunity Globally or Entire Organization |
 | Rejected | Reopen → Researching | Operator reason; does not undo Organization rejection or unrelated Search exclusions |
 
-All transitions run through Frappe server hooks. Stage history and signed human decisions are retained. Creating an application, interview, or offer never automatically creates a human approval.
+All transitions run through Frappe server hooks. Stage history and signed human decisions are retained. Creating an application, interview, or offer never automatically creates a human approval. **Qualified** is strictly the signed-in human's Pursue decision and does not recheck research or eligibility after Ready to Review.
 
 ## Ready-to-Review qualification
 
