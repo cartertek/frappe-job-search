@@ -33,6 +33,12 @@ def migrate_opportunities_v5():
     job_cols = set(frappe.db.get_table_columns('Job'))
     opp_cols = set(frappe.db.get_table_columns('Opportunity'))
     missing = set(shared) - job_cols - {'idx'}
+    if missing and frappe.db.count('Job') == 0:
+        # A fresh installation has the *new* Job schema, without historical
+        # pursuit columns. There is no legacy data to copy or transform.
+        # Do not treat a partially upgraded populated Job table as fresh.
+        frappe.db.set_default(MARKER, '1')
+        return
     if missing:
         frappe.throw(
             'Cannot migrate Opportunities; missing historical columns: '

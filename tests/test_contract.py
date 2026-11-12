@@ -191,6 +191,7 @@ class SchemaTest(unittest.TestCase):
         migration=(APP/'opportunity_migration.py').read_text()
         self.assertIn('verify_opportunity_migration()',migration)
         self.assertIn("availability_status='Unknown'",migration)
+        self.assertIn("missing and frappe.db.count('Job') == 0",migration)
         self.assertNotIn("THEN 'Rejected'",migration)
         self.assertIn('Job Search Transition',migration)
         self.assertIn('Job Search Decision',migration)
