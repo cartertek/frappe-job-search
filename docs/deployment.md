@@ -19,7 +19,7 @@ Frappe Desktop Icons mode has **two independent sources**: `Desktop Icon` record
 After any deployment/migration involving Desk, apps, desktop icons, or workspaces, run the read-only smoke check:
 
 ```sh
-bench --site YOUR-SITE execute job_search.desktop_integrity.audit_desktop_layouts --kwargs '{"strict": true}'
+bench --site YOUR-SITE execute job_search.desktop_integrity.audit_desktop_layouts --kwargs '{"strict": True}'
 ```
 
 A nonzero exit code indicates a broken icon parent, a saved icon without an accessible backing icon, or an icon not shared with its layout owner. **Do not reset a user's layout to fix this.** Back up the site and reconcile the `Desktop Icon` and *that user's* `Desktop Layout` by stable icon name, preserving position and folder, using the assistant's own account for any authorized edit; never impersonate a user or Administrator. For live migrations `after_migrate` runs the same audit in warning-only mode so upgrades don't fail because an unrelated private layout is stale. The app's idempotent legacy parent repair addresses the two known aliases `Frappe Framework` → `Framework` and `Frappe Job Search` → top-level `Job Search`.
