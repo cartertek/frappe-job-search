@@ -17,13 +17,14 @@ def _decision(job, action, rationale):
 
 
 def perform_action(opportunity, action, rationale=None, scope=None, search=None, offer_details=None):
-    if action in ("reject", "reopen", "ready_to_review", "needs_research"):
+    if action in ("reject", "reopen", "begin_research", "ready_to_review", "needs_research"):
         require_operator()
     else:
         require_approver()
     job = require_opportunity(opportunity, "write")
     rationale = (rationale or "").strip()
     allowed = {
+        "Discovered": {"begin_research"},
         "Researching": {"ready_to_review"},
         "Ready to Review": {"needs_research", "qualify"},
         "Qualified": {"mark_applied"},
@@ -31,23 +32,29 @@ def perform_action(opportunity, action, rationale=None, scope=None, search=None,
         "Interviewing": {"accept_offer"},
     }
     if action == "reopen":
-        if job.status != "Rejected":
-            frappe.throw("Only Rejected jobs can be reopened")
+        if job.status != "Rejected" and job.rejection_scope != "Search Only":
+            frappe.throw("Only rejected or search-excluded Opportunities can be reopened")
         if not rationale:
             frappe.throw("Reopening reason is required")
         if frappe.db.get_value("Job Search Employer", job.organization, "globally_rejected"):
             frappe.throw(
                 "The organization is globally rejected; resolve that rejection before reopening this Job"
             )
-        # Undo only this Job's rejection. Other search exclusions remain intact.
+        # Undo only this Opportunity's own rejection. Other search exclusions remain intact.
         if job.rejection_scope == "Search Only" and job.rejection_search:
             query = require_doc("Job Search Search", job.rejection_search, "write")
             for row in list(query.overrides):
-                if row.job == job.name and row.override == "Exclude":
+                if row.opportunity == job.name and row.override == "Exclude":
                     query.remove(row)
             query.save()
-        job.globally_rejected = 0
-        job.status = "Researching"
+        if job.rejection_scope != "Search Only" or job.status == "Rejected":
+            job.globally_rejected = 0
+            job.status = "Researching"
+        # Search-only reversal must not reset a pursuit that is still valid in
+        # another matching Search. Clear the displayed scope, retain audit.
+        job.rejection_scope = ""
+        job.rejection_search = None
+        job.rejection_reason = None
         previous_context = getattr(frappe.flags, "job_search_transition_context", None)
         frappe.flags.job_search_transition_context = {
             "deal": job.name,
@@ -61,28 +68,28 @@ def perform_action(opportunity, action, rationale=None, scope=None, search=None,
         job.add_comment("Comment", f"Reopened for research: {rationale}")
         return {"status": job.status, "opportunity": job.name}
     if action == "reject":
-        if scope not in ("search", "job", "organization"):
+        if scope not in ("search", "opportunity", "organization"):
             frappe.throw("Choose a rejection scope")
         if not rationale:
             frappe.throw("Rejection rationale is required")
         if scope == "search":
             search = search or job.active_job_search
             if not search:
-                frappe.throw("Select a search or set the Job's Active Job Search before rejecting")
+                frappe.throw("Select a search or set the Opportunity's Qualification Search before rejecting")
             query = require_doc("Job Search Search", search, "write")
             for row in list(query.overrides):
-                if row.job == job.name:
+                if row.opportunity == job.name:
                     query.remove(row)
-            query.append("overrides", {"job": job.name, "override": "Exclude"})
+            query.append("overrides", {"opportunity": job.name, "override": "Exclude"})
             query.save()
             job.rejection_scope = "Search Only"
             job.rejection_search = search
             job.rejection_reason = rationale
-            if job.status not in ("Rejected", "Accepted"):
-                job.status = "Rejected"
+            # A Search-only exclusion is not a global rejection or lifecycle
+            # closure: other Job Searches can still match and pursue this Opportunity.
             job.save()
-        elif scope == "job":
-            job.rejection_scope = "Job Globally"
+        elif scope == "opportunity":
+            job.rejection_scope = "Opportunity Globally"
             job.rejection_search = None
             job.rejection_reason = rationale
             job.globally_rejected = 1
@@ -103,18 +110,20 @@ def perform_action(opportunity, action, rationale=None, scope=None, search=None,
         # Research rejection is an operator action, not a human authorization.
         # Record its rationale under the actual signed-in actor, without creating
         # a Job Search Decision (which requires an approver).
-        job.add_comment("Comment", f"Research rejection ({scope}): {rationale}")
+        job.add_comment("Comment", f"Opportunity rejection ({scope}): {rationale}")
         return {"status": job.status, "scope": scope}
     if action not in allowed.get(job.status, set()):
         frappe.throw("Action is not available from this status")
     if action in ("qualify", "accept_offer") and not rationale:
         frappe.throw("Decision rationale is required")
     target = {
-        "ready_to_review": "Ready to Review",
+        "begin_research": "Researching", "ready_to_review": "Ready to Review",
         "needs_research": "Researching", "qualify": "Qualified",
         "mark_applied": "Applied", "begin_interviewing": "Interviewing",
         "accept_offer": "Accepted",
     }[action]
+    if action in ("qualify", "mark_applied") and job.eligibility_status != "Eligible":
+        frappe.throw("At least one currently valid Job must qualify before proceeding")
     if action == "qualify":
         if not (_has_research(job) and _has_completed_research_procedure(job)):
             frappe.throw("Complete cited research and a research procedure before qualifying")

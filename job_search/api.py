@@ -42,27 +42,33 @@ def _transition_context(value):
 
 
 @frappe.whitelist()
-def register_opportunity(employer, title, source_url=None, description=None,
-                         requisition_id=None, location=None, source_name="Employer website"):
-    return success(services.register_opportunity(
-        employer=employer, title=title, source_url=source_url, description=description,
-        requisition_id=requisition_id, location=location, source_name=source_name,
-    ))
+def register_opportunity(employer, name=None):
+    """Create or locate an organization-level Opportunity."""
+    return success(services.register_opportunity(employer=employer, name=name))
 
 
 @frappe.whitelist()
-def capture_posting(opportunity, description, source_name, source_url=None,
-                    posting_title=None, requisition_id=None, snapshot=None):
+def register_job(employer, title, source_url=None, description=None,
+                 requisition_id=None, location=None, source_name="Employer website", opportunity=None):
+    return success(services.register_job(
+        employer=employer,title=title,source_url=source_url,description=description,
+        requisition_id=requisition_id,location=location,source_name=source_name,
+        opportunity=opportunity))
+
+
+@frappe.whitelist()
+def capture_posting(job, description, source_name, source_url=None,
+                    posting_title=None, requisition_id=None, snapshot=None, opportunity=None):
     return success(capture_posting_record(
-        opportunity, description=description, source_name=source_name,
-        source_url=source_url, posting_title=posting_title,
-        requisition_id=requisition_id, snapshot=snapshot,
-    ))
+        job,description=description,source_name=source_name,source_url=source_url,
+        posting_title=posting_title,requisition_id=requisition_id,snapshot=snapshot,
+        opportunity=opportunity))
 
 
 @frappe.whitelist()
 def add_research(title, evidence_class, content, category="General Observations",
-                 opportunity=None, organization=None, sources=None, procedure_execution=None):
+                 opportunity=None, organization=None, sources=None, procedure_execution=None,
+                 job=None):
     require_operator()
     if not opportunity and not organization:
         frappe.throw("Research must relate to an employer or opportunity")
@@ -71,6 +77,15 @@ def add_research(title, evidence_class, content, category="General Observations"
         organization = organization or deal.organization
         if organization != deal.organization:
             frappe.throw("Research employer differs from opportunity employer")
+    if job:
+        from job_search.permissions import require_job
+        from job_search.opportunities import opportunities_for_job
+        role=require_job(job,'read')
+        if organization and role.organization != organization:
+            frappe.throw('Job belongs to another Organization')
+        organization=organization or role.organization
+        if opportunity and opportunity not in opportunities_for_job(job):
+            frappe.throw('Job is not associated with the selected Opportunity')
     links = []
     for item in _data(sources) or []:
         if isinstance(item, str):
@@ -89,7 +104,7 @@ def add_research(title, evidence_class, content, category="General Observations"
                 "source_type": item.get("source_type") or "Other",
                 "excerpt": item.get("excerpt"),
                 "publisher": item.get("publisher"),
-                "organization": organization, "opportunity": opportunity,
+                "organization": organization, "opportunity": opportunity, "job": job,
                 "verification_status": item.get("verification_status") or "Unverified",
                 "retrieved_on": now_datetime(),
             }).insert()
@@ -98,7 +113,7 @@ def add_research(title, evidence_class, content, category="General Observations"
         "doctype": "Job Search Research", "title": title, "content": content,
         "category": category, "evidence_class": evidence_class,
         "status": "Draft", "operator": frappe.session.user,
-        "organization": organization, "opportunity": opportunity,
+        "organization": organization, "opportunity": opportunity, "job": job,
         "procedure_execution": procedure_execution, "sources": links,
     }).insert()
     return success({"research": record.name, "sources": [x["source"] for x in links]})
@@ -148,7 +163,7 @@ def transition_opportunity(opportunity, stage, reason="", decision=None,
         "exception": exception, "override_decision": override_decision,
     }):
         deal.status = stage
-        deal.save()  # Job Search Opportunity validation hook protects every UI/REST save path.
+        deal.save()  # Opportunity validation hook protects every UI/REST save path.
     return success({"opportunity": deal.name, "stage": deal.status, "changed": True})
 
 
@@ -201,8 +216,8 @@ def get_research_queue(stale_after_days=90):
 @frappe.whitelist()
 def get_work_queue():
     require_operator()
-    deals = frappe.get_list("Job Search Opportunity", filters={},
-        fields=["name", "organization", "job_title", "status", "next_action_on",
+    deals = frappe.get_list("Opportunity", filters={},
+        fields=["name", "organization", "opportunity_name", "status", "next_action_on",
                 "deadline", "priority"], limit_page_length=500)
     tasks = frappe.get_list("Job Search Task", filters={"status": ["not in", ["Done", "Canceled"]]},
         fields=["name", "title", "due_date", "opportunity", "status"],
@@ -220,8 +235,8 @@ def get_work_queue():
 def get_company_dossier(organization):
     require_operator()
     company = require_doc("Job Search Employer", organization)
-    deals = frappe.get_list("Job Search Opportunity", filters={"organization": company.name},
-        fields=["name", "job_title", "status", "next_action_on"],
+    deals = frappe.get_list("Opportunity", filters={"organization": company.name},
+        fields=["name", "opportunity_name", "status", "next_action_on"],
         limit_page_length=500)
     postings = frappe.get_list("Job Search Posting", filters={"organization": company.name},
         fields=["name", "opportunity", "posting_title", "retrieved_on", "status"],
@@ -232,8 +247,10 @@ def get_company_dossier(organization):
     sources = frappe.get_list("Job Search Source", filters={"organization": company.name},
         fields=["name", "opportunity", "title", "url", "verification_status"],
         limit_page_length=500)
+    jobs = frappe.get_list('Job', filters={'organization':company.name},
+        fields=['name','job_title','availability_status'],limit_page_length=500)
     return success({"organization": company.as_dict(), "opportunities": deals,
-                    "postings": postings, "research": research, "sources": sources})
+                    "jobs":jobs,"postings": postings, "research": research, "sources": sources})
 
 
 @frappe.whitelist()
@@ -251,7 +268,9 @@ def get_opportunity_context(opportunity):
     ):
         related[key] = frappe.get_list(doctype, filters={"opportunity": opportunity},
                                        fields=["name", "modified"], limit_page_length=500)
-    return success({"deal": deal.as_dict(), "employer": employer.as_dict(), **related})
+    related['jobs'] = frappe.get_list('Job',filters={'name':['in',[row.job for row in deal.jobs] or ['__none__']]},
+        fields=['name','job_title','availability_status'],limit_page_length=500)
+    return success({"opportunity": deal.as_dict(), "employer": employer.as_dict(), **related})
 
 
 @frappe.whitelist()
@@ -260,15 +279,17 @@ def publish_human_review(opportunity, posting_digest=None, research_digest=None,
                          job_description=None, research_findings=None,
                          research_recommendation=None, application_materials_for_review=None,
                          interview_preparation=None):
-    """Agent writes the human-facing summary to the Job Search Opportunity Data tab.
+    """Agent writes the human-facing summary to the Opportunity Data tab.
 
     Only explicitly supported review fields are changed, never stage or approvals.
     Existing values are preserved when an argument is omitted.
     """
     require_operator()
     deal = require_opportunity(opportunity, "write")
+    if job_description is not None or posting_digest is not None:
+        # Job descriptions are job-specific; never place them on the Opportunity.
+        frappe.throw('Publish a Job description on the Job record or capture its Posting')
     updates = {
-        "job_description": job_description if job_description is not None else posting_digest,
         "research_findings": research_findings if research_findings is not None else research_digest,
         "research_recommendation": research_recommendation
         if research_recommendation is not None
@@ -320,7 +341,7 @@ def request_human_review(opportunity, requested_action, reviewer, summary, due_d
     if not frappe.db.exists("User", {"name": reviewer, "enabled": 1}):
         frappe.throw("Reviewer must be an enabled user")
     task = frappe.get_doc({
-        "doctype": "Job Search Task", "title": f"Human review: {deal.job_title}",
+        "doctype": "Job Search Task", "title": f"Human review: {deal.opportunity_name}",
         "assigned_to": reviewer, "status": "Todo", "priority": "High",
         "due_date": due_date or deal.next_action_on or deal.deadline,
         "opportunity": deal.name,
@@ -329,7 +350,7 @@ def request_human_review(opportunity, requested_action, reviewer, summary, due_d
     from frappe.desk.form.assign_to import add as assign_deal
 
     assign_deal({
-        "doctype": "Job Search Opportunity", "name": deal.name, "assign_to": [reviewer],
+        "doctype": "Opportunity", "name": deal.name, "assign_to": [reviewer],
         "description": f"Job Search human review: {requested_action}",
     })
     return success({"opportunity": deal.name, "task": task.name,
@@ -369,32 +390,47 @@ def record_human_decision(opportunity, decision, rationale):
 def get_search_results(search):
     from job_search.searches import matching_jobs
 
-    return success({'search': search, 'jobs': matching_jobs(search)})
+    return success({'search':search,'opportunities':matching_jobs(search)})
 
 
 @frappe.whitelist()
-def set_search_membership(search, job, override):
+def set_search_membership(search, opportunity, override):
     from job_search.searches import set_membership
 
-    return success(set_membership(search, job, override))
+    return success(set_membership(search, opportunity, override))
 
 
 @frappe.whitelist()
-def reject_job(job):
-    from job_search.searches import reject_job as reject
+def reject_job(job, reason):
+    from job_search.opportunities import reject_job as reject
+    return success(reject(job, reason))
 
-    return success({'job': reject(job)})
+
+@frappe.whitelist()
+def reopen_job(job, reason):
+    from job_search.opportunities import reopen_job as reopen
+    return success(reopen(job, reason))
+
+
+@frappe.whitelist()
+def associate_job(opportunity, job):
+    from job_search.opportunities import associate_job as attach
+    return success(attach(opportunity, job))
 
 
 @frappe.whitelist()
 def reject_organization(organization):
-    from job_search.searches import reject_employer
-
-    return success({'organization': reject_employer(organization)})
+    frappe.throw('Reject an Organization through an Opportunity with scope=organization')
 
 
 @frappe.whitelist()
-def perform_job_action(opportunity, action, rationale=None, scope=None, search=None,
+def reopen_organization(organization, reason):
+    from job_search.opportunities import reopen_organization as reopen
+    return success(reopen(organization,reason))
+
+
+@frappe.whitelist()
+def perform_opportunity_action(opportunity, action, rationale=None, scope=None, search=None,
                        offer_details=None):
     from job_search.workflow_actions import perform_action
 

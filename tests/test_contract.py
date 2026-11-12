@@ -23,7 +23,9 @@ EXPECTED = {
     "Job Search Interview Contact",
     "Job Search Decision",
     "Job Search Transition",
-    "Job Search Opportunity",
+    "Opportunity",
+    "Job",
+    "Opportunity Job",
     "Job Search Employer",
     "Job Search Task",
     "Job Search Search",
@@ -32,6 +34,7 @@ EXPECTED = {
     "Job Search Heuristic Value",
     "Research Strategy",
     "Assigned Research Strategy",
+    "Opportunity Job",
 }
 CHILD = {
     "Job Search Heuristic",
@@ -41,7 +44,8 @@ CHILD = {
     "Job Search Interview Contact",
     "Job Search Membership",
     "Job Search Heuristic Value",
-    "Assigned Research Strategy",
+    "Assigned Research Strategy",    "Opportunity Job",
+
 }
 
 
@@ -97,7 +101,7 @@ class SchemaTest(unittest.TestCase):
                    and any(isinstance(d, ast.Call) and isinstance(d.func, ast.Attribute)
                            and d.func.attr == "whitelist" for d in n.decorator_list)}
         self.assertGreaterEqual(exposed, {
-            "register_opportunity", "capture_posting", "add_research", "start_procedure",
+            "register_opportunity", "register_job", "capture_posting", "add_research", "start_procedure",
             "complete_procedure_step", "complete_procedure", "transition_opportunity",
             "record_application", "record_interview", "create_follow_up",
             "get_work_queue", "get_research_queue", "get_follow_up_queue",
@@ -120,256 +124,65 @@ class SchemaTest(unittest.TestCase):
         self.assertEqual(labels, literal_eval(block))
         self.assertIn("clear_translation_cache()", setup)
 
-    def test_job_form_uses_five_part_layout_without_losing_data_fields(self):
-        data = json.loads((BASE / "job_search_opportunity" / "job_search_opportunity.json").read_text())
-        fields = data["fields"]
-        by_name = {field["fieldname"]: field for field in fields}
-        names = data["field_order"]
-        self.assertEqual(names, [f["fieldname"] for f in fields])
-        self.assertEqual(
-            [f["fieldname"] for f in fields if f["fieldtype"] == "Section Break"],
-            [
-                "overview_section",
-                "search_fields_section",
-                "job_details_section",
-                "research_heuristics_section",
-                "research_notes_section",
-            ],
-        )
-        self.assertEqual(
-            [(f["fieldname"], f.get("label")) for f in fields if f["fieldtype"] == "Column Break"],
-            [
-                ("overview_column", "Overview"),
-                ("metadata_column", "Metadata"),
-                ("search_compensation_column", None),
-            ],
-        )
-        self.assertNotIn("overview_job_title", by_name)
-        self.assertEqual(by_name["job_title"]["fieldtype"], "Data")
-        self.assertTrue(by_name["research_notes_section"]["collapsible"])
-        groups = {
-            "overview_column": {
-                "status",
-                "organization",
-                "job_title",
-                "rejection_scope",
-                "rejection_search",
-                "rejection_reason",
-            },
-            "metadata_column": {
-                "posting_url",
-                "requisition_id",
-                "priority",
-                "discovered_on",
-                "deadline",
-                "applied_on",
-                "next_action_on",
-                "closure_reason",
-                "offer_details",
-                "latest_posting",
-                "last_decision",
-                "last_decision_record",
-                "latest_application",
-                "interview_schedule",
-                "globally_rejected",
-            },
-            "search_fields_section": {
-                "active_job_search",
-                "location",
-                "employment_type",
-                "work_arrangement",
-                "seniority",
-                "compensation_not_given",
-                "compensation_min",
-                "compensation_max",
-                "currency",
-                "compensation_period",
-                "posted_on",
-                "last_active_on",
-                "last_active_source_url",
-            },
-            "job_details_section": {"job_description"},
-            "research_heuristics_section": {"research_heuristics"},
-            "research_notes_section": {
-                "research_findings",
-                "research_recommendation",
-                "application_materials_for_review",
-                "interview_preparation",
-                "human_feedback_and_instructions",
-            },
-        }
+    def test_job_and_opportunity_own_distinct_lifecycles(self):
+        job=json.loads((BASE/'job/job.json').read_text())
+        opportunity=json.loads((BASE/'opportunity/opportunity.json').read_text())
+        job_fields={f['fieldname']:f for f in job['fields']}
+        opp_fields={f['fieldname']:f for f in opportunity['fields']}
+        self.assertNotIn('status',job_fields)
+        self.assertEqual(job_fields['availability_status']['options'].splitlines(),
+                         ['Unknown','Active','Closed','Rejected'])
+        self.assertNotIn('availability_status',opp_fields)
+        self.assertIn('status',opp_fields)
+        self.assertNotIn('research_heuristics',opp_fields)
+        self.assertIn('research_heuristics',job_fields)
+        self.assertNotIn('job_description',opp_fields)
+        self.assertIn('job_description',job_fields)
+        self.assertIn('jobs',opp_fields)
+        self.assertEqual(opp_fields['jobs']['options'],'Opportunity Job')
+        self.assertIn('research_findings',opp_fields)
+        self.assertIn('latest_posting',job_fields)
+        self.assertNotIn('latest_posting',opp_fields)
+        self.assertIn('rejection_scope',opp_fields)
+        self.assertNotIn('rejection_scope',job_fields)
+        self.assertIn('job_rejection_reason',job_fields)
+        self.assertEqual(job['title_field'],'job_title')
+        self.assertEqual(opportunity['title_field'],'opportunity_name')
 
-        def slice_between(start, end):
-            return fields[names.index(start) + 1 : names.index(end)]
+    def test_opportunity_action_and_job_evidence_ui_are_separate(self):
+        job_js=(BASE/'job/job.js').read_text()
+        opp_js=(BASE/'opportunity/opportunity.js').read_text()
+        self.assertIn("frappe.ui.form.on('Job'",job_js)
+        self.assertIn('Load Heuristic Choices',job_js)
+        self.assertIn('Reject Job',job_js)
+        self.assertIn("frappe.ui.form.on('Opportunity'",opp_js)
+        for action in ('Begin Research','Ready to Review','Mark Qualified',
+                       'Needs Research','Mark Applied','Begin Interviewing','Accept Offer',
+                       'Reject Opportunity','Reopen Opportunity'):
+            self.assertIn(action,opp_js)
+        self.assertNotIn('Mark Applied',job_js)
+        self.assertNotIn('Load Heuristic Choices',opp_js)
 
-        self.assertEqual(
-            {f["fieldname"] for f in slice_between("overview_column", "metadata_column")},
-            groups["overview_column"],
-        )
-        self.assertEqual(
-            {f["fieldname"] for f in slice_between("metadata_column", "search_fields_section")},
-            groups["metadata_column"],
-        )
-        self.assertEqual(
-            {
-                f["fieldname"]
-                for f in slice_between("search_fields_section", "job_details_section")
-                if f["fieldtype"] != "Column Break"
-            },
-            groups["search_fields_section"],
-        )
-        self.assertEqual(
-            {f["fieldname"] for f in slice_between("job_details_section", "research_heuristics_section")},
-            groups["job_details_section"],
-        )
-        self.assertEqual(
-            {f["fieldname"] for f in slice_between("research_heuristics_section", "research_notes_section")},
-            groups["research_heuristics_section"],
-        )
-        self.assertEqual(
-            {f["fieldname"] for f in fields[names.index("research_notes_section") + 1 :]},
-            groups["research_notes_section"],
-        )
-        self.assertEqual(40, len([f for f in fields if f["fieldname"] in set().union(*groups.values())
-                                 and f["fieldname"] != "research_heuristics"]))
-        js = (BASE / "job_search_opportunity/job_search_opportunity.js").read_text()
-        css = (BASE / "job_search_opportunity/job_search_opportunity.css").read_text()
-        self.assertNotIn("render_overview_title", js)
-        self.assertIn('data-fieldname="metadata_column"', css)
-        self.assertIn("grid-template-columns", css)
-        self.assertIn(".job-value-record", css)
-        self.assertIn("grid-template-columns", css)
-        self.assertIn("white-space: pre-wrap", css)
-        self.assertIn('"research_heuristics": "templates/includes/job_heuristic_value_row.html"',
-                      (BASE / "job_search_opportunity/job_search_opportunity.py").read_text())
-        template = (APP / "templates/includes/job_heuristic_value_row.html").read_text()
-        self.assertIn("frappe.utils.escape_html(doc.quote", template)
-        self.assertIn('__("Heuristic")', template)
-        self.assertIn('__("Exact Quote")', template)
-        self.assertIn('__("Reasoning")', template)
-        self.assertIn('__("Source Date")', template)
-        self.assertIn("frappe.utils.escape_html(doc.reasoning", template)
-        self.assertIn("frappe.utils.escape_html(doc.source_date", template)
-        self.assertNotIn("sync_research_heuristics(frm);\n    if", js)
-        setup = (APP / "setup/__init__.py").read_text()
-        self.assertIn('frappe.client_cache.delete_value("doctype_form_meta::Job Search Opportunity")', setup)
+    def test_memberships_use_opportunities_not_jobs(self):
+        child=json.loads((BASE/'job_search_membership/job_search_membership.json').read_text())
+        field=next(f for f in child['fields'] if f['fieldname']=='opportunity')
+        self.assertEqual(field['options'],'Opportunity')
+        opp=json.loads((BASE/'opportunity/opportunity.json').read_text())
+        self.assertEqual(next(f for f in opp['fields'] if f['fieldname']=='jobs')['options'],
+                         'Opportunity Job')
+        member=json.loads((BASE/'opportunity_job/opportunity_job.json').read_text())
+        self.assertEqual(member['fields'][0]['options'],'Job')
 
-    def test_job_status_colors_match_form_and_list(self):
-        form = (BASE / "job_search_opportunity/job_search_opportunity.js").read_text()
-        listing = (BASE / "job_search_opportunity/job_search_opportunity_list.js").read_text()
-        colors = {
-            "Discovered": "gray", "Researching": "yellow", "Ready to Review": "blue",
-            "Qualified": "green", "Applied": "gray", "Interviewing": "green",
-            "Accepted": "gray", "Rejected": "red",
-        }
-        for status, color in colors.items():
-            entry = f"'{status}': '{color}'" if ' ' in status else f"{status}: '{color}'"
-            with self.subTest(status=status):
-                self.assertIn(entry, form)
-                self.assertIn(entry, listing)
-
-    def test_review_heuristics_child_table_and_transition_contract(self):
-        data = json.loads((BASE / "job_search_opportunity" / "job_search_opportunity.json").read_text())
-        fields = {f["fieldname"]: f for f in data["fields"]}
-        self.assertEqual(
-            (fields["active_job_search"]["fieldtype"], fields["active_job_search"]["options"]),
-            ("Link", "Job Search Search"),
-        )
-        self.assertEqual(
-            (fields["research_heuristics"]["fieldtype"], fields["research_heuristics"]["options"]),
-            ("Table", "Job Search Heuristic Value"),
-        )
-        self.assertLess(
-            data["field_order"].index("job_details_section"),
-            data["field_order"].index("research_heuristics_section"),
-        )
-        self.assertLess(
-            data["field_order"].index("research_heuristics_section"),
-            data["field_order"].index("research_notes_section"),
-        )
-        child = json.loads((BASE / "job_search_heuristic_value/job_search_heuristic_value.json").read_text())
-        self.assertEqual(
-            child["field_order"],
-            [
-                "heuristic_id",
-                "heuristic_name",
-                "quote",
-                "reasoning",
-                "source",
-                "source_date",
-            ],
-        )
-        self.assertEqual(
-            {f["fieldname"] for f in child["fields"] if f.get("in_list_view")},
-            {"heuristic_name", "quote", "reasoning", "source", "source_date"},
-        )
-        claim_fields = {f["fieldname"]: f for f in child["fields"]}
-        for field in ("reasoning", "source_date"):
-            self.assertEqual(1, claim_fields[field]["reqd"])
-            self.assertEqual(
-                "Data" if field == "source_date" else "Small Text", claim_fields[field]["fieldtype"]
-            )
-        self.assertIn("YYYY-MM-DD", claim_fields["source_date"]["description"])
-        self.assertIn("literal None", claim_fields["source_date"]["description"])
-        js = (BASE / "job_search_opportunity/job_search_opportunity.js").read_text()
-        self.assertIn("active_job_search(frm)", js)
-        self.assertIn("frappe.db.get_doc('Job Search Search', search_name)", js)
-        self.assertIn("frappe.model.set_value(cdt,cdn,'heuristic_id',definition.name)", js)
-        self.assertIn('Load Heuristic Choices', js)
-        workflow = (APP / "workflow.py").read_text()
-        self.assertIn('if next_stage == "Ready to Review":', workflow)
-        self.assertIn('_review_readiness_failures(deal)', workflow)
-
-    def test_opportunity_has_single_unprefixed_status(self):
-        import json
-
-        data = json.loads((BASE / "job_search_opportunity" / "job_search_opportunity.json").read_text())
-        fields = {field["fieldname"]: field for field in data["fields"]}
-        self.assertNotIn("js_stage", fields)
-        self.assertEqual("Status", fields["status"]["label"])
-        workflow = (APP / "workflow.py").read_text()
-        self.assertNotIn("JS: ", workflow)
-        self.assertNotIn("JS: ", workflow)
-
-    def test_simplified_status_actions(self):
-        import json
-
-        data = json.loads((BASE / "job_search_opportunity" / "job_search_opportunity.json").read_text())
-        status = next(f for f in data["fields"] if f["fieldname"] == "status")
-        self.assertEqual(status["options"].splitlines(), [
-            "Discovered", "Researching", "Ready to Review", "Qualified",
-            "Applied", "Interviewing", "Accepted", "Rejected",
-        ])
-        self.assertTrue(status["read_only"])
-        ui = (BASE / "job_search_opportunity" / "job_search_opportunity.js").read_text()
-        for action in ("Mark Qualified", "Needs Research", "Mark Applied",
-                       "Begin Interviewing", "Accept Offer", "More Actions"):
-            self.assertIn(action, ui)
-
-    def test_no_duplicate_owner_or_qualification(self):
-        import json
-
-        data = json.loads((BASE / "job_search_opportunity" / "job_search_opportunity.json").read_text())
-        field_names = {f["fieldname"] for f in data["fields"]}
-        self.assertTrue({"status", "latest_posting"}.issubset(field_names))
-        self.assertFalse({"deal_owner", "qualification", "qualification_rationale"} & field_names)
-        workflow = (APP / "workflow.py").read_text()
-        self.assertIn('require_decision(deal.name, "Pursue"', workflow)
-        self.assertNotIn('deal.qualification', workflow)
-        tasks = (APP / "tasks.py").read_text()
-        self.assertNotIn('deal.deal_owner', tasks)
-
-    def test_no_duplicate_review_or_posting_fields(self):
-        import json
-
-        schema = json.loads((BASE / "job_search_opportunity" / "job_search_opportunity.json").read_text())
-        fields = {f["fieldname"] for f in schema["fields"]}
-        obsolete = {"review_request", "review_status", "review_assigned_to", "review_task",
-                    "review_assignment", "human_action", "human_action_rationale", "posting_text"}
-        self.assertFalse(fields & obsolete)
-        self.assertIn("latest_posting", fields)
-        self.assertEqual("Job Posting", next(f["label"] for f in schema["fields"]
-                         if f["fieldname"] == "latest_posting"))
+    def test_documentation_and_migration_references(self):
+        hooks=(APP/'hooks.py').read_text()
+        self.assertIn('"Opportunity":',hooks)
+        self.assertIn('"Job":',hooks)
+        patch=(APP/'patches/v5_split_opportunities.py').read_text()
+        self.assertIn('rename_doc("DocType", old, new',patch)
+        migration=(APP/'opportunity_migration.py').read_text()
+        self.assertIn('verify_opportunity_migration()',migration)
+        self.assertIn('Job Search Transition',migration)
+        self.assertIn('Job Search Decision',migration)
 
     def test_heuristics_are_named_child_rows(self):
         import json
@@ -405,12 +218,12 @@ class SchemaTest(unittest.TestCase):
     def test_standalone_ui(self):
         hooks = (APP / "hooks.py").read_text()
         self.assertNotIn('required_apps = ["crm"]', hooks)
-        self.assertIn('"Job Search Opportunity"', hooks)
+        self.assertIn('"Opportunity"', hooks)
         self.assertIn('add_to_apps_screen = [', hooks)
         self.assertIn('"route": app_home', hooks)
         self.assertIn('"has_permission": "job_search.permissions.can_access_app"', hooks)
         self.assertTrue((APP / "public" / "images" / "job-search.svg").exists())
-        self.assertTrue((BASE / "job_search_opportunity" / "job_search_opportunity.js").exists())
+        self.assertTrue((BASE / "opportunity" / "opportunity.js").exists())
         self.assertTrue((APP / "migration.py").exists())
 
     def test_no_untracked_direct_crm_mutation(self):

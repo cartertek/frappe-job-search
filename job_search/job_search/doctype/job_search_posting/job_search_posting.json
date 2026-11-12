@@ -11,6 +11,7 @@
   "autoname": "JS-.YYYY.-.#####",
   "field_order": [
     "opportunity",
+    "job",
     "organization",
     "source_name",
     "source_url",
@@ -31,9 +32,16 @@
       "fieldname": "opportunity",
       "label": "Opportunity",
       "fieldtype": "Link",
-      "options": "Job Search Opportunity",
-      "reqd": 1,
+      "options": "Opportunity",
       "in_standard_filter": 1
+    },
+    {
+      "fieldname": "job",
+      "fieldtype": "Link",
+      "label": "Job",
+      "options": "Job",
+      "in_standard_filter": 1,
+      "reqd": 1
     },
     {
       "fieldname": "organization",

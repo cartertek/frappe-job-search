@@ -97,31 +97,34 @@ class SearchRules(unittest.TestCase):
 
     def test_global_and_explicit_precedence(self):
         from types import SimpleNamespace as NS
-        module = self.module
-        jobs = [dict(vars(obj()), name='a', organization='one', globally_rejected=0, status='Discovered'),
-                dict(vars(obj(job_title='Designer')), name='b', organization='one',
-                     globally_rejected=0, status='Discovered'),
-                dict(vars(obj()), name='c', organization='two', globally_rejected=1, status='Discovered'),
-                dict(vars(obj()), name='d', organization='blocked',
-                     globally_rejected=0, status='Discovered')]
+        module=self.module
         class Row(dict):
-            __getattr__ = dict.get
-        dataset = [Row(x) for x in jobs]
-        overrides = [NS(job=key, override=action) for key, action in (
-            ('a', 'Exclude'), ('b', 'Include'), ('c', 'Include'), ('d', 'Include')
-        )]
-        active = search(require_heuristics=0, overrides=overrides)
-        fake = sys.modules['frappe']
-        fake.get_list = lambda *args, **kwargs: dataset
-        fake.db = NS(get_value=lambda dt, org, field: org=='blocked')
-        with patch.object(module, 'require_doc', return_value=active):
-            self.assertEqual(['b'], [x['name'] for x in module.matching_jobs('search')])
-            active.require_heuristics = 1
-            self.assertEqual(['b'], [x['name'] for x in module.matching_jobs('search')])
-            active.overrides = []
-            self.assertEqual([], module.matching_jobs('search'))
-            active.require_heuristics = 0
-            self.assertEqual(['a', 'b'], [x['name'] for x in module.matching_jobs('search')])
+            __getattr__=dict.get
+        jobs=[Row(dict(vars(obj()),name='a',organization='one',availability_status='Active')),
+              Row(dict(vars(obj(job_title='Designer')),name='b',organization='one',availability_status='Active')),
+              Row(dict(vars(obj()),name='c',organization='two',availability_status='Rejected')),
+              Row(dict(vars(obj()),name='d',organization='blocked',availability_status='Active'))]
+        opportunities=[Row(name='oa',organization='one',opportunity_name='One',status='Researching',globally_rejected=0),
+                       Row(name='ob',organization='one',opportunity_name='Two',status='Researching',globally_rejected=0),
+                       Row(name='oc',organization='two',opportunity_name='Three',status='Researching',globally_rejected=0),
+                       Row(name='od',organization='blocked',opportunity_name='Four',status='Researching',globally_rejected=0)]
+        links=[Row(parent='o'+k,job=k) for k in 'abcd']
+        active=search(name='search',enabled=1,require_heuristics=0,overrides=[
+            NS(opportunity='oa',override='Exclude'),NS(opportunity='ob',override='Include'),
+            NS(opportunity='oc',override='Include'),NS(opportunity='od',override='Include')])
+        fake=sys.modules['frappe']
+        fake.get_list=lambda dt,**kw: jobs if dt=='Job' else opportunities
+        fake.get_all=lambda dt,**kw: links
+        fake.db=NS(get_value=lambda dt,org,field: org=='blocked')
+        with patch.object(module,'require_doc',return_value=active):
+            self.assertEqual(['ob'],[x['opportunity'] for x in module.matching_jobs('search')])
+            active.require_heuristics=1
+            self.assertEqual(['ob'],[x['opportunity'] for x in module.matching_jobs('search')])
+            active.overrides=[]
+            self.assertEqual([],module.matching_jobs('search'))
+            active.require_heuristics=0
+            self.assertEqual(['oa','ob'],[x['opportunity'] for x in module.matching_jobs('search')])
+
 
 
 if __name__ == '__main__':

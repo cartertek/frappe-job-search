@@ -20,7 +20,8 @@
     "archive",
     "verification_status",
     "organization",
-    "opportunity"
+    "opportunity",
+    "job"
   ],
   "fields": [
     {
@@ -83,7 +84,14 @@
       "fieldname": "opportunity",
       "label": "Opportunity",
       "fieldtype": "Link",
-      "options": "Job Search Opportunity"
+      "options": "Opportunity"
+    },
+    {
+      "fieldname": "job",
+      "fieldtype": "Link",
+      "label": "Job",
+      "options": "Job",
+      "in_standard_filter": 1
     }
   ],
   "permissions": [

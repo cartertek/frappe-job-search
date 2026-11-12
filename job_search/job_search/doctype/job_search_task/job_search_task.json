@@ -29,7 +29,7 @@
       "fieldname": "opportunity",
       "label": "Opportunity",
       "fieldtype": "Link",
-      "options": "Job Search Opportunity"
+      "options": "Opportunity"
     },
     {
       "fieldname": "assigned_to",

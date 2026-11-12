@@ -15,7 +15,7 @@ def require_doc(doctype, name, ptype="read"):
 
 
 def require_opportunity(name, ptype="read"):
-    doc = require_doc("Job Search Opportunity", name, ptype)
+    doc = require_doc("Opportunity", name, ptype)
     return doc
 
 
@@ -33,3 +33,7 @@ def can_access_app():
         {"Job Search Operator", "Job Search Approver", "System Manager"}
         & set(frappe.get_roles(frappe.session.user))
     )
+
+
+def require_job(name, ptype="read"):
+    return require_doc("Job", name, ptype)

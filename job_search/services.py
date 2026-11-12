@@ -8,74 +8,105 @@ from job_search.postings import capture_posting
 from job_search.workflow import require_decision
 
 
-def register_opportunity(*, employer, title, source_url=None, description=None, requisition_id=None,
-                         location=None, source_name="Employer website"):
+def _organization(employer):
+    employer = (employer or '').strip()
+    if not employer:
+        frappe.throw('Organization is required')
+    name = employer if frappe.db.exists('Job Search Employer', employer) else frappe.db.exists(
+        'Job Search Employer', {'organization_name': employer})
+    if name:
+        return require_doc('Job Search Employer', name, 'read')
+    return frappe.get_doc({'doctype':'Job Search Employer',
+                           'organization_name': employer}).insert()
+
+
+def register_opportunity(*, employer, name=None):
+    """Create a hiring pursuit, independent of Job Search membership."""
     require_operator()
-    employer = (employer or "").strip()
-    title = (title or "").strip()
-    if not employer or not title or not (source_url or description):
-        frappe.throw("Employer, title, and a posting URL or description are required")
-    existing_org = frappe.db.exists("Job Search Employer", {"organization_name": employer})
-    if existing_org:
-        org = require_doc("Job Search Employer", existing_org, "read")
-    else:
-        org = frappe.get_doc({"doctype": "Job Search Employer", "organization_name": employer})
-        org.insert()
+    org = _organization(employer)
+    opportunity_name = (name or org.organization_name or '').strip()
+    if not opportunity_name:
+        frappe.throw('Opportunity name is required')
+    existing = frappe.get_all('Opportunity',filters={'organization':org.name},
+                              fields=['name','opportunity_name'],limit_page_length=1000)
+    same = next((x for x in existing if x.opportunity_name.casefold()==opportunity_name.casefold()),None)
+    if same:
+        return {'opportunity':same.name,'organization':org.name,'created':False}
+    doc = frappe.get_doc({'doctype':'Opportunity','organization':org.name,
+                          'opportunity_name':opportunity_name,'status':'Discovered',
+                          'discovered_on':nowdate()}).insert()
+    return {'opportunity':doc.name,'organization':org.name,'created':True}
+
+
+def register_job(*, employer, title, source_url=None, description=None,
+                 requisition_id=None, location=None,source_name='Employer website',
+                 opportunity=None):
+    """Record a Job once, then attach it to an existing/default Opportunity."""
+    require_operator()
+    org=_organization(employer)
+    title=(title or '').strip()
+    if not title or not (source_url or description):
+        frappe.throw('Job title and a source URL or description are required')
+    found=None
     if source_url:
-        existing = frappe.db.get_value("Job Search Posting", {"source_url": source_url}, "opportunity")
-        if not existing:
-            # A URL-only first observation is a discovery source, not a captured posting.
-            # Re-import with description must reuse its Deal instead of duplicating it.
-            existing = frappe.db.get_value("Job Search Source", {"url": source_url}, "opportunity")
-        if existing:
-            deal = require_opportunity(existing, "read")
-            if deal.organization != org.name:
-                frappe.throw("Posting URL belongs to a different employer; review this duplicate")
-            captured = (capture_posting(deal.name, description=description,
-                source_name=source_name, source_url=source_url, posting_title=title,
-                requisition_id=requisition_id) if description else None)
-            return {"opportunity": deal.name, "organization": org.name, "created": False,
-                    "posting": captured["posting"] if captured else None,
-                    "snapshot_created": captured["created"] if captured else False,
-                    "possible_duplicates": []}
-    # Strict match. Never merge on title alone or a requisition ID alone.
-    candidate_filters = {"organization": org.name}
-    candidates = frappe.get_all("Job Search Opportunity", filters=candidate_filters,
-                                fields=["name", "job_title", "requisition_id", "location"])
-    strict = [x for x in candidates if requisition_id and x.requisition_id == requisition_id
-              and x.job_title.casefold() == title.casefold()
-              and (x.location or "").casefold() == (location or "").casefold()]
-    if len(strict) == 1:
-        deal = require_opportunity(strict[0].name, "write")
-        created = False
+        found=frappe.db.get_value('Job Search Posting',{'source_url':source_url},'job')
+        found=found or frappe.db.get_value('Job Search Source',{'url':source_url},'job')
+    candidates=frappe.get_all('Job',filters={'organization':org.name},
+                              fields=['name','job_title','requisition_id','location'],
+                              limit_page_length=100000)
+    if not found and requisition_id:
+        matches=[x.name for x in candidates if x.requisition_id==requisition_id and
+                 (x.job_title or '').casefold()==title.casefold() and
+                 (x.location or '').casefold()==(location or '').casefold()]
+        if len(matches)==1:
+            found=matches[0]
+    if found:
+        role=require_doc('Job',found,'write')
+        if role.organization != org.name:
+            frappe.throw('Existing Job belongs to another Organization')
+        created=False
     else:
-        deal = frappe.get_doc({
-            "doctype": "Job Search Opportunity", "organization": org.name, "lead_name": title,
-            "job_title": title, "requisition_id": requisition_id,
-            "posting_url": source_url, "location": location,
-            "discovered_on": nowdate(), "status": "Discovered",
-        })
-        deal.insert()
-        created = True
-    posting = None
+        role=frappe.get_doc({'doctype':'Job','organization':org.name,
+                             'job_title':title,'requisition_id':requisition_id,
+                             'posting_url':source_url,'location':location,
+                             'discovered_on':nowdate(),'availability_status':'Unknown',
+                             'compensation_not_given':1}).insert()
+        created=True
+    from job_search.opportunities import associate_job, opportunities_for_job
+    linked=opportunities_for_job(role.name)
+    if opportunity:
+        target=require_doc('Opportunity',opportunity,'write')
+        if target.organization != org.name:
+            frappe.throw('Opportunity belongs to another Organization')
+    elif linked:
+        if len(linked)>1:
+            frappe.throw('Job belongs to multiple Opportunities; select one explicitly')
+        opportunity=linked[0]
+    else:
+        existing=frappe.get_all('Opportunity',filters={'organization':org.name},pluck='name',
+                                limit_page_length=1000)
+        if len(existing)>1:
+            frappe.throw('Multiple Opportunities exist for this Organization; select one')
+        if existing:
+            opportunity=existing[0]
+        else:
+            opportunity=register_opportunity(employer=org.name)['opportunity']
+    associate_job(opportunity,role.name)
+    snapshot=None
     if description:
-        posting = capture_posting(deal.name, description=description, source_name=source_name,
-            source_url=source_url, posting_title=title, requisition_id=requisition_id)
-    elif source_url and not frappe.db.exists(
-        "Job Search Source", {"url": source_url, "opportunity": deal.name}
-    ):
-        frappe.get_doc({
-            "doctype": "Job Search Source", "title": f"{title} (discovery)",
-            "url": source_url, "source_type": "Job Board",
-            "retrieved_on": now_datetime(), "opportunity": deal.name,
-            "organization": org.name, "verification_status": "Unverified",
-        }).insert()
-    return {
-        "opportunity": deal.name, "organization": org.name,
-        "posting": posting["posting"] if posting else None, "created": created,
-        "possible_duplicates": [x.name for x in candidates if x.name != deal.name and
-                                (x.job_title or "").casefold() == title.casefold()],
-    }
+        snapshot=capture_posting(role.name,description=description,source_name=source_name,
+                                 source_url=source_url,posting_title=title,
+                                 requisition_id=requisition_id,opportunity=opportunity)
+    elif source_url and not frappe.db.exists('Job Search Source',{'url':source_url,'job':role.name}):
+        frappe.get_doc({'doctype':'Job Search Source','title':f'{title} (discovery)',
+            'url':source_url,'source_type':'Job Board','retrieved_on':now_datetime(),
+            'job':role.name,'opportunity':opportunity,'organization':org.name,
+            'verification_status':'Unverified'}).insert()
+    return {'job':role.name,'opportunity':opportunity,'organization':org.name,
+            'created':created,'posting':snapshot['posting'] if snapshot else None,
+            'snapshot_created':snapshot['created'] if snapshot else False,
+            'possible_duplicates':[x.name for x in candidates if x.name!=role.name and
+                                   (x.job_title or '').casefold()==title.casefold()]}
 
 
 def start_procedure(procedure, opportunity=None, organization=None, operator=None):

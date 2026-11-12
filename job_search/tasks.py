@@ -22,7 +22,7 @@ def create_stage_task(deal, transition):
         return existing
     due = deal.next_action_on or deal.deadline
     doc = frappe.get_doc({
-        "doctype": "Job Search Task", "title": f"{action}: {deal.job_title}",
+        "doctype": "Job Search Task", "title": f"{action}: {deal.opportunity_name}",
         "status": "Todo", "priority": "High" if deal.status == "Ready to Review" else "Medium",
         "due_date": due, "assigned_to": frappe.session.user,
         "opportunity": deal.name,

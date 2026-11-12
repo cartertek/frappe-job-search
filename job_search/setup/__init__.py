@@ -21,16 +21,12 @@ def after_migrate():
         frappe.get_doc({"doctype": "Job Search Procedure", **item}).insert(
             ignore_permissions=True
         )
-    migrate_prefixed_fields()
-    migrate_semantic_job_fields()
-    migrate_heuristic_claims()
-    cleanup_legacy_heuristic_claim_rows()
-    migrate_workflow_statuses()
+    from job_search.opportunity_migration import migrate_opportunities_v5
+
+    migrate_opportunities_v5()
     migrate_legacy_search_filters()
     migrate_heuristics_table()
     migrate_active_in_past()
-    backfill_last_active_on()
-    backfill_rejection_details()
     ensure_workspace()
     from job_search.desktop_integrity import audit_desktop_layouts
 
@@ -42,7 +38,8 @@ def after_migrate():
     # native child-grid template can remain absent from browser metadata.
     frappe.cache.delete_value("doctype_form_meta::Job Search Search")
     frappe.client_cache.delete_value("doctype_form_meta::Job Search Search")
-    frappe.client_cache.delete_value("doctype_form_meta::Job Search Opportunity")
+    for name in ("Job", "Opportunity", "Opportunity Job", "Job Search Posting"):
+        frappe.client_cache.delete_value(f"doctype_form_meta::{name}")
     # Frappe's merged language dictionary has its own cache, independent of
     # the Desk/doctype caches. Refresh it when app translations change.
     from frappe.translate import clear_cache as clear_translation_cache
@@ -93,10 +90,10 @@ def backfill_last_active_on():
     if frappe.db.get_default(marker):
         return
     required = {"posted_on", "posting_url", "last_active_on", "last_active_source_url"}
-    if not required.issubset(set(frappe.db.get_table_columns("Job Search Opportunity"))):
+    if not required.issubset(set(frappe.db.get_table_columns("Job"))):
         return
     frappe.db.sql(
-        "UPDATE `tabJob Search Opportunity` SET "
+        "UPDATE `tabJob` SET "
         "last_active_on=posted_on, last_active_source_url=posting_url "
         "WHERE last_active_on IS NULL AND posted_on IS NOT NULL "
         "AND posting_url IS NOT NULL AND TRIM(posting_url) != ''"
@@ -107,7 +104,8 @@ def backfill_last_active_on():
 WORKSPACE_LABELS = {
     'Job Search Search': 'Search',
     'Research Strategy': 'Research Strategies',
-    'Job Search Opportunity': 'Job',
+    'Opportunity': 'Opportunity',
+    'Job': 'Job',
     'Job Search Employer': 'Organization',
     'Job Search Task': 'Task',
     'Job Search Posting': 'Posting',
@@ -125,7 +123,7 @@ WORKSPACE_LABELS = {
 def ensure_workspace():
     """Keep display labels friendly while retaining stable underlying DocTypes."""
     names = (
-        "Job Search Search", "Research Strategy", "Job Search Opportunity",
+        "Job Search Search", "Research Strategy", "Opportunity", "Job",
         "Job Search Employer", "Job Search Task",
         "Job Search Posting", "Job Search Research", "Job Search Decision",
         "Job Search Application", "Job Search Interview", "Job Search Procedure Execution",
@@ -142,6 +140,9 @@ def ensure_workspace():
             if row.type == "DocType" and row.link_to == "Job Search Research Strategy":
                 row.link_to = "Research Strategy"
                 row.label = "Research Strategies"
+            if row.type == "DocType" and row.link_to == "Job Search Opportunity":
+                row.link_to = "Job"
+                row.label = "Job"
         by_doctype = {row.link_to: row for row in doc.shortcuts if row.type == "DocType"}
         for item in links:
             if item["link_to"] in by_doctype:
@@ -156,6 +157,7 @@ def ensure_workspace():
         }
         old_to_new = {name: WORKSPACE_LABELS[name] for name in names}
         old_to_new['Job Search Research Strategy'] = 'Research Strategies'
+        old_to_new['Job Search Opportunity'] = 'Job'
         old_to_new.update(legacy_plural)
         current = frappe.parse_json(doc.content or "[]")
         seen = set()
@@ -263,14 +265,14 @@ def migrate_heuristic_claims():
     for job_name, entries in grouped.items():
         # Append using direct SQL: historical Jobs may not satisfy current save
         # validation. No workflow transitions or modified-by impersonation.
-        existing = frappe.db.get_value("Job Search Opportunity", job_name, "research_findings") or ""
+        existing = frappe.db.get_value("Job", job_name, "research_findings") or ""
         blocks = ["<h3>Previous heuristic research assessments (not sourced claims)</h3>"]
         for row in entries:
             blocks.append(f"<p><strong>{escape(row.heuristic_name or 'Heuristic')}</strong>: "
                           f"{escape(row.value).replace(chr(10), '<br>')}</p>")
         addition = "\n".join(blocks)
         content = existing + ("\n" if existing else "") + addition
-        frappe.db.sql("UPDATE `tabJob Search Opportunity` SET research_findings=%s WHERE name=%s",
+        frappe.db.sql("UPDATE `tabJob` SET research_findings=%s WHERE name=%s",
                       (content, job_name))
     # The old values are now research notes, not claims.
     frappe.db.sql(f"UPDATE `{table}` SET value=NULL WHERE value IS NOT NULL")
@@ -285,7 +287,7 @@ def backfill_rejection_details():
     marker = "job_search:rejection_details_backfill_v1"
     if frappe.db.get_default(marker):
         return
-    doctype = "Job Search Opportunity"
+    doctype = "Job"
     for row in frappe.get_all(doctype, filters={"status": "Rejected"},
                               fields=["name", "rejection_scope", "rejection_reason"]):
         if row.rejection_scope and row.rejection_reason:
@@ -338,11 +340,11 @@ def migrate_semantic_job_fields():
         "interview_brief": "interview_preparation",
         "human_feedback": "human_feedback_and_instructions",
     }
-    columns = set(frappe.db.get_table_columns("Job Search Opportunity"))
+    columns = set(frappe.db.get_table_columns("Job"))
     for old, new in mapping.items():
         if {old, new}.issubset(columns):
             frappe.db.sql(
-                f"UPDATE `tabJob Search Opportunity` SET `{new}` = `{old}` "
+                f"UPDATE `tabJob` SET `{new}` = `{old}` "
                 f"WHERE `{new}` IS NULL AND `{old}` IS NOT NULL"
             )
     frappe.db.set_default(marker, "1")
@@ -449,7 +451,7 @@ def migrate_workflow_statuses():
     }
     for old, new in mapping.items():
         frappe.db.sql(
-            "UPDATE `tabJob Search Opportunity` SET status=%s WHERE status=%s", (new, old)
+            "UPDATE `tabJob` SET status=%s WHERE status=%s", (new, old)
         )
     frappe.db.set_default(marker, "1")
 

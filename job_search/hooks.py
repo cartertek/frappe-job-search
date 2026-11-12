@@ -25,8 +25,11 @@ after_migrate = "job_search.setup.after_migrate"
 fixtures = [{"dt": "Role", "filters": [["name", "in", ["Job Search Operator", "Job Search Approver"]]]}]
 
 doc_events = {
-    "Job Search Opportunity": {
+    "Opportunity": {
         "validate": "job_search.workflow.validate_deal",
         "on_update": "job_search.workflow.record_transition",
-    }
+    },
+    "Job": {
+        "on_update": "job_search.opportunities.recheck_for_job",
+    },
 }

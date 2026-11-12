@@ -46,7 +46,7 @@ class PostingBehavior(unittest.TestCase):
         fake.throw = lambda message: (_ for _ in ()).throw(ValueError(message))
         def get_value(doctype, filters, field, **kwargs):
             for post in reversed(self.postings):
-                if post.opportunity != filters.get("opportunity"):
+                if post.job != filters.get("job"):
                     continue
                 if post.source_name != filters.get("source_name"):
                     continue
@@ -81,14 +81,17 @@ class PostingBehavior(unittest.TestCase):
                 pass
 
         self.fake_deal = FakeDeal()
-        fake_perms.require_opportunity = lambda name, ptype="read": self.fake_deal
+        fake_perms.require_doc = lambda name, doc, ptype="read": self.fake_deal
+        fake_opps = types.ModuleType('job_search.opportunities')
+        fake_opps.opportunities_for_job=lambda name: ['OPP-1']
         service = load_app_module("postings.py", "test_postings_module", fake,
-                                  **{"job_search.permissions": fake_perms})
+                                  **{"job_search.permissions": fake_perms,
+                                     "job_search.opportunities": fake_opps})
         return service
 
     def test_unchanged_import_is_idempotent_but_new_text_is_preserved(self):
         service = self.make_service()
-        params = {"opportunity": "D-1", "source_name": "Employer",
+        params = {"job": "D-1", "source_name": "Employer",
                   "source_url": "https://example.org/job/42"}
         a = service.capture_posting(description="Original description", **params)
         b = service.capture_posting(description="Original description", **params)
@@ -106,7 +109,7 @@ class PostingBehavior(unittest.TestCase):
 
     def test_empty_captured_description_is_not_saved(self):
         service = self.make_service()
-        with self.assertRaisesRegex(ValueError, "description is required"):
+        with self.assertRaisesRegex(ValueError, "full posting description"):
             service.capture_posting("D-1", description=" ", source_name="Employer")
         self.assertFalse(self.postings)
 
@@ -121,7 +124,7 @@ class TaskBehavior(unittest.TestCase):
         ))
         fake.get_doc = lambda data: FakeDocument(data, rows)
         tasks = load_app_module("tasks.py", "test_tasks_module", fake)
-        deal = types.SimpleNamespace(status="Applied", job_title="Engineer", name="D-1",
+        deal = types.SimpleNamespace(status="Applied", opportunity_name="Engineer", name="D-1",
              next_action_on="2026-10-22", deadline="2026-11-01")
         transition = types.SimpleNamespace(name="T-1")
         first = tasks.create_stage_task(deal, transition)
