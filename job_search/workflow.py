@@ -113,13 +113,13 @@ def _job_readiness_failures(job, search):
 def _review_readiness_failures(deal):
     """An Opportunity qualifies for a Search if at least one associated Job qualifies."""
     if not deal.active_job_search:
-        return ["Qualification Search is required"]
+        return ["Active Job Search is required"]
     if not frappe.db.exists("Job Search Search", deal.active_job_search):
-        return ["Qualification Search does not exist"]
+        return ["Active Job Search does not exist"]
     search = frappe.get_doc("Job Search Search", deal.active_job_search)
     errors = []
     if not search.enabled:
-        errors.append("Qualification Search is disabled")
+        errors.append("Active Job Search is disabled")
     if deal.globally_rejected:
         errors.append("Opportunity is globally rejected")
     if frappe.db.get_value("Job Search Employer", deal.organization, "globally_rejected"):
@@ -127,9 +127,9 @@ def _review_readiness_failures(deal):
     override = next((r.override for r in search.overrides
                      if r.opportunity == deal.name), None)
     if override == "Exclude":
-        errors.append("Opportunity is excluded from the Qualification Search")
+        errors.append("Opportunity is excluded from the Active Job Search")
     if search.require_heuristics and override != "Include":
-        errors.append("Qualification Search requires an explicit Include for this Opportunity")
+        errors.append("Active Job Search requires an explicit Include for this Opportunity")
     if errors:
         return errors
     if not deal.jobs:

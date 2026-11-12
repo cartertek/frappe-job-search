@@ -148,7 +148,7 @@ class ReviewReadiness(unittest.TestCase):
 
     def test_missing_and_disabled_search_are_rejected(self):
         self.opp.active_job_search = ''
-        self.assertIn('Qualification Search is required', self.opportunity_errors())
+        self.assertIn('Active Job Search is required', self.opportunity_errors())
         self.opp.active_job_search = 'SEARCH1'
         self.search.enabled = 0
         self.assertIn('disabled', ' '.join(self.opportunity_errors()))
@@ -265,8 +265,8 @@ class ReviewReadiness(unittest.TestCase):
         self.search.require_heuristics = 1
         errors = self.opportunity_errors()
         self.assertIn('Opportunity is globally rejected', errors)
-        self.assertIn('Opportunity is excluded from the Qualification Search', errors)
-        self.assertIn('Qualification Search requires an explicit Include for this Opportunity', errors)
+        self.assertIn('Opportunity is excluded from the Active Job Search', errors)
+        self.assertIn('Active Job Search requires an explicit Include for this Opportunity', errors)
         self.opp.globally_rejected = 0
         self.search.overrides = [record(opportunity='OPP1', override='Include')]
         self.assertEqual([], self.opportunity_errors())

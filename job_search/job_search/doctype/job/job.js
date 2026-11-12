@@ -1,11 +1,32 @@
 // Configure selectable heuristics without modifying saved claims on form load.
 async function sync_research_heuristics(frm) {
-  const search_name = frm.doc.active_job_search;
-  if (!search_name) return;
+  if (frm.is_new()) return;
+  const {message} = await frappe.call({
+    method:'job_search.api.get_job_active_searches', args:{job:frm.doc.name},
+  });
+  const searches = message.data.searches || [];
+  if (!searches.length) return;
+  let search_name;
+  if (searches.length === 1) {
+    search_name = searches[0].search;
+  } else {
+    const choices=searches.map(row=>row.search);
+    search_name=await new Promise(resolve=>{
+      const dialog=new frappe.ui.Dialog({title:__('Select Active Job Search'),
+        fields:[{fieldname:'search',fieldtype:'Select',label:__('Active Job Search'),
+          options:choices.join('\n'),reqd:1}],
+        primary_action_label:__('Load Heuristics'),
+        primary_action:values=>{dialog.hide();resolve(values.search);},
+      });
+      dialog.onhide=()=>resolve(null);
+      dialog.show();
+    });
+    if (!search_name) return;
+  }
   const serial = (frm._claims_request || 0) + 1;
   frm._claims_request = serial;
   const search = await frappe.db.get_doc('Job Search Search', search_name);
-  if (frm.doc.active_job_search !== search_name || frm._claims_request !== serial) return;
+  if (frm._claims_request !== serial) return;
   const titles = (search.title_matches || '').split('\n').map(x => x.trim()).filter(Boolean);
   const defined = [
     ...(titles.length ? [{name:'builtin:job-title', heuristic_name:'Job Title',
@@ -35,19 +56,15 @@ frappe.ui.form.on('Job Search Heuristic Value', {
 });
 
 frappe.ui.form.on('Job', {
-  active_job_search(frm) { sync_research_heuristics(frm); },
   compensation_not_given(frm) {
     if (frm.doc.compensation_not_given) {
       ['compensation_min', 'compensation_max', 'currency', 'compensation_period'].forEach(
         field => frm.set_value(field, null));
     }
   },
-  onload(frm) { if (frm.doc.active_job_search) sync_research_heuristics(frm); },
   refresh(frm) {
-    if (frm.doc.active_job_search) {
-      frm.add_custom_button(__('Load Heuristic Choices'), () =>
-        sync_research_heuristics(frm), __('More Actions'));
-    }
+    if (!frm.is_new()) frm.add_custom_button(__('Load Heuristic Choices'),
+      () => sync_research_heuristics(frm), __('More Actions');
     const colors = {Unknown:'gray', Active:'green', Closed:'orange', Rejected:'red'};
     if (frm.doc.availability_status) frm.page.set_indicator(
       __(frm.doc.availability_status), colors[frm.doc.availability_status] || 'gray');

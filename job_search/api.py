@@ -446,3 +446,19 @@ def get_search_research_strategies(search):
     """Return assigned strategies in execution order, with full instructions."""
     from job_search.strategies import get_search_strategies
     return success({"search": search, "strategies": get_search_strategies(search)})
+
+
+@frappe.whitelist()
+def get_job_active_searches(job):
+    """Read Active Job Searches from the Opportunity(s) containing this Job."""
+    from job_search.opportunities import opportunities_for_job
+    from job_search.permissions import require_doc
+
+    require_doc('Job', job, 'read')
+    opportunities = opportunities_for_job(job)
+    rows = frappe.get_all('Opportunity',
+        filters={'name': ['in', opportunities or ['__none__']]},
+        fields=['name','opportunity_name','active_job_search'],limit_page_length=100000)
+    searches = [{'opportunity': row.name,'search':row.active_job_search}
+                for row in rows if row.active_job_search]
+    return success({'job':job,'searches':searches})

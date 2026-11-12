@@ -20,7 +20,6 @@
     "discovered_on",
     "latest_posting",
     "search_fields_section",
-    "active_job_search",
     "location",
     "employment_type",
     "work_arrangement",
@@ -111,13 +110,6 @@
       "fieldname": "search_fields_section",
       "fieldtype": "Section Break",
       "label": "Job Search Fields"
-    },
-    {
-      "fieldname": "active_job_search",
-      "fieldtype": "Link",
-      "options": "Job Search Search",
-      "label": "Original Discovery Search",
-      "description": "Historical discovery source. Opportunities can match multiple searches independently."
     },
     {
       "fieldname": "location",
