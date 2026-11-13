@@ -1,12 +1,4 @@
 frappe.ui.form.on('Opportunity', {
-  activity_log_add(frm, cdt, cdn) {
-    // Frappe's Add Row handler focuses the first editable field (Date) after
-    // 100ms. Focus the required Type selector for this child table instead.
-    setTimeout(() => {
-      const row = frm.fields_dict.activity_log?.grid?.grid_rows_by_docname?.[cdn];
-      row?.row?.find('[data-fieldname="type"] select:visible').first().trigger('focus');
-    }, 180);
-  },
   onload(frm) {
     // Existing Activity rows must display oldest first, even before save.
     const rows = frm.doc.activity_log || [];

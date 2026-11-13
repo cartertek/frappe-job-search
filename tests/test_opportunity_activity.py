@@ -12,7 +12,7 @@ class OpportunityActivityTests(unittest.TestCase):
     def test_child_schema_matches_issue_18(self):
         schema = json.loads((DT/'opportunity_activity/opportunity_activity.json').read_text())
         self.assertEqual(schema['istable'], 1)
-        self.assertEqual(schema['field_order'], ['date','type','contact','platform','notes'])
+        self.assertEqual(schema['field_order'], ['type','date','contact','platform','notes'])
         fields = {item['fieldname']:item for item in schema['fields']}
         self.assertEqual(fields['date']['default'],'Today')
         self.assertTrue(fields['date']['reqd'])
